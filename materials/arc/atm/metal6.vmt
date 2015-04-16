@@ -1,0 +1,11 @@
+"vertexlitgeneric"
+{
+	"$basetexture" "metal6"
+	"$surfaceprop" "solidmetal"
+	"$bumpmap" "metal6_bump"
+	 "$phong"     "1"
+	"$halflambert"	1
+ 	"$phongexponent"   "250"
+ 	"$phongboost"   "1"
+ 	"$phongfresnelranges"   "[.5 .8 1]"
+}

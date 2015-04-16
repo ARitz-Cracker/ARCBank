@@ -1,0 +1,17 @@
+"vertexlitgeneric"
+{
+	"$basetexture" "metal4"
+	"$surfaceprop" "solidmetal"
+	"$envmap" "env_cubemap"
+	"$envmaptint" "[ 1 1 1 ]"
+	"$envmapcontrast" 0
+	"$envmapsaturation" 0	//"$envmapmask" "models/props_combine/combine_binocular01_mask"
+	"$selfillum" 0
+	}
+"lightmappedgeneric_dx9_hdr"
+      {
+	"$envmaptint" "[ 1 1 1 ]"
+	"$envmapcontrast" 0
+	"$envmapsaturation" 0	//"$envmapmask" "models/props_combine/combine_binocular01_mask"
+	"$selfillum" 0
+      }

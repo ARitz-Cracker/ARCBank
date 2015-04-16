@@ -1,0 +1,11 @@
+"vertexlitgeneric"
+{
+	"$basetexture" "rubber2"
+	"$surfaceprop" "rubbertire"
+	"$bumpmap" "rubber1_bump"
+	"$phong"     "1"
+	"$halflambert"	1
+ 	"$phongexponent"   "200"
+ 	"$phongboost"   "0"
+ 	"$phongfresnelranges"   "[.1 .1 .1]"
+}

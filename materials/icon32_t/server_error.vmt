@@ -1,0 +1,7 @@
+"UnlitGeneric"
+{
+	"$basetexture" "icon32_t/server_error"
+	"$translucent" 1
+	"$vertexcolor" 1
+	"$vertexalpha" 1 
+}

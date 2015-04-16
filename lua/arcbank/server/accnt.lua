@@ -1,0 +1,3 @@
+-- This file is under copyright.
+-- Any 3rd party content has been used as either public domain or with permission.
+-- © Copyright 2014 Aritz Beobide-Cardinal All rights reserved.

@@ -1,0 +1,12 @@
+"vertexlitgeneric"
+{
+	"$basetexture" "phoenix_storms/metalbox2"
+	"$surfaceprop" "metal"
+	"$bumpmap" "phoenix_storms/metalbox2_bump"
+	"$envmap" "env_cubemap"
+	"$envmaptint" "[ .3 .3 .3 ]"
+	"$selfillum" 0
+	"$halflambert" 1
+}
+
+

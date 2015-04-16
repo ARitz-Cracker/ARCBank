@@ -1,0 +1,7 @@
+"VertexLitGeneric"
+{
+	"$basetexture" "models/crack_machine/screen_black"
+	"$surfaceprop" "metal"
+	"$model" 1
+}
+

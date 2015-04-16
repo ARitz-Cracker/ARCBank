@@ -1,0 +1,7 @@
+"vertexlitgeneric"
+{
+	// original shader: basetimeslightmapselfillum
+	"$basetexture" "lights/fluorescentcool001a"
+	"$selfillum" 1
+	"$surfaceprop" "glass"
+}

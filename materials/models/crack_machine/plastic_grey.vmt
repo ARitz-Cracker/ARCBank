@@ -1,0 +1,15 @@
+"VertexLitGeneric"
+{
+	"$basetexture" "models/crack_machine/plastic_grey"
+	"$surfaceprop" "metal"
+	"$model" 1
+	"$phong" 1
+	"$ssbump" 1
+	"$bumpmap" "models/crack_machine/plastic_grey_normal"
+	"$normalmapalphaenvmapmask" 1
+	"$envmaptint" "[0.4 0.4 0.4]"
+	"$envmap" "env_cubemap"
+	"$envmapmask"		"models/crack_machine/shiny_metal"
+
+}
+

@@ -1,0 +1,6 @@
+"vertexlitgeneric"
+{
+	// original shader: basetimeslightmap
+	"$basetexture" "dev/dev_signflammable01a"
+	"$surfaceprop" "concrete"
+}

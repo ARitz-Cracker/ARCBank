@@ -1,0 +1,7 @@
+"VertexLitGeneric"
+{
+	"$basetexture" "models/crack_machine/shiny_metal"
+	"$surfaceprop" "metal"
+	"$model" 1
+}
+
