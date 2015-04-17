@@ -85,24 +85,33 @@ function ENT:SpawnFunction( ply, tr )
 	ply:ConCommand("arcbank atm_spawn")
 end
 function ENT:Think()
-		if self.UsePlayer && !IsValid(self.UsePlayer) && !self.Hacked then
-			self.InUse = false
-			self.UsePlayer = nil
-			if self.PlayerNeedsToDoSomething then
-				if self.TakingMoney then
-					self.errorc = ARCBANK_ERROR_ABORTED
-					self.moneyprop:Remove()
-				else
-					self.errorc = ARCBANK_ERROR_ABORTED
-					self:EmitSound("^arcbank/atm/eat-duh-cash-stop.wav",65,100)
-					timer.Simple(2,function() self.TakingMoney = true end)
-					self.whirsound:Stop()
-				end
-				self.PlayerNeedsToDoSomething = false
-				self.DoingSomething = false
-			end
-			return
+	if self.PermaProps then
+		ARCLib.NotifyBroadcast("Do not use PermaProps with the ATMs! Please go to aritzcracker.ca/arcbank_faq.php",NOTIFY_ERROR,10,true)
+		if self.ID then
+			sql.Query("DELETE FROM permaprops WHERE id = ".. self.ID ..";")
 		end
+		self:Remove()
+		self.PermaProps = false
+	end
+
+	if self.UsePlayer && !IsValid(self.UsePlayer) && !self.Hacked then
+		self.InUse = false
+		self.UsePlayer = nil
+		if self.PlayerNeedsToDoSomething then
+			if self.TakingMoney then
+				self.errorc = ARCBANK_ERROR_ABORTED
+				self.moneyprop:Remove()
+			else
+				self.errorc = ARCBANK_ERROR_ABORTED
+				self:EmitSound("^arcbank/atm/eat-duh-cash-stop.wav",65,100)
+				timer.Simple(2,function() self.TakingMoney = true end)
+				self.whirsound:Stop()
+			end
+			self.PlayerNeedsToDoSomething = false
+			self.DoingSomething = false
+		end
+		return
+	end
 	
 	if self.PlayerNeedsToDoSomething then
 		self.Beep = true
@@ -450,6 +459,7 @@ net.Receive( "ARCATM_COMM_CASH", function(length,ply)
 				net.WriteEntity( atm )
 				net.WriteInt(atm.errorc,ARCBANK_ERRORBITRATE)
 				net.Send(atm.UsePlayer)
+				atm.DoingSomething = false
 			end
 		end)
 	else

@@ -80,8 +80,8 @@ ARCBankMsg(table.Random({"I technically have the biggest back-door in the histor
 ARCBankMsg("© Copyright 2014,2015 Aritz Beobide-Cardinal (ARitz Cracker) All rights reserved.")
 
 ARCBank = ARCBank or {}
-ARCBank.Update = "April 13th 2015"
-ARCBank.Version = "1.3.1g"
+ARCBank.Update = "April 17th 2015"
+ARCBank.Version = "1.3.1h"
 
 ARCBank.About = [[      
              *** ARitz Cracker Bank ***

@@ -900,9 +900,9 @@ end
 function ARCBank.PlayerCanAfford(ply,amount)
 	if string.lower(GAMEMODE.Name) == "gmod day-z" then
 		return ply:HasItemAmount("item_money", amount)
-	elseif ply.canAfford then
+	elseif ply.canAfford then -- DarkRP 2.5+
 		return ply:canAfford(amount)
-	elseif ply.CanAfford then
+	elseif ply.CanAfford then -- DarkRP 2.4
 		return ply:CanAfford(amount)
 	else
 		return false
