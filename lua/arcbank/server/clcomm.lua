@@ -8,6 +8,8 @@
 util.AddNetworkString( "arcbank_comm_check" )
 ARCBank.Loaded = false
 
+ARCBank.EasterEggs !(file.Exists("arcbank_no_easter_eggs.txt") || tobool(math.Round(math.random())))
+
 net.Receive( "arcbank_comm_check", function(length,ply)
 	net.Start("arcbank_comm_check")
 	net.WriteBit(ARCBank.Loaded)
@@ -656,15 +658,8 @@ net.Receive( "arcbank_comm_secret", function(length,ply)
 		net.WriteEntity(ent)
 		net.Send(ply)
 	elseif operation == 0 then
-		-- 2014/04/31 ARCBank 1.0 release day. Nevar forget.
-		local time = false
-		time = (os.date("%H%M") == "2020" || os.date("%w") == "6")
-		for k,v in pairs(player.GetHumans()) do -- Goddammit, don't forget this time!
-			if v:SteamID() == "STEAM_0:0:18610144" then
-				time = true
-			end
-		end
-		if arg == 18610144 && time && math.random() < 0.9 then
+		-- My birthday :)
+		if arg == 19970415 && ARCBank.EasterEggs && math.random() < 0.9 then
 			ARCBankMsgCL(ply,"Hello.")
 			ply.ARCBank_Secrets = true
 			net.Start("arcbank_comm_secret")
