@@ -384,59 +384,22 @@ function ARCBank.AddAccountInterest()
 	if !ARCBank.Settings["interest_enable"] then return end
 	ARCBankMsg("Giving out bank interest...")
 	if ARCBank.IsMySQLEnabled() then
-		--if #player.GetAll() == 0 then
-		--	ARCBankMsg("Cannot give interest while no players are on the server in SQL mode.")
-		--else
+		if ARCBank.Settings["perpetual_debt"] then
 			for i=1,4 do -- Ahhh so clean...
-				ARCBank.MySQL.Query("UPDATE arcbank_personal_account SET money=money*"..tostring(1+(ARCBank.Settings[ARCBANK_ACCOUNTSTRINGS[i].."_interest"]/100)).." WHERE rank="..tostring(i)..";",function(didwork) ARCBankMsg("Personal account interest complete!") end)
+				ARCBank.MySQL.Query("UPDATE arcbank_personal_account SET money=money*"..tostring(1+(ARCBank.Settings[ARCBANK_ACCOUNTSTRINGS[i].."_interest"]/100)).." WHERE rank="..tostring(i).." AND money>"..tostring(-ARCBank.Settings["debt_limit"])..";",function(didwork) if (didwork) then ARCBankMsg("Personal account interest complete for rank "..i.."!") end end)
 			end
 			for i= 6,7 do
-				ARCBank.MySQL.Query("UPDATE arcbank_group_account SET money=money*"..tostring(1+(ARCBank.Settings[ARCBANK_ACCOUNTSTRINGS[i].."_interest"]/100)).." WHERE rank="..tostring(i)..";",function(didwork) ARCBankMsg("Group account interest complete!") end)
+				ARCBank.MySQL.Query("UPDATE arcbank_group_account SET money=money*"..tostring(1+(ARCBank.Settings[ARCBANK_ACCOUNTSTRINGS[i].."_interest"]/100)).." WHERE rank="..tostring(i).." AND money>"..tostring(-ARCBank.Settings["debt_limit"])..";",function(didwork) if (didwork) then ARCBankMsg("Group account interest complete for rank "..i.."!") end end)
 			end
-		--end
+		else
+			for i=1,4 do -- Ahhh so clean...
+				ARCBank.MySQL.Query("UPDATE arcbank_personal_account SET money=money*"..tostring(1+(ARCBank.Settings[ARCBANK_ACCOUNTSTRINGS[i].."_interest"]/100)).." WHERE rank="..tostring(i).." AND money>0;",function(didwork) if (didwork) then ARCBankMsg("Personal account interest complete for rank "..i.."!") end end)
+			end
+			for i= 6,7 do
+				ARCBank.MySQL.Query("UPDATE arcbank_group_account SET money=money*"..tostring(1+(ARCBank.Settings[ARCBANK_ACCOUNTSTRINGS[i].."_interest"]/100)).." WHERE rank="..tostring(i).." AND money>0;",function(didwork) if (didwork) then ARCBankMsg("Group account interest complete for rank "..i.."!") end end)
+			end
+		end
 	else -- Why did I do it this way? Apperently some servers have over 9000 accounts. (Literally) Doing this in a for loop would cause the server to freeze for a bit.
-		--[[
-		local p_p = file.Find(ARCBank.Dir.."/accounts/personal/*.txt","DATA")
-		local p_i = 1
-		local function p_func()
-			--ARCBank.Dir.."/accounts/personal/*.txt" 
-			ARCBank.ReadAccountFile(string.Replace(p_p[p_i],".txt",""),false,function(accdata) 
-				accdata.money = math.floor(accdata.money*(1+(ARCBank.Settings[ARCBANK_ACCOUNTSTRINGS[accdata.rank].."_interest"]/100)))
-				if accdata.money > 1e14 then
-					accdata.money = 1e14
-				end
-				ARCBank.WriteAccountFile(accdata,function(wop) 
-					if p_i < #p_p then
-						p_i = p_i + 1
-						p_func()
-					else
-						ARCBankMsg("Personal account interest complete!") 
-					end
-				end)
-				ARCBankAccountMsg(accdata,"Added %"..tostring(ARCBank.Settings[ARCBANK_ACCOUNTSTRINGS[accdata.rank].."_interest"]).." to account. ("..accdata.money..")")
-			end)
-		end
-		p_func()
-		local g_i = 1
-		local g_g = file.Find(ARCBank.Dir.."/accounts/group/*.txt","DATA")
-		local function g_func()
-			ARCBank.ReadAccountFile(string.Replace(g_g[g_i],".txt",""),true,function(accdata)
-				accdata.money = math.floor(accdata.money*(1+(ARCBank.Settings[ARCBANK_ACCOUNTSTRINGS[accdata.rank].."_interest"]/100)))
-				if accdata.money > 1e14 then
-					accdata.money = 1e14
-				end
-				ARCBank.WriteAccountFile(accdata,function(wop) 
-					if g_i < #g_g then
-						g_i = g_i + 1
-						g_func()
-					else
-						ARCBankMsg("Group account interest complete!") 
-					end
-				end)
-				ARCBankAccountMsg(accdata,"Added %"..tostring(ARCBank.Settings[ARCBANK_ACCOUNTSTRINGS[accdata.rank].."_interest"]).." to account. ("..accdata.money..")")
-			end)
-		end
-		g_func()]]
 		for k,v in pairs(file.Find(ARCBank.Dir.."/accounts/personal/*.txt","DATA")) do
 			--ARCBank.Dir.."/accounts/personal/*.txt" 
 			ARCBank.ReadAccountFile(string.Replace(v,".txt",""),false,function(accdata)
@@ -456,8 +419,16 @@ function ARCBank.AddAccountInterest()
 				if accdata.money > 1e14 then
 					accdata.money = 1e14
 				end
-				ARCBank.WriteAccountFile(accdata,function(wop) end)
-				ARCBankAccountMsg(accdata,string.Replace( ARCBank.Msgs.LogMsgs.Interest, "%VALUE%", tostring(ARCBank.Settings[ARCBANK_ACCOUNTSTRINGS[accdata.rank].."_interest"]) ).."("..accdata.money..")")
+				
+				if (accountdata.money < 0 && !ARCBank.Settings["perpetual_debt"]) then
+					continue
+				end
+				if accountdata.money < -ARCBank.Settings["debt_limit"] then
+					accountdata.money = -ARCBank.Settings["debt_limit"]
+				end
+					ARCBank.WriteAccountFile(accdata,function(wop) end)
+					ARCBankAccountMsg(accdata,string.Replace( ARCBank.Msgs.LogMsgs.Interest, "%VALUE%", tostring(ARCBank.Settings[ARCBANK_ACCOUNTSTRINGS[accdata.rank].."_interest"]) ).."("..accdata.money..")")
+				end
 			end)
 		end
 	end

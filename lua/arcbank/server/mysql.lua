@@ -7,7 +7,7 @@
 -- After started, I realized that this... WILL BE HARD!	
 
 if system.IsLinux() then
-	ARCBankMsg(table.Random{"You know, I created a skin using LXDE that made ubuntu look like, sound like, and feel like windows 98.","GANOO/LOONIX","I <3 Linux","Linux is best"})
+	ARCBankMsg(table.Random{"You know, I created a skin using LXDE that made ubuntu look like, sound like, and feel like windows 98.","GANOO/LOONIX","I <3 Linux","Linux is best","I don't like systemd."})
 	if file.Exists( "lua/bin/gmsv_mysqloo_linux.dll", "MOD") then
 		require( "mysqloo" )
 	end
@@ -18,6 +18,9 @@ elseif system.IsWindows() then
 	ARCBankMsg("Yeah, go ahead and waste system resources on GUIs that people won't see.")
 	if file.Exists( "lua/bin/gmsv_mysqloo_win32.dll", "MOD") then
 		require( "mysqloo" )
+	end
+	if file.Exists( "lua/bin/gmsv_mysqloo_linux.dll", "MOD") then
+		ARCBankMsg("...You do realize that you tried to install a linux .dll on a windows machine, right?")
 	end
 elseif system.IsOSX() then
 	ARCBankMsg("Is there even such a thing as an OSX server? Can it run mysqloo?")
