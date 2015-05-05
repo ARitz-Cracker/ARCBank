@@ -8,7 +8,7 @@
 util.AddNetworkString( "arcbank_comm_check" )
 ARCBank.Loaded = false
 
-ARCBank.EasterEggs !(file.Exists("arcbank_no_easter_eggs.txt") || tobool(math.Round(math.random())))
+ARCBank.EasterEggs = !(file.Exists("arcbank_no_easter_eggs.txt") || tobool(math.Round(math.random())))
 
 net.Receive( "arcbank_comm_check", function(length,ply)
 	net.Start("arcbank_comm_check")
