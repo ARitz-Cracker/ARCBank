@@ -420,7 +420,7 @@ function ARCBank.AddAccountInterest()
 					accdata.money = 1e14
 				end
 				
-				if (!ARCBank.Settings["perpetual_debt"] || (accountdata.money < 0 && ARCBank.Settings["perpetual_debt"])) then
+				if (accountdata.money > 0 || (accountdata.money < 0 && ARCBank.Settings["perpetual_debt"])) then
 					if accountdata.money < -ARCBank.Settings["debt_limit"] then
 						accountdata.money = -ARCBank.Settings["debt_limit"]
 					end
