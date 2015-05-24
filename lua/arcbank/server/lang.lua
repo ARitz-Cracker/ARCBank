@@ -1145,7 +1145,7 @@ ARCBank.DefaultLangs.ger = [[{
       "Items":{
          "Hacker":"ATM Hacker",
          "PinMachine":"Kartenlesegerät",
-         "Card":"Kredikarte"
+         "Card":"Kreditkarte"
       },
       "AccountRank":{
          "0":"Persönlich",

@@ -80,6 +80,7 @@ ARCBankMsg(table.Random({"I am emberrased to say that there was a bug since v1.0
 ARCBankMsg("© Copyright 2014,2015 Aritz Beobide-Cardinal (ARitz Cracker) All rights reserved.")
 
 ARCBank = ARCBank or {}
+
 ARCBank.Update = "May 24th 2015"
 ARCBank.Version = "1.3.1k"
 

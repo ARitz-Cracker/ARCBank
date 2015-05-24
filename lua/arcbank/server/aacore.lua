@@ -463,9 +463,9 @@ function ARCBank.AddAccountInterest()
 					accdata.money = 1e14
 				end
 				
-				if (accountdata.money > 0 || (accountdata.money < 0 && ARCBank.Settings["perpetual_debt"])) then
-					if accountdata.money < -ARCBank.Settings["debt_limit"] then
-						accountdata.money = -ARCBank.Settings["debt_limit"]
+				if (accdata.money > 0 || (accdata.money < 0 && ARCBank.Settings["perpetual_debt"])) then
+					if accdata.money < -ARCBank.Settings["debt_limit"] then
+						accdata.money = -ARCBank.Settings["debt_limit"]
 					end
 					ARCBank.WriteAccountFile(accdata,function(wop) end)
 					ARCBankAccountMsg(accdata,string.Replace( ARCBank.Msgs.LogMsgs.Interest, "%VALUE%", tostring(ARCBank.Settings[ARCBANK_ACCOUNTSTRINGS[accdata.rank].."_interest"]) ).."("..accdata.money..")")
