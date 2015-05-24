@@ -301,6 +301,49 @@ function ARCBank.ReadFileTable(dir)
 		return {"**ARCBank File Viewer Error**","","Requested File: "..dir,"","File doesn't exist!"}
 	end
 end
+
+function ARCBank.MaxAccountRank(ply,group)
+	if group then
+		local result = ARCBANK_GROUPACCOUNTS_
+		
+		for k,v in pairs( ARCBank.Settings["everything_requirement"] ) do
+			if ply:IsUserGroup( v ) then
+				result = ARCBANK_PERSONALACCOUNTS_GOLD
+				break
+			end
+		end
+		if result>ARCBANK_GROUPACCOUNTS_ then return result end
+		for i=ARCBANK_PERSONALACCOUNTS_STANDARD,ARCBANK_PERSONALACCOUNTS_GOLD do
+			for k,v in pairs( ARCBank.Settings[""..ARCBANK_ACCOUNTSTRINGS[i].."_requirement"] ) do
+				if ply:IsUserGroup( v ) then
+					result = i
+					break
+				end
+			end
+		end
+		return result
+	else
+		local result = ARCBANK_PERSONALACCOUNTS_
+		for k,v in pairs( ARCBank.Settings["everything_requirement"] ) do
+			if ply:IsUserGroup( v ) then
+				result = ARCBANK_GROUPACCOUNTS_PREMIUM
+				break
+			end
+		end
+		if result>ARCBANK_PERSONALACCOUNTS_ then return result end
+		for i=ARCBANK_GROUPACCOUNTS_STANDARD,ARCBANK_GROUPACCOUNTS_PREMIUM do
+			for k,v in pairs( ARCBank.Settings[""..ARCBANK_ACCOUNTSTRINGS[i].."_requirement"] ) do
+				if ply:IsUserGroup( v ) then
+					result = i
+					break
+				end
+			end
+		end
+		return result
+	end
+	
+end
+
 function ARCBank.CreateAccount(ply,rank,initbalance,groupname,callback)
 	if !ARCBank.Loaded then callback(ARCBANK_ERROR_NOT_LOADED) return end
 	if ARCBank.Busy then callback(ARCBANK_ERROR_BUSY) return end
@@ -537,6 +580,45 @@ function ARCBank.RemovePlayerFromGroup(ply,guysteamid,groupname,callback)
 			end
 		end)
 	end)
+end
+
+function ARCBank.GroupAccountOwner(ply,callback)
+	if !ARCBank.Loaded then callback(ARCBANK_ERROR_NOT_LOADED,{}) return end
+	if ARCBank.Busy then callback(ARCBANK_ERROR_BUSY,{}) return end
+	local sid = ""
+	if !isstring(ply)&& ply:IsPlayer() then
+		sid = ply:SteamID()
+	elseif string.StartWith(ply,"STEAM_") then
+		sid = ply
+	else
+		callback(ARCBANK_ERROR_NIL_PLAYER,{}) 
+		return
+	end
+	local names = {}
+	if ARCBank.IsMySQLEnabled() then
+		ARCBank.MySQL.Query("SELECT * FROM arcbank_group_account WHERE owner="..sid..";",function(didwork,data)
+			if didwork then
+				for _,accountdata in pairs(data) do
+					if accountdata.owner == sid then
+						table.insert( names, accountdata.name )
+					end
+				end
+				callback(ARCBANK_ERROR_NONE,names) 
+			else
+				callback(ARCBANK_ERROR_READ_FAILURE,{})
+			end
+		end)
+	else
+		local files, directories = file.Find( ARCBank.Dir.."/accounts/group/*.txt","DATA" )
+		for _,v in pairs( files ) do
+			local accountdata = util.JSONToTable(file.Read( ARCBank.Dir.."/accounts/group/"..v,"DATA" ))
+			if accountdata.owner == sid then
+				table.insert( names, accountdata.name )
+			end
+		end
+		callback(ARCBANK_ERROR_NONE,names) 
+	end
+	
 end
 
 function ARCBank.GroupAccountAcces(ply,callback)
@@ -1515,7 +1597,8 @@ function ARCBank.Load()
 					local newaccount = {}
 					newaccount.isgroup = true
 					newaccount.filename = string.Replace(v,".txt","")
-					newaccount.name = string.Replace(v,".txt","")
+					newaccount.name = string.sub( string.Replace(v,".txt",""), 8)
+					
 					newaccount.rank = 6
 					newaccount.members = {}
 					newaccount.owner = ""
