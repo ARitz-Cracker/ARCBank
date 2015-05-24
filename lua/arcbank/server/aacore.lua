@@ -856,7 +856,13 @@ function ARCBank.PlayerAddMoney(ply,amount)
 			amount = amount * -1
 			ply:TakeItem("item_money", amount)
 		end
-	
+	elseif string.lower(GAMEMODE.Name) == "underdone" then
+		if amount > 0 then
+			ply:AddItem("money", amount)
+		else
+			amount = amount * -1
+			ply:RemoveItem("money", amount)
+		end
 	elseif ply.addMoney then -- DarkRP 2.5+
 		ply:addMoney(amount)
 	elseif ply.AddMoney then -- DarkRP 2.4
@@ -869,6 +875,8 @@ end
 function ARCBank.PlayerCanAfford(ply,amount)
 	if string.lower(GAMEMODE.Name) == "gmod day-z" then
 		return ply:HasItemAmount("item_money", amount)
+	elseif string.lower(GAMEMODE.Name) == "underdone" then
+		return ply:HasItem("money", amount)
 	elseif ply.canAfford then -- DarkRP 2.5+
 		return ply:canAfford(amount)
 	elseif ply.CanAfford then -- DarkRP 2.4

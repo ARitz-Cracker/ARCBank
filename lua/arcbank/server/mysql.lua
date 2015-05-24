@@ -230,15 +230,15 @@ ARCBank.Commands["mysql"] = {
 			for _,plys in pairs(player.GetAll()) do
 				ARCBankMsgCL(plys,ARCBank.Msgs.CommandOutput.MySQLCopyFrom)
 			end
-			ARCBank.GetAllAccountsUnordered(0,true,function(errcode,accounts)
+			ARCBank.GetAllAccountsUnordered(true,function(errcode,accounts)
 				ARCBank.Busy = true
 				if errcode == 0 then
 					for k,v in pairs(accounts) do
 						v.money = tostring(v.money)
 						v.isgroup = tobool(v.isgroup)
 						if v.isgroup then
-							v.members = string.Explode(" ",v.members)
-							if v.members[1] == "" then v.members = {} end
+							--v.members = string.Explode(" ",v.members)
+							--if v.members[1] == "" then v.members = {} end
 							file.Write( ARCBank.Dir.."/accounts/group/"..v.filename..".txt", util.TableToJSON(v) )
 						else
 							file.Write( ARCBank.Dir.."/accounts/personal/"..v.filename..".txt", util.TableToJSON(v) )
