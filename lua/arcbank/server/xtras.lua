@@ -13,6 +13,7 @@ function ARCBank.CapAccountRank(ply)
 		ARCBank.ReadAccountFile(ARCBank.GetAccountID(ply:SteamID()),false,function(accdata)
 			if (accdata) then
 				local maxrank = ARCBank.MaxAccountRank(ply,false)
+				MsgN(tostring(ply).."'s max rank: "..maxrank)
 				if maxrank == ARCBANK_PERSONALACCOUNTS_ then
 					maxrank = ARCBANK_PERSONALACCOUNTS_STANDARD
 				end
@@ -25,6 +26,7 @@ function ARCBank.CapAccountRank(ply)
 		ARCBank.GroupAccountOwner(ply,function(err,dat)
 			if err == ARCBANK_ERROR_NONE then
 				local maxrank = ARCBank.MaxAccountRank(ply,true)
+				MsgN(tostring(ply).."'s max rank: "..maxrank)
 				if maxrank == ARCBANK_GROUPACCOUNTS_ then
 					maxrank = ARCBANK_GROUPACCOUNTS_STANDARD
 				end

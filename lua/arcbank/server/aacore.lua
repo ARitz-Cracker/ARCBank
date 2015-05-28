@@ -308,7 +308,7 @@ function ARCBank.MaxAccountRank(ply,group)
 		
 		for k,v in pairs( ARCBank.Settings["everything_requirement"] ) do
 			if ply:IsUserGroup( v ) then
-				result = ARCBANK_PERSONALACCOUNTS_GOLD
+				result = ARCBANK_GROUPACCOUNTS_PREMIUM
 				break
 			end
 		end
@@ -326,7 +326,7 @@ function ARCBank.MaxAccountRank(ply,group)
 		local result = ARCBANK_PERSONALACCOUNTS_
 		for k,v in pairs( ARCBank.Settings["everything_requirement"] ) do
 			if ply:IsUserGroup( v ) then
-				result = ARCBANK_GROUPACCOUNTS_PREMIUM
+				result = ARCBANK_PERSONALACCOUNTS_GOLD
 				break
 			end
 		end
@@ -335,6 +335,7 @@ function ARCBank.MaxAccountRank(ply,group)
 			for k,v in pairs( ARCBank.Settings[""..ARCBANK_ACCOUNTSTRINGS[i].."_requirement"] ) do
 				if ply:IsUserGroup( v ) then
 					result = i
+					MsgN("Got result "..i)
 					break
 				end
 			end
