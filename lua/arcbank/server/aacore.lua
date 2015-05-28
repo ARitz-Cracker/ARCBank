@@ -1711,6 +1711,7 @@ function ARCBank.Load()
 			ARCBankMsg("ARCBank is ready!")
 			ARCBank.Loaded = true
 			ARCBank.Busy = false
+			ARCBank.CapAccountRank();
 		end
 		for k,ply in pairs(player.GetAll()) do
 			local f = ARCBank.Dir.."/accounts_unused/"..string.lower(string.gsub(ply:SteamID(), "[^_%w]", "_"))..".txt" 
