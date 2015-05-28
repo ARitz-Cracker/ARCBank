@@ -335,7 +335,6 @@ function ARCBank.MaxAccountRank(ply,group)
 			for k,v in pairs( ARCBank.Settings[""..ARCBANK_ACCOUNTSTRINGS[i].."_requirement"] ) do
 				if ply:IsUserGroup( v ) then
 					result = i
-					MsgN("Got result "..i)
 					break
 				end
 			end
