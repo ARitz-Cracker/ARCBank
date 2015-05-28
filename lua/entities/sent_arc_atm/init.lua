@@ -354,7 +354,7 @@ function ENT:ATM_USE(activator)
 			selfcard:GetPhysicsObject():EnableGravity(false)
 			selfcard:GetPhysicsObject():SetVelocity(selfcard:GetForward()*self.ATMType.CardInsertAnimationSpeed.x + selfcard:GetRight()*self.ATMType.CardInsertAnimationSpeed.y + selfcard:GetUp()*self.ATMType.CardInsertAnimationSpeed.z)
 			timer.Simple(self.ATMType.CardInsertAnimationLength,function() 
-			MsgN(self:WorldToLocal(selfcard:GetPos()))
+			--MsgN(self:WorldToLocal(selfcard:GetPos()))
 			selfcard:Remove() 
 			end)
 		
