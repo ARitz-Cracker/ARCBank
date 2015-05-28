@@ -596,7 +596,7 @@ function ARCBank.GroupAccountOwner(ply,callback)
 	end
 	local names = {}
 	if ARCBank.IsMySQLEnabled() then
-		ARCBank.MySQL.Query("SELECT * FROM arcbank_group_account WHERE owner="..sid..";",function(didwork,data)
+		ARCBank.MySQL.Query("SELECT * FROM arcbank_group_account WHERE owner='"..sid.."';",function(didwork,data)
 			if didwork then
 				for _,accountdata in pairs(data) do
 					if accountdata.owner == sid then
