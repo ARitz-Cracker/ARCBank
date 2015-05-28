@@ -17,7 +17,7 @@ function ARCBank.CapAccountRank(ply)
 				if maxrank == ARCBANK_PERSONALACCOUNTS_ then
 					maxrank = ARCBANK_PERSONALACCOUNTS_STANDARD
 				end
-				MsgN(accdata.rank." > "..maxrank)
+				MsgN(accdata.rank.." > "..maxrank)
 				if accdata.rank > maxrank then
 					accdata.rank = maxrank
 					ARCBank.WriteAccountFile(accdata,function(wop) end)
