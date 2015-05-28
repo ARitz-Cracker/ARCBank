@@ -14,6 +14,7 @@ function ARCBank.CapAccountRank(ply)
 			if (accdata) then
 				local maxrank = ARCBank.MaxAccountRank(ply,false)
 				MsgN(tostring(ply).."'s max rank: "..maxrank)
+				MsgN(maxrank.." == "..ARCBANK_PERSONALACCOUNTS_)
 				if maxrank == ARCBANK_PERSONALACCOUNTS_ then
 					maxrank = ARCBANK_PERSONALACCOUNTS_STANDARD
 				end
