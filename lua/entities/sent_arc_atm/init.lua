@@ -146,7 +146,7 @@ function ENT:Think()
 		else
 			self:EmitSound(table.Random(self.ATMType.WaitSound),65,100)
 			if !self.Hacked && self.PlayerNeedsToDoSomething && IsValid(self.UsePlayer) && self:GetPos():DistToSqr( self.UsePlayer:GetPos() ) > 25000 then
-				net.Send(self.UsePlayer)
+				
 				if self.TakingMoney then
 					self.errorc = ARCBANK_ERROR_ABORTED
 					self.moneyprop:Remove()
@@ -156,10 +156,12 @@ function ENT:Think()
 					timer.Simple(2,function() self.TakingMoney = true end)
 					self.whirsound:Stop()
 				end
-				net.Start( "ARCATM_COMM_WAITMSG" )
-				net.WriteEntity( self.Entity )
-				net.WriteUInt(0,2)
-				net.Send(self.UsePlayer)
+				if IsValid(self.UsePlayer) then
+					net.Start( "ARCATM_COMM_WAITMSG" )
+					net.WriteEntity( self.Entity )
+					net.WriteUInt(0,2)
+					net.Send(self.UsePlayer)
+				end
 				self.PlayerNeedsToDoSomething = false
 			end
 		end
