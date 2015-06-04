@@ -130,10 +130,12 @@ function ENT:Think()
 		if self.ATMType.CloseAnimation != "" then
 			self:ARCLib_SetAnimationTime(atm.ATMType.CloseAnimation,atm.ATMType.CloseAnimationLength)
 		end
-		net.Start( "ARCATM_COMM_CASH" )
-		net.WriteEntity( self.Entity )
-		net.WriteInt(self.errorc,ARCBANK_ERRORBITRATE)
-		net.Send(self.UsePlayer)
+		if IsValid(self.UsePlayer) then
+			net.Start( "ARCATM_COMM_CASH" )
+			net.WriteEntity( self.Entity )
+			net.WriteInt(self.errorc,ARCBANK_ERRORBITRATE)
+			net.Send(self.UsePlayer)
+		end
 		self.Beep = false
 		self.DoingSomething = false
 	end
