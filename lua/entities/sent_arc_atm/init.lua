@@ -270,10 +270,12 @@ function ENT:Use( ply, caller )
 					self.PlayerNeedsToDoSomething = false
 				end)
 			end
-			net.Start( "ARCATM_COMM_WAITMSG" )
-			net.WriteEntity( self.Entity )
-			net.WriteUInt(0,2)
-			net.Send(self.UsePlayer)
+			if IsValid(self.UsePlayer) then
+				net.Start( "ARCATM_COMM_WAITMSG" )
+				net.WriteEntity( self.Entity )
+				net.WriteUInt(0,2)
+				net.Send(self.UsePlayer)
+			end
 			
 		end
 	end
@@ -368,10 +370,12 @@ function ENT:ATM_USE(activator)
 			activator:SwitchToDefaultWeapon() 
 			activator:StripWeapon( "weapon_arc_atmcard" ) 
 			--activator:SendLua( "achievements.EatBall()" );
-			net.Start( "ARCATM_USE" )
-			net.WriteEntity( self )
-			net.WriteBit(true)
-			net.Send(activator)
+			if IsValid(activator) then
+				net.Start( "ARCATM_USE" )
+				net.WriteEntity( self )
+				net.WriteBit(true)
+				net.Send(activator)
+			end
 			
 		end
 	end
@@ -384,6 +388,21 @@ net.Receive( "ARCATM_COMM_CASH", function(length,ply)
 	local acc = net.ReadString()
 	local take = tobool(net.ReadBit())
 	local amount = net.ReadUInt(32)
+	if !IsValid(atm) || !atm.IsAFuckingATM || !atm.ARCBank_IsAValidDevice then
+		ARCBank.FuckIdiotPlayer(ply,"Invalid ATM entity") 
+		net.Start( "ARCATM_COMM_CASH" )
+		net.WriteEntity( atm )
+		net.WriteInt(ARCBANK_ERROR_EXPLOIT,ARCBANK_ERRORBITRATE)
+		net.Send(ply)
+		return
+	end
+	if ply != atm.UsePlayer then
+		ARCBank.FuckIdiotPlayer(ply,"Withdrawing cash from ATM s/he's not using") 
+		net.Start( "ARCATM_COMM_CASH" )
+		net.WriteEntity( atm )
+		net.WriteInt(ARCBANK_ERROR_EXPLOIT,ARCBANK_ERRORBITRATE)
+		net.Send(atm.UsePlayer)	
+	end
 	if amount < 0 then -- This should never happen, but apperently, unsigned ints turn into ints. Which kind makes the limit 2^31 - 1 instead of 2^32 - 1
 		ARCBank.FuckIdiotPlayer(ply,"ATM Negative Withdraw/Deposit Request")
 		net.Start( "ARCATM_COMM_CASH" )
@@ -392,15 +411,6 @@ net.Receive( "ARCATM_COMM_CASH", function(length,ply)
 		net.Send(atm.UsePlayer)
 		return
 	end
-	if !IsValid(atm) || !atm.IsAFuckingATM || !atm.ARCBank_IsAValidDevice then
-		ARCBank.FuckIdiotPlayer(ply,"Invalid ATM entity") 
-		net.Start( "ARCATM_COMM_CASH" )
-		net.WriteEntity( atm )
-		net.WriteInt(ARCBANK_ERROR_EXPLOIT,ARCBANK_ERRORBITRATE)
-		net.Send(atm.UsePlayer)
-		return
-	end
-	
 	if (atm.DoingSomething) then
 		ply:PrintMessage(HUD_PRINTTALK, "I'm not sure what you're trying to do... I won't ban you for it, but it can't be good.")
 		return
@@ -451,18 +461,22 @@ net.Receive( "ARCATM_COMM_CASH", function(length,ply)
 				
 				atm.MonehDelay = CurTime() + 8.5
 				timer.Simple(atm.ATMType.PauseBeforeWithdrawAnimation + atm.ATMType.WithdrawAnimationLength + 0.5,function()
-					net.Start( "ARCATM_COMM_WAITMSG" )
-					net.WriteEntity( atm )
-					net.WriteUInt(2,2)
-					net.Send(ply)
+					if IsValid(atm.UsePlayer) then
+						net.Start( "ARCATM_COMM_WAITMSG" )
+						net.WriteEntity( atm )
+						net.WriteUInt(2,2)
+						net.Send(ply)
+					end
 					ARCLib.NotifyPlayer(ply,ARCBank.Msgs.UserMsgs.WithdrawATM,NOTIFY_HINT,5,false)
 					atm.PlayerNeedsToDoSomething = true
 				end)
 			else
-				net.Start( "ARCATM_COMM_CASH" )
-				net.WriteEntity( atm )
-				net.WriteInt(atm.errorc,ARCBANK_ERRORBITRATE)
-				net.Send(atm.UsePlayer)
+				if IsValid(atm.UsePlayer) then
+					net.Start( "ARCATM_COMM_CASH" )
+					net.WriteEntity( atm )
+					net.WriteInt(atm.errorc,ARCBANK_ERRORBITRATE)
+					net.Send(atm.UsePlayer)
+				end
 				atm.DoingSomething = false
 			end
 		end)
@@ -484,10 +498,12 @@ net.Receive( "ARCATM_COMM_CASH", function(length,ply)
 		end)
 		timer.Simple(atm.ATMType.PauseBeforeDepositAnimation + atm.ATMType.PauseBeforeDepositSoundLoop,function()
 			ARCLib.NotifyPlayer(ply,ARCBank.Msgs.UserMsgs.DepositATM,NOTIFY_HINT,5,false)
-			net.Start( "ARCATM_COMM_WAITMSG" )
-			net.WriteEntity( atm )
-			net.WriteUInt(1,2)
-			net.Send(ply)
+			if IsValid(ply) then
+				net.Start( "ARCATM_COMM_WAITMSG" )
+				net.WriteEntity( atm )
+				net.WriteUInt(1,2)
+				net.Send(ply)
+			end
 			atm.PlayerNeedsToDoSomething = true
 			if #atm.ATMType.DepositLoopSound > 0 then
 				atm.whirsound:PlayEx(0.65, 100)
