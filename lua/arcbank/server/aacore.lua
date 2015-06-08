@@ -308,12 +308,12 @@ function ARCBank.MaxAccountRank(ply,group)
 		
 		for k,v in pairs( ARCBank.Settings["everything_requirement"] ) do
 			if ply:IsUserGroup( v ) then
-				result = ARCBANK_PERSONALACCOUNTS_GOLD
+				result = ARCBANK_GROUPACCOUNTS_PREMIUM
 				break
 			end
 		end
 		if result>ARCBANK_GROUPACCOUNTS_ then return result end
-		for i=ARCBANK_PERSONALACCOUNTS_STANDARD,ARCBANK_PERSONALACCOUNTS_GOLD do
+		for i=ARCBANK_GROUPACCOUNTS_STANDARD,ARCBANK_GROUPACCOUNTS_PREMIUM do
 			for k,v in pairs( ARCBank.Settings[""..ARCBANK_ACCOUNTSTRINGS[i].."_requirement"] ) do
 				if ply:IsUserGroup( v ) then
 					result = i
@@ -326,12 +326,12 @@ function ARCBank.MaxAccountRank(ply,group)
 		local result = ARCBANK_PERSONALACCOUNTS_
 		for k,v in pairs( ARCBank.Settings["everything_requirement"] ) do
 			if ply:IsUserGroup( v ) then
-				result = ARCBANK_GROUPACCOUNTS_PREMIUM
+				result = ARCBANK_PERSONALACCOUNTS_GOLD
 				break
 			end
 		end
 		if result>ARCBANK_PERSONALACCOUNTS_ then return result end
-		for i=ARCBANK_GROUPACCOUNTS_STANDARD,ARCBANK_GROUPACCOUNTS_PREMIUM do
+		for i=ARCBANK_PERSONALACCOUNTS_STANDARD,ARCBANK_PERSONALACCOUNTS_GOLD do
 			for k,v in pairs( ARCBank.Settings[""..ARCBANK_ACCOUNTSTRINGS[i].."_requirement"] ) do
 				if ply:IsUserGroup( v ) then
 					result = i
@@ -596,7 +596,7 @@ function ARCBank.GroupAccountOwner(ply,callback)
 	end
 	local names = {}
 	if ARCBank.IsMySQLEnabled() then
-		ARCBank.MySQL.Query("SELECT * FROM arcbank_group_account WHERE owner="..sid..";",function(didwork,data)
+		ARCBank.MySQL.Query("SELECT * FROM arcbank_group_account WHERE owner='"..sid.."';",function(didwork,data)
 			if didwork then
 				for _,accountdata in pairs(data) do
 					if accountdata.owner == sid then
@@ -1712,6 +1712,7 @@ function ARCBank.Load()
 			ARCBankMsg("ARCBank is ready!")
 			ARCBank.Loaded = true
 			ARCBank.Busy = false
+			ARCBank.CapAccountRank();
 		end
 		for k,ply in pairs(player.GetAll()) do
 			local f = ARCBank.Dir.."/accounts_unused/"..string.lower(string.gsub(ply:SteamID(), "[^_%w]", "_"))..".txt" 

@@ -63,6 +63,7 @@ function ARCBank.MySQL.Connect()
 					ARCBank.Loaded = true
 					ARCBank.Busy = false
 					ARCBankMsg("ARCBank is ready!")
+					ARCBank.CapAccountRank();
 			
 				end
 				function aq:onError( err, sql )

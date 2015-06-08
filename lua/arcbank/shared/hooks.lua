@@ -198,36 +198,7 @@ else
 				end
 			end
 		end
-		ARCBank.ReadAccountFile(ARCBank.GetAccountID(ply:SteamID()),false,function(accdata)
-			if (accdata) then
-				local maxrank = ARCBank.MaxAccountRank(ply,false)
-				if maxrank == ARCBANK_PERSONALACCOUNTS_ then
-					maxrank = ARCBANK_PERSONALACCOUNTS_STANDARD
-				end
-				if accdata.rank > maxrank then
-					accdata.rank = maxrank
-					ARCBank.WriteAccountFile(accdata,function(wop) end)
-				end
-			end
-		end)
-		ARCBank.GroupAccountOwner(ply,function(err,dat)
-			if err == ARCBANK_ERROR_NONE then
-				local maxrank = ARCBank.MaxAccountRank(ply,true)
-				if maxrank == ARCBANK_GROUPACCOUNTS_ then
-					maxrank = ARCBANK_GROUPACCOUNTS_STANDARD
-				end
-				for i=1,#dat do
-					ARCBank.ReadAccountFile(ARCBank.GetAccountID(dat[i]),true,function(accdata)
-						if (accdata) then
-							if accdata.rank > maxrank then
-								accdata.rank = maxrank
-								ARCBank.WriteAccountFile(accdata,function(wop) end)
-							end
-						end
-					end)
-				end
-			end
-		end)
+		ARCBank.CapAccountRank(ply);
 	end)
 	--[[
 	-- This is now handeled in the ATM entity itself.

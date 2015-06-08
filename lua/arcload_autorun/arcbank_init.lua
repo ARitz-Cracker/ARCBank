@@ -81,8 +81,8 @@ ARCBankMsg("© Copyright 2014,2015 Aritz Beobide-Cardinal (ARitz Cracker) All ri
 
 ARCBank = ARCBank or {}
 
-ARCBank.Update = "May 24th 2015"
-ARCBank.Version = "1.3.1k"
+ARCBank.Update = "May 28th 2015"
+ARCBank.Version = "1.3.2"
 
 ARCBank.About = [[      
              *** ARitz Cracker Bank ***
