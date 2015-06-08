@@ -6,7 +6,7 @@
 ARCBank.Loaded = false
 ARCBank.VarTypeExamples = {}
 ARCBank.VarTypeExamples["list"] = {"aritz,snow,cathy,kenzie,isaac,tasha,bubby","bob,joe,frank,bill","red,green,blue,yellow","lol,wtf,omg,rly"}
-ARCBank.VarTypeExamples["number"] = {"1337","15","27","9","69","20140331"}
+ARCBank.VarTypeExamples["number"] = {"1337","15","27","9","69","19970415"}
 ARCBank.VarTypeExamples["boolean"] = {"true","false"}
 ARCBank.VarTypeExamples["string"] = {"word","helloworld","iloveyou","MONEY!","bob","aritz"}
 ARCBank.Commands = { --Make sure they are less then 16 chars long.$
@@ -286,6 +286,7 @@ ARCBank.Commands = { --Make sure they are less then 16 chars long.$
 					ARCBank.WriteAccountFile(tab,function(didwork)
 						if didwork then
 							ARCBankMsgCL(ply,ARCBANK_ERRORSTRINGS[0].." "..tostring(tab.money-tonumber(args[3])).." -> "..tab.money)
+							ARCBankAccountMsg(tab,"ADMIN: "..tonumber(args[3]).." ("..tab.money..")")
 						else
 							ARCBankMsgCL(ply,ARCBANK_ERRORSTRINGS[16])
 						end

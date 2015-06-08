@@ -1109,6 +1109,7 @@ function ARCBank.StealMoney(ply,amount,accounttable,hidden,callback)
 						else
 							ARCBankMsg("(Someone) hacked into "..accounttable.filename.." stole "..tostring(amount))
 						end
+						ARCBankAccountMsg(accounttable,string.Replace( string.Replace( ARCBank.Msgs.LogMsgs.RemoveMoney, "%VALUE%", tostring(-amount)), "%PLAYER%", "__UNKNOWN"))
 					end
 					--ARCBank.PlayerAddMoney(ply,amount)
 				else
