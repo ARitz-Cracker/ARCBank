@@ -1647,7 +1647,7 @@ function ARCBank.Load()
 			end
 		end
 		stime = SysTime() - stime 
-		if stime > 0.5 then
+		if stime > 0.1 then
 			ARCBankMsg("File system check took "..stime.." seconds. Which I personally think is a bit too long. Optimizing...")
 			
 			local files, directories = file.Find( ARCBank.Dir.."/accounts/group/*.txt","DATA" )
