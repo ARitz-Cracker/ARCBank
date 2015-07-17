@@ -48,7 +48,7 @@ else
 	hook.Add( "PlayerCanPickupWeapon", "ARCBank HackerPickup", function( ply, wep ) 
 		if ARCBank.Settings["atm_hack_allowed_use"] && wep:GetClass() == "weapon_arc_atmhack" then
 			local canpickup = false
-			for k,v in pairs(ARCBank.Settings["atm_hack_notify"]) do
+			for k,v in pairs(ARCBank.Settings["atm_hack_allowed"]) do
 				if ply:Team() == _G[v] then
 					canpickup = true
 					break
