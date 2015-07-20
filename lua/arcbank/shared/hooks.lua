@@ -224,7 +224,7 @@ else
 	]]
 
 	hook.Add( "ARCLoad_OnLoaded", "ARCBank SpawnATMs", function(loaded)
-		if loaded != "ARCBank" then return end
+		if loaded != true && loaded != "ARCBank" then return end
 		ARCBank.SpawnATMs()
 	end )
 	hook.Add( "ARCLoad_OnUpdate", "ARCBank RemoveATMs",function(loaded)
