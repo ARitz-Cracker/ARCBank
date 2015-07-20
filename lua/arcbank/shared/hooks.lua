@@ -104,7 +104,17 @@ else
 			if table.HasValue(ARCBank.Disk.NommedCards,ply:SteamID()) then
 				ply:PrintMessage( HUD_PRINTTALK, "ARCBank: "..ARCBank.Msgs.UserMsgs.Eatcard1 )
 			end
-			ARCBank.UpdateLang(ARCBank.Settings["language"])
+			if ARCBank.RunningLang != ARCBank.Settings["language"] then
+				ARCBank.UpdateLang(ARCBank.Settings["language"])
+			else
+				net.Start("arcbank_comm_lang")
+				net.WriteInt(0,ARCBANK_ERRORBITRATE)
+				ply._ARCBank_Lang_Place = 0
+				net.WriteUInt(0,32)
+				net.WriteUInt(#ARCBank.JSON_Lang,32)
+				net.WriteString("")
+				net.Send(ply)
+			end
 			if ARCBank.Settings["atm_darkmode_default"] then
 				if !table.HasValue(ARCBank.Disk.EmoPlayers,ply:SteamID()) && table.HasValue(ARCBank.Disk.BlindPlayers,ply:SteamID()) then
 					ply:SendLua("ARCBank.ATM_DarkTheme = false")
@@ -213,7 +223,18 @@ else
 	hook.Add( "PostCleanupMap", "ARCBank PostCleanupATM", function() timer.Simple(1,function() ARCBank.SpawnATMs() end ) end )
 	]]
 
-	hook.Add( "ARCLoad_OnLoaded", "ARCBank SpawnATMs", function(loaded) ARCBank.SpawnATMs() end )
+	hook.Add( "ARCLoad_OnLoaded", "ARCBank SpawnATMs", function(loaded)
+		if loaded != "ARCBank" then return end
+		ARCBank.SpawnATMs()
+	end )
+	hook.Add( "ARCLoad_OnUpdate", "ARCBank RemoveATMs",function(loaded)
+		if loaded != "ARCBank" then return end
+		for k,v in pairs(player.GetAll()) do 
+			ARCBankMsgCL(v,"Updating...") 
+		end
+		ARCBank.SaveDisk()
+		ARCBank.ClearATMs()
+	end)
 	hook.Add( "ShutDown", "ARCBank Shutdown", function()
 		for _, oldatms in pairs( ents.FindByClass("sent_arc_atm") ) do
 			oldatms.ARCBank_MapEntity = false

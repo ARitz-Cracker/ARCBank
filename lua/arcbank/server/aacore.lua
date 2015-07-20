@@ -1278,7 +1278,9 @@ function ARCBank.Transfer(fromply,toply,fromname,toname,amount,reason,callback)
 	end
 
 end
+ARCBank.RunningLang = "\n" -- Some character invalid to filenames
 function ARCBank.UpdateLang(lang)
+	ARCBank.RunningLang = lang
 	local lanstr = file.Read(ARCBank.Dir.."/languages/"..lang..".txt","DATA")
 	if lanstr && lanstr != "" then
 		local tab = util.JSONToTable(lanstr)
