@@ -66,6 +66,9 @@ end
 function ARCBank.IsMySQLEnabled()
 	return ARCBank.MySQL && ARCBank.MySQL.EnableMySQL 
 end
+
+
+
 function ARCBank.WriteAccountFile(accounttable,callback)
 	if !ARCBank.Loaded || !accounttable.filename || !accounttable.rank || accounttable.rank <= ARCBANK_PERSONALACCOUNTS_ || accounttable.rank == ARCBANK_GROUPACCOUNTS_ || accounttable.rank > ARCBANK_GROUPACCOUNTS_PREMIUM then return false end
 	accounttable.money = tostring(accounttable.money) -- Just in case!
@@ -674,6 +677,36 @@ function ARCBank.GroupAccountAcces(ply,callback)
 		callback(ARCBANK_ERROR_NONE,names) 
 	end
 	
+end
+
+function ARCBank.GetAccountInformation(ply,groupname,callback)
+	if !ARCBank.Loaded then callback(ARCBANK_ERROR_NOT_LOADED) return end
+	if ARCBank.Busy then callback(ARCBANK_ERROR_BUSY) return end
+	local sid = ""
+	if !isstring(ply)&& ply:IsPlayer() then
+		sid = ply:SteamID()
+	elseif string.StartWith(ply,"STEAM_") then
+		sid = ply
+	else
+		callback(ARCBANK_ERROR_NIL_PLAYER)
+		return 
+	end
+	local datafunc = function(accountdata)
+		if !accountdata then
+			callback(ARCBANK_ERROR_NIL_ACCOUNT)
+			return
+		end
+		if accountdata.isgroup && accountdata.owner != sid && !table.HasValue( accountdata.members, sid ) then
+			callback(ARCBANK_ERROR_NO_ACCESS)
+			return 
+		end
+		callback(ARCBANK_ERROR_NONE,accountdata)
+	end
+	if !groupname || groupname == "" then
+		ARCBank.ReadAccountFile(ARCBank.GetAccountID(sid),false,datafunc)
+	else
+		ARCBank.ReadAccountFile(ARCBank.GetAccountID(groupname),true,datafunc)
+	end
 end
 
 function ARCBank.CanAfford(ply,amount,groupname,callback)
