@@ -1388,6 +1388,7 @@ function ARCBank.Load()
 			ARCBank.Disk = util.JSONToTable(file.Read( ARCBank.Dir.."/__data.txt","DATA" ))
 			if (!ARCBank.Disk) then
 				ARCBankMsg("__data.txt is corrupt. Yeah, some accounts will be too.")
+				ARCBank.Disk = {}
 			end
 			ARCBank.Disk.EmoPlayers = ARCBank.Disk.EmoPlayers or {}
 			ARCBank.Disk.BlindPlayers = ARCBank.Disk.BlindPlayers or {}
