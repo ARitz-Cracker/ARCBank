@@ -216,7 +216,7 @@ if SERVER then
 	end
 
 
-	hook.Add( "ARCLoad_OnLoaded", "ARCBank Load", function(loaded) ARCBank.Load() end )
+	--hook.Add( "ARCLoad_OnLoaded", "ARCBank Load", function(loaded) ARCBank.Load() end )
 
 end
 ARCBankMsg("Loading virtual Lua files...")
