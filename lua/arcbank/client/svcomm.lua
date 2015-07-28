@@ -300,14 +300,18 @@ net.Receive( "arcbank_comm_lang", function(length)
 	local succ = net.ReadInt(ARCBANK_ERRORBITRATE)
 	local part = net.ReadUInt(32)
 	local whole = net.ReadUInt(32)
-	local str = net.ReadString()
+	local chunklen = net.ReadUInt(32)
+	local str = ""
+	if (chunklen > 0) then
+		str = net.ReadData(chunklen)
+	end
 	if succ == 0 then
 		if part != ARCBank_UpdateLang_Progress then
 			MsgN("ARCBank: Chuck Mismatch Error. Possibly due to lag.")
 		else
 			ARCBank_UpdateLang_Chunks = ARCBank_UpdateLang_Chunks .. str
 			if part == whole then
-				local tab = util.JSONToTable(ARCBank_UpdateLang_Chunks)
+				local tab = util.JSONToTable(util.Decompress(ARCBank_UpdateLang_Chunks))
 				if tab then
 					ARCBANK_ERRORSTRINGS = ARCLib.RecursiveTableMerge(ARCBANK_ERRORSTRINGS,tab.errmsgs)
 					ARCBank.Msgs = ARCLib.RecursiveTableMerge(ARCBank.Msgs,tab.msgs)

@@ -1328,7 +1328,7 @@ function ARCBank.UpdateLang(lang)
 			translations.msgs = ARCBank.Msgs
 			translations.settingsdesc = ARCBank.SettingsDesc
 			]]
-			ARCBank.JSON_Lang = ARCLib.SplitString(lanstr,49152) -- Splitting the string every 48 kb just in case
+			ARCBank.JSON_Lang = ARCLib.SplitString(util.Compress(lanstr),49152) -- Splitting the string every 48 kb just in case
 			for k,v in pairs(player.GetHumans()) do
 				net.Start("arcbank_comm_lang")
 				net.WriteInt(0,ARCBANK_ERRORBITRATE)
