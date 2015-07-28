@@ -88,7 +88,7 @@ function SWEP:PrimaryAttack()
 	end
 end
 function SWEP:SecondaryAttack()
-	if self.SettingMenu || !ARCLoad.Loaded then return end
+	if self.SettingMenu then return end
     self:SetNextPrimaryFire( CurTime() + 1.5 )
     self:SetNextSecondaryFire( CurTime() + 1.5 )
 	if SERVER then
@@ -99,7 +99,6 @@ function SWEP:SecondaryAttack()
 	self.SettingMenu = true
 end
 function SWEP:Think()
-	if !ARCLoad.Loaded then return end
 	if self:GetNextPrimaryFire() < CurTime() && self:GetNextSecondaryFire() < CurTime() then
 		local trace = self.Owner:GetEyeTrace()
 		local side = 0
@@ -129,9 +128,7 @@ function SWEP:Reload()
 end
 function SWEP:Deploy()
 		if SERVER then
-			if ARCLoad.Loaded then
-				self.Owner:SendLua("LocalPlayer():GetActiveWeapon().chargerate = "..tostring(ARCBank.Settings["atm_hack_charge_rate"]))
-			end
+			self.Owner:SendLua("LocalPlayer():GetActiveWeapon().chargerate = "..tostring(ARCBank.Settings["atm_hack_charge_rate"]))
 		end
 		self.PrintName = ARCBank.Msgs.Items.Hacker
         self.m_WeaponDeploySpeed=1
@@ -209,11 +206,7 @@ function SWEP:Initialize()
 			end
 		end
 	else
-		if ARCLoad.Loaded then
-			self.Settings = {500,false,ARCBank.Settings["hack_max"],ARCBank.Settings["atm_hack_charge_rate"]}
-		else
-			self.Settings = {500,false,10000,1.5}
-		end
+		self.Settings = {500,false,ARCBank.Settings["hack_max"],ARCBank.Settings["atm_hack_charge_rate"]}
 	end
 
 end
@@ -234,7 +227,6 @@ function SWEP:OnRemove()
 	self:Holster()
 end
 function SWEP:DrawHUD()
-	if ARCLoad.Loaded then
 		local power = math.floor((0-ARCBank.Settings["atm_hack_charge_rate"])*(self.energystart - CurTime()))
 		draw.SimpleText( ARCBank.Msgs.Hack.Power..tostring(ARCLib.TimeString(power,ARCBank.Msgs.Time)),"ARCBankCard", surface.ScreenWidth() - 48*2, surface.ScreenHeight() - 48 - 24, Color(255,255,0,255),TEXT_ALIGN_RIGHT , TEXT_ALIGN_TOP  ) 
 		if power < (self.hacktime - self.hacktimeoff) then
@@ -244,7 +236,6 @@ function SWEP:DrawHUD()
 		else
 			draw.SimpleText( ARCBank.Msgs.Hack.Chance..tostring(math.floor(((power - (self.hacktime - self.hacktimeoff))/(2*self.hacktimeoff))*100)).."%","ARCBankCard", surface.ScreenWidth() - 48*2, surface.ScreenHeight() - 48, Color(255,255,0,255),TEXT_ALIGN_RIGHT , TEXT_ALIGN_TOP  )
 		end
-	end
 end
 if CLIENT then
 SWEP.VElements = {

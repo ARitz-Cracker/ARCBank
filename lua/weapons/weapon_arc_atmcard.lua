@@ -37,14 +37,14 @@ if CLIENT then
 	}
 	SWEP.WepSelectIcon = surface.GetTextureID( "arc/atm_base/screen/card" )
 	function SWEP:DrawHUD() 
-		if ARCLoad.Loaded then
+		--if ARCLoad.Loaded then
 			surface.SetDrawColor( 255, 255, 255, 255 )
 			surface.SetTexture( self.WepSelectIcon ) 
 			--surface.DrawOutlinedRect( surface.ScreenWidth() - 512, surface.ScreenHeight() - 256, 512, 256 )
 			surface.DrawTexturedRect( surface.ScreenWidth() - 512, surface.ScreenHeight() - 256, 512, 256 )
 			draw.SimpleText(self.Owner:SteamID(), "ARCBankCard", surface.ScreenWidth() - 430, surface.ScreenHeight() - 94, Color(255,255,255,200), TEXT_ALIGN_LEFT, TEXT_ALIGN_BOTTOM)
 			draw.SimpleText(self.Owner:Nick(), "ARCBankCard", surface.ScreenWidth() - 430, surface.ScreenHeight() - 55, Color(255,255,255,200), TEXT_ALIGN_LEFT, TEXT_ALIGN_BOTTOM)
-		end
+		--end
 	end
 		
 	SWEP.wRenderOrder = nil
