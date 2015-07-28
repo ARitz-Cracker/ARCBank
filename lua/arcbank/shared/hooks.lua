@@ -161,6 +161,8 @@ else
 	end)
 
 	hook.Add( "playerGetSalary", "ARCBank PaydayATM", function(ply, amount)
+		--TODO: Look at amount before/after payday to properly determine tax stuffs
+		MsgN(tostring(ply).." : "..ply:getDarkRPVar("money"))
 		if amount == 0 then return end
 		if ARCBank.Settings["use_bank_for_payday"] then
 			ARCBank.AtmFunc(ply,amount,"",function(errcode)
