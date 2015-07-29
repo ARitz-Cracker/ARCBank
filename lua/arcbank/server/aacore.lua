@@ -1328,6 +1328,7 @@ function ARCBank.UpdateLang(lang)
 			translations.msgs = ARCBank.Msgs
 			translations.settingsdesc = ARCBank.SettingsDesc
 			]]
+			//local compressedstir
 			ARCBank.JSON_Lang = ARCLib.SplitString(util.Compress(lanstr),49152) -- Splitting the string every 48 kb just in case
 			for k,v in pairs(player.GetHumans()) do
 				net.Start("arcbank_comm_lang")
@@ -1335,7 +1336,7 @@ function ARCBank.UpdateLang(lang)
 				v._ARCBank_Lang_Place = 0
 				net.WriteUInt(0,32)
 				net.WriteUInt(#ARCBank.JSON_Lang,32)
-				net.WriteString("")
+				net.WriteUInt(0,32)
 				net.Send(v)
 			end
 		else
