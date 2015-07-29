@@ -435,7 +435,8 @@ net.Receive( "arcbank_comm_admin_accounts", function(length)
 				ARCBank_Admin_Accounts_IsBusy = false
 			else
 				net.Start("arcbank_comm_admin_accounts")
-				net.WriteString("RECIEVED DUH FOOKING CHUNK ||||"..tostring(part).."/"..tostring(whole))
+				net.WriteUInt(part,32)
+				net.WriteUInt(whole,32)
 				net.SendToServer()
 				ARCBank_Admin_Accounts_Progress = ARCBank_Admin_Accounts_Progress + 1
 				ARCBank_Admin_Accounts_CallBack(ARCBANK_ERROR_DOWNLOADING,part/whole)
