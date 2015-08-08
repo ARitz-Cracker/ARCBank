@@ -774,6 +774,15 @@ end)
 util.AddNetworkString( "arcbank_comm_atmspawn" )
 
 net.Receive( "arcbank_comm_atmspawn", function(length,ply)
+	if !ply:IsAdmin() && !ply:IsSuperAdmin() then
+		ARCBankMsgCL(ply,ARCBank.Msgs.CommandOutput.admin)
+	return end
+	if ARCBank.Settings["superadmin_only"] && !ply:IsSuperAdmin() then
+		ARCBankMsgCL(ply,ARCBank.Msgs.CommandOutput.superadmin)
+	return end
+	if ARCBank.Settings["owner_only"] && string.lower(ply:GetUserGroup()) != "owner" then
+		ARCBankMsgCL(ply,ARCBank.Msgs.CommandOutput.superadmin)
+	return end
 	local atmtype = net.ReadString()
 	local tr = ply:GetEyeTrace()
 	local ang = ply:EyeAngles()
