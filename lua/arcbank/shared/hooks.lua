@@ -112,7 +112,7 @@ else
 				ply._ARCBank_Lang_Place = 0
 				net.WriteUInt(0,32)
 				net.WriteUInt(#ARCBank.JSON_Lang,32)
-				net.WriteString("")
+				net.WriteUInt(0,32)
 				net.Send(ply)
 			end
 			if ARCBank.Settings["atm_darkmode_default"] then
@@ -227,8 +227,8 @@ else
 
 	hook.Add( "ARCLoad_OnLoaded", "ARCBank SpawnATMs", function(loaded)
 		if loaded != true && loaded != "ARCBank" then return end
-			timer.Simple(1,ARCBank.Load)
-			timer.Simple(1.1,ARCBank.SpawnATMs)
+			ARCBank.Load()
+			ARCBank.SpawnATMs()
 	end )
 	hook.Add( "ARCLoad_OnUpdate", "ARCBank RemoveATMs",function(loaded)
 		if loaded != "ARCBank" then return end
