@@ -482,7 +482,6 @@ end)
 
 util.AddNetworkString( "arcbank_comm_lang" )
 net.Receive( "arcbank_comm_lang", function(length,ply)
-	local steamid = tostring(net.ReadString())
 	local part = net.ReadUInt(32)
 	local whole  = net.ReadUInt(32)
 	if whole == #ARCBank.JSON_Lang then
