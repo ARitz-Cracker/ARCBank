@@ -307,7 +307,7 @@ net.Receive( "arcbank_comm_lang", function(length)
 	end
 	if succ == 0 then
 		if part != ARCBank_UpdateLang_Progress then
-			MsgN("ARCBank: Chuck Mismatch Error. Possibly due to lag.")
+			MsgN("ARCBank: Chuck Mismatch Error while loading language. Possibly due to lag.")
 		else
 			ARCBank_UpdateLang_Chunks = ARCBank_UpdateLang_Chunks .. str
 			if part == whole then
@@ -332,7 +332,8 @@ net.Receive( "arcbank_comm_lang", function(length)
 				ARCBank_UpdateLang_Progress = 0
 			else
 				net.Start("arcbank_comm_lang")
-				net.WriteString("RECIEVED DUH FOOKING CHUNK ||||"..tostring(part).."/"..tostring(whole))
+				net.WriteUInt(part,32)
+				net.WriteUInt(whole,32)
 				net.SendToServer()
 				ARCBank_UpdateLang_Progress = ARCBank_UpdateLang_Progress + 1
 			end
