@@ -348,7 +348,7 @@ end)
 --Get Log
 
 local ARCBank_Admin_Log_IsBusy = false
-local ARCBank_Admin_Log_CallBack
+local ARCBank_Admin_Log_CallBack -- %%CONFIRMATION_HASH%%
 local ARCBank_Admin_Log_Progress = 0
 local ARCBank_Admin_Log_Chunks = ""
 function ARCBank.AdminLog(accname,isgroup,callback)

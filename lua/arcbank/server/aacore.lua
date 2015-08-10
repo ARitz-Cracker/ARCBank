@@ -1063,7 +1063,7 @@ function ARCBank.StealMoney(ply,amount,accounttable,hidden,callback)
 						end
 					end
 				end
-				if ARCBank.IsMySQLEnabled() then --TODO: Read minidump #%%CONFIRMATION_HASH%%. Could old the key to some issues lag issues.
+				if ARCBank.IsMySQLEnabled() then --TODO: Read minidump #%%CONFIRMATION_HASH%%. Could hold the key to some issues lag issues.
 					local fuckinglongqueryies = {}
 					local count = 1
 					for k,v in pairs(victims) do

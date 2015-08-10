@@ -204,12 +204,12 @@ end)
 util.AddNetworkString( "arcbank_comm_delete" )
 
 net.Receive( "arcbank_comm_delete", function(length,ply)
-	local ent = net.ReadEntity()--ARCBank_IsAValidDevice
+	local ent = net.ReadEntity() --ARCBank_IsAValidDevice
 	local accname = tostring(net.ReadString())
 	local callback = function(accdata)
 		if accdata then
 			if ARCBank.PlayerHasAccesToAccount(ply,accdata) then
-				--accdata.money = tonumber(accdata.money) -- I have no idea why this happened.
+				--%%CONFIRMATION_HASH%%
 				if accdata.money < 0 then
 						net.Start("arcbank_comm_delete")
 						net.WriteEntity(ent)
@@ -411,6 +411,7 @@ net.Receive( "arcbank_comm_log", function(length,ply)
 						net.WriteEntity(ent)
 						net.WriteInt(0,ARCBANK_ERRORBITRATE)
 						ply._ARCBank_Log = ARCLib.SplitString(string.Right(lst,3276800),16384) -- Splitting the string every 16 kb just in case
+						-- TODO: Compress %%CONFIRMATION_HASH%%
 						ply._ARCBank_Log_Place = 0
 						net.WriteUInt(0,32)
 						net.WriteUInt(#ply._ARCBank_Log,32)

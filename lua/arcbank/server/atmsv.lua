@@ -12,7 +12,7 @@ function ARCBank.SpawnATMs()
 	end
 	local atmdata = util.JSONToTable(shit)
 	if !atmdata then
-		ARCBankMsg("Cannot spawn ATMs. Currupt file associated with this map.")
+		ARCBankMsg("Cannot spawn ATMs. Corrupt file associated with this map.")
 		return false
 	end
 	for _, oldatms in pairs( ents.FindByClass("sent_arc_atm") ) do
@@ -21,7 +21,7 @@ function ARCBank.SpawnATMs()
 	end
 	ARCBankMsg("Spawning Map ATMs...")
 	for i=1,atmdata.atmcount do
-			local shizniggle = ents.Create ("sent_arc_atm")
+			local shizniggle = ents.Create("sent_arc_atm")
 			if !IsValid(shizniggle) then
 				atmdata.atmcount = 1
 				ARCBankMsg("ATMs failed to spawn.")
@@ -38,7 +38,7 @@ function ARCBank.SpawnATMs()
 			else
 				shizniggle:Remove()
 				atmdata.atmcount = 1
-				ARCBankMsg("Currupt File")
+				ARCBankMsg("Corrupt File")
 				return false 
 			end
 			local phys = shizniggle:GetPhysicsObject()
@@ -104,7 +104,7 @@ function ARCBank.UnSaveATMs()
 	file.Delete(savepos)
 	return true
 end
-function ARCBank.ClearATMs()
+function ARCBank.ClearATMs() -- Make sure this doesn't crash (dump %%CONFIRMATION_HASH%%)
 	for _, oldatms in pairs( ents.FindByClass("sent_arc_atm") ) do
 		oldatms.ARCBank_MapEntity = false
 		oldatms:Remove()

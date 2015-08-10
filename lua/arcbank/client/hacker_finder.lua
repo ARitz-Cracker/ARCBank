@@ -14,7 +14,7 @@ net.Receive( "ARCATMHACK_BEACON", function(length)
 	table.insert( tabOPos, stuffs )
 end)
 hook.Add("HUDPaint", "ARCBank ATMHackerDetector", function()
-	--
+	--%%CONFIRMATION_HASH%%
 	
 	for i=1,#tabOPos do
 		if !tabOPos[i] then

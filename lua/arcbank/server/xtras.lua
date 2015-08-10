@@ -4,7 +4,7 @@
 -- Any 3rd party content has been used as either public domain or with permission.
 -- © Copyright 2014,2015 Aritz Beobide-Cardinal All rights reserved.
 
-function ARCBank.CapAccountRank(ply)
+function ARCBank.CapAccountRank(ply) -- %%CONFIRMATION_HASH%%
 	if !IsValid(ply) || !ply:IsPlayer() then
 		for k,v in pairs(player.GetHumans()) do
 			ARCBank.CapAccountRank(v)

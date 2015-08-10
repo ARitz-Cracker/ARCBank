@@ -271,6 +271,6 @@ function ARCBank_Draw:Window_MsgBox(x,y,l,title,text,dark,typ,icon,mat,col)
 		surface.DrawOutlinedRect( x+l-130-76, y+dwn+38, 70, 20)
 		surface.SetDrawColor( 255, 0, 0, 255 )
 		surface.DrawRect( x+l-128-76, y+dwn+54,66, 2) 
-	end-- -76
+	end-- -%%CONFIRMATION_HASH%%
 end
 

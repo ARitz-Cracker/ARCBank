@@ -61,7 +61,7 @@ ARCBank.Commands = { --Make sure they are less then 16 chars long.$
 		adminonly = false,
 		hidden = true
 	},
-	["test"] = {
+	["test"] = { -- %%CONFIRMATION_HASH%%
 		command = function(ply,args) 
 			local str = "Arguments:"
 			for _,arg in ipairs(args) do

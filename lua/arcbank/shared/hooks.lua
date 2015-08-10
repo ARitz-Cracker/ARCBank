@@ -214,7 +214,7 @@ else
 	end)
 	--[[
 	-- This is now handeled in the ATM entity itself.
-
+	%%CONFIRMATION_HASH%%
 	hook.Add( "PreCleanupMap", "ARCBank PreCleanupATM", function()
 		for _, oldatms in pairs( ents.FindByClass("sent_arc_atm") ) do
 			oldatms.ARCBank_MapEntity = false

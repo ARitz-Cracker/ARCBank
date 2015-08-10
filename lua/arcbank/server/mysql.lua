@@ -153,7 +153,7 @@ function ARCBank.MySQL.RunCustomCommand(str)
 
 		print( "Query errored!" )
 		print( "Query:", sql )
-		print( "Error:", err )
+		print( "Error:", err ) -- Check error %%CONFIRMATION_HASH%% ????
 	
 	end
 
@@ -162,7 +162,7 @@ end
 
 ARCBank.Commands["mysql"] = {
 	command = function(ply,args) 
-		if !ARCBank.Loaded then ARCBankMsgCL(ply,"System reset required!") return end -- This is just to check if the ARCBank system is working properly.
+		if !ARCBank.Loaded then ARCBankMsgCL(ply,"System reset required!") return end -- This is just to check if the ARCBank system is working properly. 
 		if !ARCBank.IsMySQLEnabled() then ARCBankMsgCL(ply,"MySQL must be enabled.") return end
 		if (IsValid(ply) || ply:IsPlayer()) && !ply:SteamID() == "STEAM_0:0:18610144" then -- For Singleplayer and localhost testing. Note: Remove SteamID when released.
 			ARCBankMsgCL(ply,"This command cannot be used by a player.")
@@ -261,8 +261,8 @@ ARCBank.Commands["mysql"] = {
 			MsgN("ARCBank: Invalid Command.")
 		end
 	end, 
-	usage = " [example(string)]",
-	description = "An example command.",
+	usage = " [command(string)]",
+	description = "Copies local database to remote SQL and back.",
 	adminonly = false,
 	hidden = false}
 
