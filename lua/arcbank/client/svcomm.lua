@@ -306,6 +306,7 @@ net.Receive( "arcbank_comm_lang", function(length)
 		str = net.ReadData(chunklen)
 	end
 	if succ == 0 then
+		MsgN("ARCBank: got "..part.."/"..whole.." on the language")
 		if part != ARCBank_UpdateLang_Progress then
 			MsgN("ARCBank: Chuck Mismatch Error while loading language. Possibly due to lag.")
 		else
