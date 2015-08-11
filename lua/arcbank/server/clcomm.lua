@@ -503,7 +503,7 @@ net.Receive( "arcbank_comm_lang", function(length,ply)
 		end
 	elseif part == 0 && whole == 0 then
 		ply._ARCBank_Lang_Place = nil
-	end
+	else
 		net.Start("arcbank_comm_lang")
 		net.WriteInt(ARCBANK_ERROR_CHUNK_MISMATCH,ARCBANK_ERRORBITRATE)
 		net.Send(ply)
