@@ -107,13 +107,15 @@ else
 			if ARCBank.RunningLang != ARCBank.Settings["language"] then
 				ARCBank.UpdateLang(ARCBank.Settings["language"])
 			else
-				net.Start("arcbank_comm_lang")
-				net.WriteInt(0,ARCBANK_ERRORBITRATE)
-				ply._ARCBank_Lang_Place = 0
-				net.WriteUInt(0,32)
-				net.WriteUInt(#ARCBank.JSON_Lang,32)
-				net.WriteUInt(0,32)
-				net.Send(ply)
+				if !ply._ARCBank_Lang_Place then
+					net.Start("arcbank_comm_lang")
+					net.WriteInt(0,ARCBANK_ERRORBITRATE)
+					ply._ARCBank_Lang_Place = 0
+					net.WriteUInt(0,32)
+					net.WriteUInt(#ARCBank.JSON_Lang,32)
+					net.WriteUInt(0,32)
+					net.Send(ply)
+				end
 			end
 			if ARCBank.Settings["atm_darkmode_default"] then
 				if !table.HasValue(ARCBank.Disk.EmoPlayers,ply:SteamID()) && table.HasValue(ARCBank.Disk.BlindPlayers,ply:SteamID()) then

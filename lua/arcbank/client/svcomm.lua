@@ -331,6 +331,10 @@ net.Receive( "arcbank_comm_lang", function(length)
 				end
 				ARCBank_UpdateLang_Chunks = ""
 				ARCBank_UpdateLang_Progress = 0
+				net.Start("arcbank_comm_lang")
+				net.WriteUInt(0,32)
+				net.WriteUInt(0,32)
+				net.SendToServer()
 			else
 				net.Start("arcbank_comm_lang")
 				net.WriteUInt(part,32)

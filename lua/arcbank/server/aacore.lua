@@ -1331,13 +1331,15 @@ function ARCBank.UpdateLang(lang)
 			//local compressedstir
 			ARCBank.JSON_Lang = ARCLib.SplitString(util.Compress(lanstr),49152) -- Splitting the string every 48 kb just in case
 			for k,v in pairs(player.GetHumans()) do
-				net.Start("arcbank_comm_lang")
-				net.WriteInt(0,ARCBANK_ERRORBITRATE)
-				v._ARCBank_Lang_Place = 0
-				net.WriteUInt(0,32)
-				net.WriteUInt(#ARCBank.JSON_Lang,32)
-				net.WriteUInt(0,32)
-				net.Send(v)
+				if !v._ARCBank_Lang_Place then
+					net.Start("arcbank_comm_lang")
+					net.WriteInt(0,ARCBANK_ERRORBITRATE)
+					v._ARCBank_Lang_Place = 0
+					net.WriteUInt(0,32)
+					net.WriteUInt(#ARCBank.JSON_Lang,32)
+					net.WriteUInt(0,32)
+					net.Send(v)
+				end
 			end
 		else
 			ARCBankMsg("WARNING! The language file '"..tostring(lang).."' is not a valid JSON file!")
