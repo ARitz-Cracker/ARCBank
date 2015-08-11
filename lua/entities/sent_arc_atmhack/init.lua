@@ -45,7 +45,7 @@ function ENT:BeginHack()
 	if self.OurHealth <= 0 then return end
 	self:EmitSound("npc/dog/dog_servo12.wav",75,75)
 	local atm = self:GetParent()
-	if atm != NULL then
+	if IsValid(atm) && atm:GetClass() == "sent_arc_atm" then
 		if atm.Hacked || atm.InUse then
 			local pos = self:GetParent():WorldToLocal(self:GetPos()) - Vector(0,-self.left,0)
 			self:SetPos(pos)
