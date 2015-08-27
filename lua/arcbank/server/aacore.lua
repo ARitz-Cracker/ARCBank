@@ -774,7 +774,7 @@ function ARCBank.GetAllAccounts(amount,callback)
 		ARCBank.MySQL.Query("SELECT * FROM arcbank_group_account",function(didwork,data)
 			if didwork then -- Even I cry when I read the next few lines of code.
 				for _, accountdata in pairs( data ) do
-					if accountdata.money+ARCBank.Settings["debt_limit"] >= amount then
+					if accountdata.money >= amount then
 						table.insert( pers[accountdata.rank], accountdata )
 					end
 				end
@@ -810,7 +810,7 @@ function ARCBank.GetAllAccounts(amount,callback)
 						ARCBank.MySQL.Query("SELECT * FROM arcbank_personal_account",function(diditworkk,pdata)
 							if diditworkk then
 								for _, accounttdata in pairs( pdata ) do
-									if accounttdata.money+ARCBank.Settings["debt_limit"] >= amount then
+									if accounttdata.money >= amount then
 										accounttdata.isgroup = tobool(accounttdata.isgroup)
 										table.insert( pers[accounttdata.rank], accounttdata )
 									end
@@ -855,14 +855,14 @@ function ARCBank.GetAllAccounts(amount,callback)
 		local files, directories = file.Find( ARCBank.Dir.."/accounts/group/*.txt","DATA" )
 		for _,v in pairs( files ) do
 			local accountdata = util.JSONToTable(file.Read( ARCBank.Dir.."/accounts/group/"..v,"DATA"))
-			if tonumber(accountdata.money)+ARCBank.Settings["debt_limit"] >= amount then
+			if tonumber(accountdata.money) >= amount then
 				table.insert( pers[accountdata.rank], accountdata )
 			end
 		end
 		local files, directories = file.Find( ARCBank.Dir.."/accounts/personal/*.txt","DATA" )
 		for _,v in pairs( files ) do
 			local accountdata = util.JSONToTable(file.Read( ARCBank.Dir.."/accounts/personal/"..v,"DATA"))
-			if tonumber(accountdata.money)+ARCBank.Settings["debt_limit"] >= amount then
+			if tonumber(accountdata.money) >= amount then
 				table.insert( pers[accountdata.rank], accountdata )
 			end
 		end
@@ -1501,10 +1501,10 @@ function ARCBank.Load()
 			local tab = util.JSONToTable(file.Read(ARCBank.Dir.."/custom_atms/"..files[i],"DATA"))
 			if tab then
 				for i = 1,#tab.ErrorSound do
-					table.insert(ARCLib.SoundWhitelist,{ent = "sent_arc_atm",snd = tab.ErrorSound[i],lvl = 65,ptch = 100})
+					ARCLib.AddToSoundWhitelist("sent_arc_atm",tab.ErrorSound[i],65,100)
 				end
 				for i = 1,#tab.PressSound do
-					table.insert(ARCLib.SoundWhitelist,{ent = "sent_arc_atm",snd = tab.PressSound[i],lvl = 65,ptch = 100})
+					ARCLib.AddToSoundWhitelist("sent_arc_atm",tab.PressSound[i],65,100)
 				end
 			end
 

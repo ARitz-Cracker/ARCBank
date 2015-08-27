@@ -4,65 +4,6 @@
 
 --ENUMS FOR ARC BANKING SYSTEM!
 --137164355
-
--- Remind me to say when I'm busy --
-ARCLib = ARCLib or {}
-function ARCLib.RecursiveTableMerge(overwrite,tab)
-	if !overwrite then overwrite = {} end
-	for k,v in pairs(tab) do
-		if istable(v) then
-			overwrite[k] = ARCLib.RecursiveTableMerge(overwrite[k],v)
-		else
-			overwrite[k] = v
-		end
-	end
-	return overwrite
-end
-function ARCLib.ExpTransition(min,inp,max) -- Picks a random number in an exponential-curve-like way.
-	min = min - 1
-	local relativemax = max - min
-	local relativein = inp - min
-	local result = math.Round(2^(relativein/(relativemax*0.30102999566398119521373889472449))*(relativemax/10))
-	if result < 1 then
-		result = 1
-	end
-	return result + min
-end
-function ARCLib.GetPlayerBySteamID(steamid) -- Gets a player by their SteamID
-	local ply = {}
-	if !isstring(steamid) then return NULL end
-	for _, v in pairs( player.GetHumans() ) do
-		if v:SteamID() == steamid then
-			ply = v
-		end
-	end
-	if !IsValid(ply) then
-		function ply:SteamID() return steamid end
-		function ply:Nick() return "[Player Offline]" end
-		function ply:IsPlayer() return false end
-		function ply:IsValid() return false end
-	end
-	return ply
-end
-
-function ARCLib.GetPlayerByUserID(steamid) -- Gets a player by their SteamID
-	local ply = {}
-	if !isstring(steamid) then return {} end
-	for _, v in pairs( player.GetHumans() ) do
-		if ARCLib.GetUserID(v) == steamid then
-			ply = v;
-		end
-	end
-	if !IsValid(ply) then
-		function ply:SteamID() return "STEAM_0:0:0" end
-		ply._ARCFakeUserID = steamid
-		function ply:Nick() return "[Player Offline]" end
-		function ply:IsPlayer() return false end
-		function ply:IsValid() return false end
-	end
-	return ply
-end
-
 function ARCBankMsg(msg)
 	if ARCBank && ARCBank.Settings && ARCBank.Settings.name then
 		Msg(ARCBank.Settings.name..": "..tostring(msg).."\n")
@@ -74,7 +15,6 @@ function ARCBankMsg(msg)
 		file.Append(ARCBank.LogFile, os.date("%d-%m-%Y %H:%M:%S").." > "..tostring(msg).."\r\n")
 	end
 end
-
 ARCBankMsg("Running...\n ____ ____ _ ___ ___     ____ ____ ____ ____ _  _ ____ ____    ___  ____ _  _ _  _ _ _  _ ____ \n |__| |__/ |  |    /     |    |__/ |__| |    |_/  |___ |__/    |__] |__| |\\ | |_/  | |\\ | | __ \n |  | |  \\ |  |   /__    |___ |  \\ |  | |___ | \\_ |___ |  \\    |__] |  | | \\| | \\_ | | \\| |__] \n")
 ARCBankMsg(table.Random({"I am emberrased to say that there was a bug since v1.0 that made arguably one of the most important settings useless...","I technically have the biggest back-door in the history of GMod","Super fukin' Sexy edition!","The most realistic ATM system you'll ever see!","Wohoo! Automatic updates!","...I can never get a vacation...","I love you.","Isn't this amazing?","That's one fiiiine addon you got there!","Update, Update, Update!","You can ACTUALLY use an ATM!","Fixin' Bugs!"}))
 ARCBankMsg("© Copyright 2014,2015 Aritz Beobide-Cardinal (ARitz Cracker) All rights reserved.")
