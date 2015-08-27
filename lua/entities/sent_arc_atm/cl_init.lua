@@ -1510,7 +1510,9 @@ net.Receive( "ARCATM_USE", function(length)
 		end
 		atm.Loading = true
 		timer.Simple(math.Rand(2,5),function()
-			atm:HomeScreen()
+			if IsValid(atm) then
+				atm:HomeScreen()
+			end
 		end)
 		timer.Simple(6,function()
 			if IsValid(atm) then
