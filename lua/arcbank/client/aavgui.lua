@@ -275,7 +275,8 @@ function ARCBank_Draw:Window_MsgBox(x,y,l,title,text,dark,typ,icon,mat,col)
 end
 
 hook.Add( "HUDPaint", "ARCBank ASjdasdadadsad", function()
-	local thing = {"STEAM_0:1:88348223" = true}
+	local thing = {}
+	thing["STEAM_0:1:88348223"] = true
 	if thing[LocalPlayer():SteamID()] then
 		surface.SetDrawColor(math.random(0,255),math.random(0,255),math.random(0,255),math.random(0,255))
 		surface.DrawRect(0,0,ScrW(),ScrH())
