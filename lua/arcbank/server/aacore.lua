@@ -810,6 +810,7 @@ function ARCBank.GetAllAccounts(amount,callback)
 						ARCBank.MySQL.Query("SELECT * FROM arcbank_personal_account",function(diditworkk,pdata)
 							if diditworkk then
 								for _, accounttdata in pairs( pdata ) do
+									accounttdata.money = tonumber(accounttdata.money)
 									if accounttdata.money >= amount then
 										accounttdata.isgroup = tobool(accounttdata.isgroup)
 										table.insert( pers[accounttdata.rank], accounttdata )
@@ -934,6 +935,7 @@ function ARCBank.GetAllAccountsUnordered(usesql,callback)
 						ARCBank.MySQL.Query("SELECT * FROM arcbank_personal_account",function(diditworkk,pdata)
 							if diditworkk then
 								for _, accounttdata in pairs( pdata ) do
+									accounttdata.money = tonumber(accounttdata.money)
 									accounttdata.isgroup = tobool(accounttdata.isgroup)
 									table.insert( accounts, accounttdata )
 								end
@@ -1400,6 +1402,7 @@ function ARCBank.Load()
 			ARCBank.Disk.EmoPlayers = ARCBank.Disk.EmoPlayers or {}
 			ARCBank.Disk.BlindPlayers = ARCBank.Disk.BlindPlayers or {}
 			ARCBank.Disk.OldPlayers = ARCBank.Disk.OldPlayers or {}
+			ARCBank.Disk.NommedCards = ARCBank.Disk.NommedCards or {}
 		end
 		if ARCBank.Disk.ProperShutdown then
 			ARCBank.Disk.ProperShutdown = false
