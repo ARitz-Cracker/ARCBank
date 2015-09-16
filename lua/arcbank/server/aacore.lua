@@ -919,6 +919,7 @@ function ARCBank.GetAllAccountsUnordered(usesql,callback)
 									end
 								end
 							end
+							accountdata.money = tonumber(accountdata.money)
 							accountdata.isgroup = tobool(accountdata.isgroup)
 							
 							--[[
