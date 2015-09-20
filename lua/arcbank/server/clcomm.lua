@@ -299,10 +299,9 @@ net.Receive( "arcbank_comm_upgrade", function(length,ply)
 					if accdata.owner == ply:SteamID() then
 						accdata.rank = accdata.rank + 1	
 						for i=accdata.rank,ARCBANK_GROUPACCOUNTS_PREMIUM do
-							for k,v in pairs( ARCBank.Settings[""..ARCBANK_ACCOUNTSTRINGS[i].."_requirement"] ) do
-								if ply:IsUserGroup( v ) then
-									newb = false
-								end
+							if table.HasValue(ARCBank.Settings[""..ARCBANK_ACCOUNTSTRINGS[i].."_requirement"],ply:GetUserGroup()) then
+								newb = false
+								break
 							end
 						end
 						if newb then
@@ -322,10 +321,9 @@ net.Receive( "arcbank_comm_upgrade", function(length,ply)
 				else
 					accdata.rank = accdata.rank + 1
 					for i=accdata.rank,ARCBANK_PERSONALACCOUNTS_GOLD do
-						for k,v in pairs( ARCBank.Settings[""..ARCBANK_ACCOUNTSTRINGS[i].."_requirement"] ) do
-							if ply:IsUserGroup( v ) then
-								newb = false
-							end
+						if table.HasValue(ARCBank.Settings[""..ARCBANK_ACCOUNTSTRINGS[i].."_requirement"],ply:GetUserGroup()) then
+							newb = false
+							break
 						end
 					end
 					if newb then
