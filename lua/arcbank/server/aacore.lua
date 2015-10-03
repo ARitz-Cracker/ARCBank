@@ -1373,27 +1373,7 @@ function ARCBank.Load()
 		else
 			ARCBank.Msg("WARNING! THE SYSTEM DIDN'T SHUT DOWN PROPERLY! EXPECT CORRUPTED ACCOUNTS!")
 		end
-		
-		if file.Exists(ARCBank.Dir.."/_saved_settings.txt","DATA") then
-			local disksettings = util.JSONToTable(file.Read(ARCBank.Dir.."/_saved_settings.txt","DATA"))
-			if disksettings then
-				for k,v in pairs(ARCBank.Settings) do
-					if disksettings[k] || isbool(disksettings[k]) then
-						ARCBank.Settings[k] = disksettings[k]
-					else
-						ARCBank.Msg(""..k.." not found in disk settings. Possibly out of date. Using default.")
-					end
-				end
-				if disksettings["atm_language"] then
-					ARCBank.Settings["language"] = disksettings["atm_language"] -- Backwards compatability for pre 1.0 ARCBank settings.
-				end
-				ARCBank.Msg("Settings succesfully set.")
-			else
-				ARCBank.Msg("Settings file is corrupt or something! Using defaults.")
-			end
-		else
-			ARCBank.Msg("No settings file found! Using defaults.")
-		end
+		ARCLib.AddonLoadSettings("ARCBank",{"atm_language" = "language"})
 
 		if !file.IsDir( ARCBank.Dir.."/languages","DATA" ) then
 			ARCBank.Msg("Created Folder: "..ARCBank.Dir.."/languages")

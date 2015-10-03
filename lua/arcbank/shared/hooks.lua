@@ -104,19 +104,8 @@ else
 			if table.HasValue(ARCBank.Disk.NommedCards,ply:SteamID()) then
 				ply:PrintMessage( HUD_PRINTTALK, "ARCBank: "..ARCBank.Msgs.UserMsgs.Eatcard1 )
 			end
-			if ARCBank.RunningLang != ARCBank.Settings["language"] then
-				ARCBank.UpdateLang(ARCBank.Settings["language"])
-			else
-				if !ply._ARCBank_Lang_Place then
-					net.Start("arcbank_comm_lang")
-					net.WriteInt(0,ARCBANK_ERRORBITRATE)
-					ply._ARCBank_Lang_Place = 0
-					net.WriteUInt(0,32)
-					net.WriteUInt(#ARCBank.JSON_Lang,32)
-					net.WriteUInt(0,32)
-					net.Send(ply)
-				end
-			end
+			ARCLib.SendAddonLanguage("ARCBank",ply)
+			ARCLib.SendAddonSettings("ARCBank",ply) 
 			if ARCBank.Settings["atm_darkmode_default"] then
 				if !table.HasValue(ARCBank.Disk.EmoPlayers,ply:SteamID()) && table.HasValue(ARCBank.Disk.BlindPlayers,ply:SteamID()) then
 					ply:SendLua("ARCBank.ATM_DarkTheme = false")
@@ -127,9 +116,6 @@ else
 				ply:SendLua("ARCBank.ATM_DarkTheme = "..tostring(table.HasValue(ARCBank.Disk.EmoPlayers,ply:SteamID())))
 			end
 			ply:SendLua("LocalPlayer().ARCBank_FullScreen = "..tostring(table.HasValue(ARCBank.Disk.OldPlayers,ply:SteamID())))
-			net.Start("arcbank_comm_client_settings")
-			net.WriteString(util.TableToJSON(ARCBank.Settings))
-			net.Send(ply)
 			for k,atm in pairs(ents.FindByClass("sent_arc_atm")) do
 				net.Start("ARCBank CustomATM")
 				net.WriteEntity(atm)

@@ -479,34 +479,6 @@ net.Receive( "arcbank_comm_playergroup", function(length,ply)
 	end
 end)
 
-util.AddNetworkString( "arcbank_comm_lang" )
-net.Receive( "arcbank_comm_lang", function(length,ply)
-	local part = net.ReadUInt(32)
-	local whole  = net.ReadUInt(32)
-	if whole == #ARCBank.JSON_Lang then
-		if part == ply._ARCBank_Lang_Place then
-			ply._ARCBank_Lang_Place = ply._ARCBank_Lang_Place + 1
-			net.Start("arcbank_comm_lang")
-			net.WriteInt(ARCBANK_ERROR_NONE,ARCBANK_ERRORBITRATE)
-			net.WriteUInt(ply._ARCBank_Lang_Place,32)
-			net.WriteUInt(#ARCBank.JSON_Lang,32)
-			local str = tostring(ARCBank.JSON_Lang[ply._ARCBank_Lang_Place])
-			net.WriteUInt(#str,32)
-			net.WriteData(str,#str)
-			net.Send(ply)
-		else
-			net.Start("arcbank_comm_lang")
-			net.WriteInt(ARCBANK_ERROR_CHUNK_MISMATCH,ARCBANK_ERRORBITRATE)
-			net.Send(ply)
-		end
-	elseif part == 0 && whole == 0 then
-		ply._ARCBank_Lang_Place = nil
-	else
-		net.Start("arcbank_comm_lang")
-		net.WriteInt(ARCBANK_ERROR_CHUNK_MISMATCH,ARCBANK_ERRORBITRATE)
-		net.Send(ply)
-	end
-end)
 ---------------------
 -- ADMIN FUNCTIONS --
 ---------------------
