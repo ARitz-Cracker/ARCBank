@@ -232,5 +232,5 @@ ARCBank.Commands = { --Make sure they are less then 16 chars long.$
 		hidden = false}
 }
 
-ARCLib.AddSettingConsoleCommands("ARCPhone")
+ARCLib.AddSettingConsoleCommands("ARCBank")
 ARCLib.AddAddonConcommand("ARCBank","arcbank") 
