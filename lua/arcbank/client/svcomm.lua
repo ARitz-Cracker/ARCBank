@@ -293,57 +293,7 @@ net.Receive( "arcbank_comm_playergroup", function(length)
 	ARCBank_EditPlayerGroup_IsBusy = nil
 end)
 
---Send languages to player
-local ARCBank_UpdateLang_Progress = 0
-local ARCBank_UpdateLang_Chunks = ""
-net.Receive( "arcbank_comm_lang", function(length)
-	local succ = net.ReadInt(ARCBANK_ERRORBITRATE)
-	local part = net.ReadUInt(32)
-	local whole = net.ReadUInt(32)
-	local chunklen = net.ReadUInt(32)
-	local str = ""
-	if (chunklen > 0) then
-		str = net.ReadData(chunklen)
-	end
-	if succ == 0 then
-		if part != ARCBank_UpdateLang_Progress then
-			MsgN("ARCBank: Chuck Mismatch Error while loading language. Possibly due to lag.")
-		else
-			ARCBank_UpdateLang_Chunks = ARCBank_UpdateLang_Chunks .. str
-			if part == whole then
-				local tab = util.JSONToTable(util.Decompress(ARCBank_UpdateLang_Chunks))
-				if tab then
-					ARCBANK_ERRORSTRINGS = ARCLib.RecursiveTableMerge(ARCBANK_ERRORSTRINGS,tab.errmsgs)
-					ARCBank.Msgs = ARCLib.RecursiveTableMerge(ARCBank.Msgs,tab.msgs)
-					ARCBank.SettingsDesc = ARCLib.RecursiveTableMerge(ARCBank.SettingsDesc,tab.settingsdesc)
-					for k,v in pairs(ents.FindByClass("weapon_arc_atmcard")) do
-						if ARCBank.Settings.name_long then
-							v.PrintName = ARCBank.Settings.name_long.." "..ARCBank.Msgs.Items.Card
-						end
-						v.Slot = ARCBank.Settings.card_weapon_slot or 1
-						v.SlotPos = ARCBank.Settings.card_weapon_slotpos or 4
-					end
-					for k,v in pairs(ents.FindByClass("weapon_arc_atmhack")) do
-						v.PrintName = ARCBank.Msgs.Items.Hacker
-					end
-					
-				end
-				ARCBank_UpdateLang_Chunks = ""
-				ARCBank_UpdateLang_Progress = 0
-				net.Start("arcbank_comm_lang")
-				net.WriteUInt(0,32)
-				net.WriteUInt(0,32)
-				net.SendToServer()
-			else
-				net.Start("arcbank_comm_lang")
-				net.WriteUInt(part,32)
-				net.WriteUInt(whole,32)
-				net.SendToServer()
-				ARCBank_UpdateLang_Progress = ARCBank_UpdateLang_Progress + 1
-			end
-		end
-	end
-end)
+
 
 ---------------------
 -- ADMIN FUNCTIONS --
@@ -499,28 +449,6 @@ net.Receive( "arcbank_comm_atmspawn", function(length)
 	end
 end)
 ARCBank.Settings = {}
-net.Receive( "arcbank_comm_client_settings", function(length)
-	ARCBank.Settings = util.JSONToTable(net.ReadString())
-end)
-
-net.Receive( "arcbank_comm_client_settings_changed", function(length)
-	local typ = net.ReadUInt(16)
-	local stn = net.ReadString()
-	local val
-	if typ == TYPE_NUMBER then
-		val = net.ReadDouble()
-	elseif typ == TYPE_STRING then
-		val = net.ReadString()
-	elseif typ == TYPE_BOOL then
-		val = tobool(net.ReadBit())
-	elseif typ == TYPE_TABLE then
-		net.ReadTable()
-	else
-		error("Server attempted to send unknown setting type. (wat)")
-	end
-	ARCBank.Settings[stn] = val
-end)
-
 
 net.Receive( "arcatmhack_gui", function(length)
 	local weapon = LocalPlayer():GetActiveWeapon()

@@ -29,7 +29,7 @@ net.Receive( "ARCATMHACK_BEGIN", function(length)
 	local hacker = net.ReadEntity()
 	local hack = tobool(net.ReadBit())
 	local orient = tobool(net.ReadBit())
-	if !IsValid(atm) || atm:GetClass() != "sent_arc_atm" || !IsValid(hacker) then return end
+	if !IsValid(atm) || (!atm.IsAFuckingATM && !atm.CasinoVault) || !IsValid(hacker) then return end
 	hacker.hacking = hack
 	hacker.ori = orient
 	if hack then

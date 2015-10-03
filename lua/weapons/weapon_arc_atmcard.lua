@@ -248,7 +248,7 @@ function SWEP:PrimaryAttack()
 	if !SERVER then return end
 	local trace = self.Owner:GetEyeTrace()
 	if trace.HitPos:Distance(self:GetPos()) < 75 then
-		if trace.Entity.IsAFuckingATM then
+		if isfunction(trace.Entity.ATM_USE) then
 			trace.Entity:ATM_USE(self.Owner)
 		else
 			ARCLib.NotifyPlayer(self.Owner,ARCBank.Msgs.UserMsgs.CardNo,NOTIFY_GENERIC,5,true)

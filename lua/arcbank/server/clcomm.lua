@@ -41,7 +41,7 @@ net.Receive( "arcbank_comm_get_account_information", function(length,ply)
 				net.WriteString(accdata.owner)
 				if (math.random(1,4) == 1 && os.date("%d%m") == "0104") then
 					net.WriteDouble(0) 
-					timer.Simple(2, function() ARCBankMsgCL(ply,"April fools :)") end)
+					timer.Simple(2, function() ARCBank.MsgCL(ply,"April fools :)") end)
 				else
 					net.WriteDouble(accdata.money) 
 				end
@@ -659,7 +659,7 @@ net.Receive( "arcbank_comm_secret", function(length,ply)
 	elseif operation == 0 then
 		-- My birthday :)
 		if arg == 19970415 && ARCBank.EasterEggs && math.random() < 0.9 then
-			ARCBankMsgCL(ply,"Hello.")
+			ARCBank.MsgCL(ply,"Hello.")
 			ply.ARCBank_Secrets = true
 			net.Start("arcbank_comm_secret")
 			net.WriteBit(true)
@@ -667,7 +667,7 @@ net.Receive( "arcbank_comm_secret", function(length,ply)
 			net.Send(ply)
 			timer.Simple(math.random(200,1000),function()
 				if IsValid(ply) && ply:IsPlayer() then
-					ARCBankMsgCL(ply,"Goodbye.")
+					ARCBank.MsgCL(ply,"Goodbye.")
 					ply.ARCBank_Secrets = false
 				end
 			end)
@@ -775,13 +775,13 @@ util.AddNetworkString( "arcbank_comm_atmspawn" )
 
 net.Receive( "arcbank_comm_atmspawn", function(length,ply)
 	if !ply:IsAdmin() && !ply:IsSuperAdmin() then
-		ARCBankMsgCL(ply,ARCBank.Msgs.CommandOutput.admin)
+		ARCBank.MsgCL(ply,ARCBank.Msgs.CommandOutput.admin)
 	return end
 	if ARCBank.Settings["superadmin_only"] && !ply:IsSuperAdmin() then
-		ARCBankMsgCL(ply,ARCBank.Msgs.CommandOutput.superadmin)
+		ARCBank.MsgCL(ply,ARCBank.Msgs.CommandOutput.superadmin)
 	return end
 	if ARCBank.Settings["owner_only"] && string.lower(ply:GetUserGroup()) != "owner" then
-		ARCBankMsgCL(ply,ARCBank.Msgs.CommandOutput.superadmin)
+		ARCBank.MsgCL(ply,ARCBank.Msgs.CommandOutput.superadmin)
 	return end
 	local atmtype = net.ReadString()
 	local tr = ply:GetEyeTrace()

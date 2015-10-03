@@ -1254,7 +1254,7 @@ function ENT:Draw()--Good
 		end
 		if self.UseDelay <= CurTime() && !self.Loading then
 			if pushedbutton then
-				--ARCBankMsgToServer("PLAYER USED ATM - "..tostring(self.Highlightbutton))
+				--ARCBank.MsgToServer("PLAYER USED ATM - "..tostring(self.Highlightbutton))
 				self.UseDelay = CurTime() + 0.3
 				if self.Highlightbutton <= 9 then
 					self:PushNumber(self.Highlightbutton)

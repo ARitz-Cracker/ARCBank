@@ -7,23 +7,23 @@
 -- After started, I realized that this... WILL BE HARD!	
 
 if system.IsLinux() then
-	ARCBankMsg(table.Random{"You know, I created a skin using LXDE that made ubuntu look like, sound like, and feel like windows 98.","GANOO/LOONIX","I <3 Linux","Linux is best","I don't like systemd."})
+	ARCBank.Msg(table.Random{"You know, I created a skin using LXDE that made ubuntu look like, sound like, and feel like windows 98.","GANOO/LOONIX","I <3 Linux","Linux is best","I don't like systemd."})
 	if file.Exists( "lua/bin/gmsv_mysqloo_linux.dll", "MOD") then
 		require( "mysqloo" )
 	end
 	if file.Exists( "lua/bin/gmsv_mysqloo_win32.dll", "MOD") then
-		ARCBankMsg("...You do realize that you tried to install a windows .dll on a linux machine, right?")
+		ARCBank.Msg("...You do realize that you tried to install a windows .dll on a linux machine, right?")
 	end
 elseif system.IsWindows() then
-	ARCBankMsg("Yeah, go ahead and waste system resources on GUIs that people won't see.")
+	ARCBank.Msg("Yeah, go ahead and waste system resources on GUIs that people won't see.")
 	if file.Exists( "lua/bin/gmsv_mysqloo_win32.dll", "MOD") then
 		require( "mysqloo" )
 	end
 	if file.Exists( "lua/bin/gmsv_mysqloo_linux.dll", "MOD") then
-		ARCBankMsg("...You do realize that you tried to install a linux .dll on a windows machine, right?")
+		ARCBank.Msg("...You do realize that you tried to install a linux .dll on a windows machine, right?")
 	end
 elseif system.IsOSX() then
-	ARCBankMsg("Is there even such a thing as an OSX server? Can it run mysqloo?")
+	ARCBank.Msg("Is there even such a thing as an OSX server? Can it run mysqloo?")
 end
 
 	
@@ -39,42 +39,42 @@ ARCBank.MySQL.DatabasePort = 3306
 
 
 function ARCBank.MySQL.Connect()
-	ARCBankMsg("INITIALIZING MYSQL SEQUENCE!")
+	ARCBank.Msg("INITIALIZING MYSQL SEQUENCE!")
 	if !mysqloo then
-		ARCBankMsg("MySQLOO Not found.")
-		ARCBankMsg("You might wanna go here. http://facepunch.com/showthread.php?t=1357773")
+		ARCBank.Msg("MySQLOO Not found.")
+		ARCBank.Msg("You might wanna go here. http://facepunch.com/showthread.php?t=1357773")
 		return
 	end
 	ARCBank.DataBase = mysqloo.connect( ARCBank.MySQL.Host, ARCBank.MySQL.Username, ARCBank.MySQL.Password, ARCBank.MySQL.DatabaseName, ARCBank.MySQL.DatabasePort )
 
 	function ARCBank.DataBase:onConnected()
 
-		ARCBankMsg( "Database connected. Good, nothing broke" )
+		ARCBank.Msg( "Database connected. Good, nothing broke" )
 		local gq = self:query( "CREATE TABLE IF NOT EXISTS arcbank_group_account(filename varchar(255),isgroup boolean,name varchar(255),owner varchar(255),money BIGINT,rank int);" )
 		function gq:onSuccess( data )
-			ARCBankMsg("Created/Verified Group account table!")
+			ARCBank.Msg("Created/Verified Group account table!")
 			local pq = ARCBank.DataBase:query( "CREATE TABLE IF NOT EXISTS arcbank_personal_account(filename varchar(255),isgroup boolean,name varchar(255),money BIGINT,rank int);" )
 			function pq:onSuccess( data )
-				ARCBankMsg("Created/Verified Personal account table!")
+				ARCBank.Msg("Created/Verified Personal account table!")
 				
 				local aq = ARCBank.DataBase:query( "CREATE TABLE IF NOT EXISTS arcbank_account_members(filename varchar(255),steamid varchar(255));" )
 				function aq:onSuccess( data )
-					ARCBankMsg("Created/Verified account members table!")
+					ARCBank.Msg("Created/Verified account members table!")
 					ARCBank.Loaded = true
 					ARCBank.Busy = false
-					ARCBankMsg("ARCBank is ready!")
+					ARCBank.Msg("ARCBank is ready!")
 					ARCBank.CapAccountRank();
 			
 				end
 				function aq:onError( err, sql )
-					ARCBankMsg( "Unable to create account members table. "..tostring(err) )
+					ARCBank.Msg( "Unable to create account members table. "..tostring(err) )
 				end
 				aq:start()
 				--lua_run ARCBank.CreateAccount(player.GetAll()[1],1,1000,"",function(err) MsgN(err) end)
 			end
 	
 			function pq:onError( err, sql )
-				ARCBankMsg( "Unable to create personal account table. "..tostring(err) )
+				ARCBank.Msg( "Unable to create personal account table. "..tostring(err) )
 			end
 			pq:start()
 			
@@ -82,7 +82,7 @@ function ARCBank.MySQL.Connect()
 		end
 	
 		function gq:onError( err, sql )
-			ARCBankMsg( "Unable to create group account table. "..tostring(err) )
+			ARCBank.Msg( "Unable to create group account table. "..tostring(err) )
 		end
 		gq:start()
 
@@ -90,11 +90,11 @@ function ARCBank.MySQL.Connect()
 
 	function ARCBank.DataBase:onConnectionFailed( err )
 
-		ARCBankMsg( "...SOMETHING BROKE! "..tostring(err) )
+		ARCBank.Msg( "...SOMETHING BROKE! "..tostring(err) )
 
 	end
 	
-	ARCBankMsg("Connecting to database. Hopefully nothing blows up....")
+	ARCBank.Msg("Connecting to database. Hopefully nothing blows up....")
 	ARCBank.DataBase:connect()
 
 end
@@ -105,32 +105,32 @@ function ARCBank.MySQL.Query(str,callback)
 	end
 	
 	function q:onError( err, sqlq )
-		ARCBankMsg( "MySQL ERROR: "..tostring(err))
-		ARCBankMsg( "In Query ("..tostring(sqlq)..")")
-		ARCBankMsg(tostring(#err).." - "..tostring(#sqlq))
+		ARCBank.Msg( "MySQL ERROR: "..tostring(err))
+		ARCBank.Msg( "In Query ("..tostring(sqlq)..")")
+		ARCBank.Msg(tostring(#err).." - "..tostring(#sqlq))
 		for _,plys in pairs(player.GetAll()) do
-			ARCBankMsgCL(plys,ARCBank.Msgs.CommandOutput.MySQL1)
-			ARCBankMsgCL(plys,ARCBank.Msgs.CommandOutput.MySQL2)
-			ARCBankMsgCL(plys,ARCBank.Msgs.CommandOutput.MySQL3)
+			ARCBank.MsgCL(plys,ARCBank.Msgs.CommandOutput.MySQL1)
+			ARCBank.MsgCL(plys,ARCBank.Msgs.CommandOutput.MySQL2)
+			ARCBank.MsgCL(plys,ARCBank.Msgs.CommandOutput.MySQL3)
 		end
 		callback(false,err)
 		ARCBank.Loaded = false
 		if string.find( err, "gone") then
-			ARCBankMsg( "This error can be ignored. Correcting...." )
-			ARCBankMsg( "If you have had this error too many times, try upping the timeout time on your MySQL server." )
+			ARCBank.Msg( "This error can be ignored. Correcting...." )
+			ARCBank.Msg( "If you have had this error too many times, try upping the timeout time on your MySQL server." )
 			timer.Simple(10,function()
 				if ARCBank.Loaded then return end
 				ARCBank.MySQL.Connect()
 				timer.Simple(5,function()
 					if !ARCBank.Loaded then
 						for _,plys in pairs(player.GetAll()) do
-							ARCBankMsgCL(plys,ARCBank.Msgs.CommandOutput.MySQL4)
+							ARCBank.MsgCL(plys,ARCBank.Msgs.CommandOutput.MySQL4)
 						end
 					end
 				end)
 			end)
 		else
-			ARCBankMsg( "REPORT THIS TO ARITZ CRACKER ASAP!!! (Unless it's your fault)" )
+			ARCBank.Msg( "REPORT THIS TO ARITZ CRACKER ASAP!!! (Unless it's your fault)" )
 		end
 	end
 
@@ -162,17 +162,17 @@ end
 
 ARCBank.Commands["mysql"] = {
 	command = function(ply,args) 
-		if !ARCBank.Loaded then ARCBankMsgCL(ply,"System reset required!") return end -- This is just to check if the ARCBank system is working properly. 
-		if !ARCBank.IsMySQLEnabled() then ARCBankMsgCL(ply,"MySQL must be enabled.") return end
+		if !ARCBank.Loaded then ARCBank.MsgCL(ply,"System reset required!") return end -- This is just to check if the ARCBank system is working properly. 
+		if !ARCBank.IsMySQLEnabled() then ARCBank.MsgCL(ply,"MySQL must be enabled.") return end
 		if (IsValid(ply) || ply:IsPlayer()) && !ply:SteamID() == "STEAM_0:0:18610144" then -- For Singleplayer and localhost testing. Note: Remove SteamID when released.
-			ARCBankMsgCL(ply,"This command cannot be used by a player.")
+			ARCBank.MsgCL(ply,"This command cannot be used by a player.")
 			return
 		end
 		if args[1] == "copy_to_database" then
 			ARCBank.GetAllAccountsUnordered(false,function(errcode,accounts)
-				ARCBankMsg(ARCBank.Msgs.CommandOutput.MySQLCopy)
+				ARCBank.Msg(ARCBank.Msgs.CommandOutput.MySQLCopy)
 				for _,plys in pairs(player.GetAll()) do
-					ARCBankMsgCL(plys,ARCBank.Msgs.CommandOutput.MySQLCopy)
+					ARCBank.MsgCL(plys,ARCBank.Msgs.CommandOutput.MySQLCopy)
 				end
 				ARCBank.Busy = true
 				if errcode == 0 then
@@ -195,26 +195,26 @@ ARCBank.Commands["mysql"] = {
 					
 					local function recrusivecopy(num)
 						if num > #Queries then 
-								ARCBankMsg(ARCBANK_ERRORSTRINGS[0])
+								ARCBank.Msg(ARCBANK_ERRORSTRINGS[0])
 								for _,plys in pairs(player.GetAll()) do
-									ARCBankMsgCL(plys,ARCBANK_ERRORSTRINGS[0])
+									ARCBank.MsgCL(plys,ARCBANK_ERRORSTRINGS[0])
 								end
 								ARCBank.Busy = false
 							return 
 						end
 						ARCBank.MySQL.Query(Queries[num],function(didwork,reason)
 							if didwork then
-								ARCBankMsg(ARCBank.Msgs.ATMMsgs.LoadingMsg.." (%"..tostring(math.floor((num/#Queries)*100))..")")
+								ARCBank.Msg(ARCBank.Msgs.ATMMsgs.LoadingMsg.." (%"..tostring(math.floor((num/#Queries)*100))..")")
 								for _,plys in pairs(player.GetAll()) do
-									ARCBankMsgCL(plys,ARCBank.Msgs.ATMMsgs.LoadingMsg.." (%"..tostring(math.floor((num/#Queries)*100))..")")
+									ARCBank.MsgCL(plys,ARCBank.Msgs.ATMMsgs.LoadingMsg.." (%"..tostring(math.floor((num/#Queries)*100))..")")
 								end
 								iii = iii + 1
 								recrusivecopy(iii)
 							else
 								ARCBank.Loaded = false
-								ARCBankMsg("[ERROR!] (%"..tostring(math.floor((num/#Queries)*100))..") Halting ARCBank. System reset required.")
+								ARCBank.Msg("[ERROR!] (%"..tostring(math.floor((num/#Queries)*100))..") Halting ARCBank. System reset required.")
 								for _,plys in pairs(player.GetAll()) do
-									ARCBankMsgCL(plys,"[ERROR!] (%"..tostring(math.floor((num/#Queries)*100))..") Halting ARCBank. System reset required.")
+									ARCBank.MsgCL(plys,"[ERROR!] (%"..tostring(math.floor((num/#Queries)*100))..") Halting ARCBank. System reset required.")
 								end
 							end
 						end)
@@ -223,13 +223,13 @@ ARCBank.Commands["mysql"] = {
 					
 
 				else
-					ARCBankMsg("Failed to get all accounts. Error code "..tostring(errcode))
+					ARCBank.Msg("Failed to get all accounts. Error code "..tostring(errcode))
 				end
 			end)
 		elseif args[1] == "copy_from_database" then
-			ARCBankMsg(ARCBank.Msgs.CommandOutput.MySQLCopyFrom)
+			ARCBank.Msg(ARCBank.Msgs.CommandOutput.MySQLCopyFrom)
 			for _,plys in pairs(player.GetAll()) do
-				ARCBankMsgCL(plys,ARCBank.Msgs.CommandOutput.MySQLCopyFrom)
+				ARCBank.MsgCL(plys,ARCBank.Msgs.CommandOutput.MySQLCopyFrom)
 			end
 			ARCBank.GetAllAccountsUnordered(true,function(errcode,accounts)
 				ARCBank.Busy = true
@@ -245,15 +245,15 @@ ARCBank.Commands["mysql"] = {
 							file.Write( ARCBank.Dir.."/accounts/personal/"..v.filename..".txt", util.TableToJSON(v) )
 						end
 					end
-					ARCBankMsg(ARCBANK_ERRORSTRINGS[0])
+					ARCBank.Msg(ARCBANK_ERRORSTRINGS[0])
 					for _,plys in pairs(player.GetAll()) do
-						ARCBankMsgCL(plys,ARCBANK_ERRORSTRINGS[0])
+						ARCBank.MsgCL(plys,ARCBANK_ERRORSTRINGS[0])
 					end
 					ARCBank.Busy = false
 				else
-					ARCBankMsg("[ERROR!] "..tostring(errcode))
+					ARCBank.Msg("[ERROR!] "..tostring(errcode))
 					for _,plys in pairs(player.GetAll()) do
-						ARCBankMsgCL(plys,"[ERROR!] "..tostring(errcode))
+						ARCBank.MsgCL(plys,"[ERROR!] "..tostring(errcode))
 					end
 				end
 			end)

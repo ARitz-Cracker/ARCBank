@@ -10,21 +10,21 @@ if ARCBank then
 	local ATMCreationTable = {}
 	ARCBank.Commands["create_atm"] = {
 		command = function(ply,args) 
-			if !ARCBank.Loaded then ARCBankMsgCL(ply,"System reset required!") return end
+			if !ARCBank.Loaded then ARCBank.MsgCL(ply,"System reset required!") return end
 			if IsValid(ATMCreatorProp) then
-				ARCBankMsgCL(ply,"The ATM Creator is already in use!")
+				ARCBank.MsgCL(ply,"The ATM Creator is already in use!")
 				return
 			end
 			
 			if !args[1] || args[1] == "" then
-				ARCBankMsgCL(ply,"Your custom ATM needs a name.")
+				ARCBank.MsgCL(ply,"Your custom ATM needs a name.")
 				return
 			else
 				if file.Exists(ARCBank.Dir.."/custom_atms/"..args[1]..".txt","DATA") then
 					ATMCreationTable = util.JSONToTable(file.Read(ARCBank.Dir.."/custom_atms/"..args[1]..".txt","DATA"))
 				else
 					if !args[2] || !util.IsValidModel( args[2] ) then
-						ARCBankMsgCL(ply,"The specified custom ATM file doesn't exist, and the specified model isn't valid.")
+						ARCBank.MsgCL(ply,"The specified custom ATM file doesn't exist, and the specified model isn't valid.")
 						return
 					else
 						ATMCreationTable.Name = string.lower(string.gsub(args[1], "[^_%w]", "_"))

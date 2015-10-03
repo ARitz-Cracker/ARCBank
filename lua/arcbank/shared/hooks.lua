@@ -236,7 +236,7 @@ else
 	hook.Add( "ARCLoad_OnUpdate", "ARCBank RemoveATMs",function(loaded)
 		if loaded != "ARCBank" then return end
 		for k,v in pairs(player.GetAll()) do 
-			ARCBankMsgCL(v,"Updating...") 
+			ARCBank.MsgCL(v,"Updating...") 
 		end
 		ARCBank.SaveDisk()
 		ARCBank.ClearATMs()

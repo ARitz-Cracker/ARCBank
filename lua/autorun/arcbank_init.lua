@@ -6,25 +6,26 @@
 --137164355
 
 -- Remind me to say when I'm busy --
+ARCBank = ARCBank or {}
 
-function ARCBankMsg(msg)
-	if ARCBank && ARCBank.Settings && ARCBank.Settings.name then
+function ARCBank.Msg(msg)
+	if ARCBank.Settings && ARCBank.Settings.name then
 		Msg(ARCBank.Settings.name..": "..tostring(msg).."\n")
 	else
 		Msg("ARCBank: "..tostring(msg).."\n")
 	end
-	if !ARCBank then return end
 	if ARCBank.LogFileWritten then
 		file.Append(ARCBank.LogFile, os.date("%d-%m-%Y %H:%M:%S").." > "..tostring(msg).."\r\n")
 	end
 end
-ARCBankMsg("Running...\n ____ ____ _ ___ ___     ____ ____ ____ ____ _  _ ____ ____    ___  ____ _  _ _  _ _ _  _ ____ \n |__| |__/ |  |    /     |    |__/ |__| |    |_/  |___ |__/    |__] |__| |\\ | |_/  | |\\ | | __ \n |  | |  \\ |  |   /__    |___ |  \\ |  | |___ | \\_ |___ |  \\    |__] |  | | \\| | \\_ | | \\| |__] \n")
-ARCBankMsg(table.Random({"Super fukin' Sexy edition!","The most realistic ATM system you'll ever see!","...I can never get a vacation...","I love you.","Isn't this amazing?","That's one fiiiine addon you got there!","Update, Update, Update!","You can ACTUALLY use an ATM!","Fixin' Bugs!"}))
-ARCBankMsg("© Copyright 2014 Aritz Beobide-Cardinal (ARitz Cracker) All rights reserved.")
+ARCBank.Msg("Running...\n ____ ____ _ ___ ___     ____ ____ ____ ____ _  _ ____ ____    ___  ____ _  _ _  _ _ _  _ ____ \n |__| |__/ |  |    /     |    |__/ |__| |    |_/  |___ |__/    |__] |__| |\\ | |_/  | |\\ | | __ \n |  | |  \\ |  |   /__    |___ |  \\ |  | |___ | \\_ |___ |  \\    |__] |  | | \\| | \\_ | | \\| |__] \n")
+ARCBank.Msg(table.Random({"Super fukin' Sexy edition!","The most realistic ATM system you'll ever see!","...I can never get a vacation...","I love you.","Isn't this amazing?","That's one fiiiine addon you got there!","Update, Update, Update!","You can ACTUALLY use an ATM!","Fixin' Bugs!"}))
+ARCBank.Msg("© Copyright 2014 Aritz Beobide-Cardinal (ARitz Cracker) All rights reserved.")
 
-ARCBank = ARCBank or {}
+
 ARCBank.Update = "Right Now"
 ARCBank.Version = "Developer Version"
+ARCBank.ARCSlotsReady = true
 
 ARCBank.About = [[      
              *** ARitz Cracker Bank ***
@@ -130,8 +131,8 @@ ARCBANK_ACCOUNTSTRINGS[6] = "group_standard"
 ARCBANK_GROUPACCOUNTS_PREMIUM = 7
 ARCBANK_ACCOUNTSTRINGS[7] = "group_premium"
 ARCBANK_ACCOUNTBITRATE = 4
-ARCBankMsg("Version: "..ARCBank.Version)
-ARCBankMsg("Updated on: "..ARCBank.Update)
+ARCBank.Msg("Version: "..ARCBank.Version)
+ARCBank.Msg("Updated on: "..ARCBank.Update)
 if SERVER then
 	resource.AddFile( "materials/models/crack_machine/ads_1.vtf" ) 
 	resource.AddFile( "materials/models/crack_machine/ads_1_dupe.vtf" ) 
@@ -141,49 +142,49 @@ if SERVER then
 		resource.AddWorkshop("200318235")
 	end
 	AddCSLuaFile() -----------------------------------------
-	ARCBankMsg("####    Loading ARCBank Lua files..     ####")
+	ARCBank.Msg("####    Loading ARCBank Lua files..     ####")
 	local sharedfiles, _ = file.Find( "arcbank/shared/*.lua", "LUA" )
 	for i, v in ipairs( sharedfiles ) do
-		ARCBankMsg("#### Loading: /arcbank/shared/"..v)
+		ARCBank.Msg("#### Loading: /arcbank/shared/"..v)
 		AddCSLuaFile( "arcbank/shared/"..v )
 		include( "arcbank/shared/"..v )
 	end
 	local serverfiles, _ = file.Find( "arcbank/server/*.lua", "LUA" )
 	for i, v in ipairs( serverfiles ) do
-		ARCBankMsg("#### Loading: /arcbank/server/"..v)
+		ARCBank.Msg("#### Loading: /arcbank/server/"..v)
 		include( "arcbank/server/"..v )
 	end
 	local clientfiles, _ = file.Find( "arcbank/client/*.lua", "LUA" )
 	for i, v in ipairs( clientfiles ) do
-		ARCBankMsg("#### Sending: /arcbank/client/"..v)
+		ARCBank.Msg("#### Sending: /arcbank/client/"..v)
 		AddCSLuaFile( "arcbank/client/"..v )
 		--include( "arcbank/client/"..v )
 	end
-	ARCBankMsg("####     Loading ARCBank Plugins...     ####")
+	ARCBank.Msg("####     Loading ARCBank Plugins...     ####")
 	local sharedfiles, _ = file.Find( "arcbank_plugins/shared/*.lua", "LUA" )
 	for i, v in ipairs( sharedfiles ) do
-		ARCBankMsg("#### Loading: /arcbank_plugins/shared/"..v)
+		ARCBank.Msg("#### Loading: /arcbank_plugins/shared/"..v)
 		AddCSLuaFile( "arcbank_plugins/shared/"..v )
 		include( "arcbank/shared/"..v )
 	end
 	local serverfiles, _ = file.Find( "arcbank_plugins/server/*.lua", "LUA" )
 	for i, v in ipairs( serverfiles ) do
-		ARCBankMsg("#### Loading: /arcbank_plugins/server/"..v)
+		ARCBank.Msg("#### Loading: /arcbank_plugins/server/"..v)
 		include( "arcbank_plugins/server/"..v )
 	end
 	
 	local clientfiles, _ = file.Find( "arcbank_plugins/client/*.lua", "LUA" )
 	for i, v in ipairs( clientfiles ) do
-		ARCBankMsg("#### Sending: /arcbank_plugins/client/"..v)
+		ARCBank.Msg("#### Sending: /arcbank_plugins/client/"..v)
 		AddCSLuaFile( "arcbank_plugins/client/"..v )
 		--include( "arcbank/client/"..v )
 	end
 	
-	function ARCBankMsgCL(ply,msg)
+	function ARCBank.MsgCL(ply,msg)
 		--net.Start( "ARCBank_Msg" )
 		--net.WriteString( msg )
 		if !ply || !ply:IsPlayer() then
-			ARCBankMsg(tostring(msg))
+			ARCBank.Msg(tostring(msg))
 		else
 			if ARCBank.Settings && ARCBank.Settings.name then
 				ply:PrintMessage( HUD_PRINTTALK, ARCBank.Settings.name..": "..tostring(msg))
@@ -194,33 +195,33 @@ if SERVER then
 		end
 	end
 
-	ARCBankMsg("####  Serverside Lua Loading Complete.  ####")
+	ARCBank.Msg("####  Serverside Lua Loading Complete.  ####")
 	hook.Add( "InitPostEntity", "ARCBank Load", ARCBank.Load )
 else
-	ARCBankMsg("####     Loading Clientside Files..     ####")
+	ARCBank.Msg("####     Loading Clientside Files..     ####")
 	local sharedfiles, _ = file.Find( "arcbank/shared/*.lua", "LUA" )
 	for i, v in pairs( sharedfiles ) do
-		ARCBankMsg("#### Loading: /arcbank/shared/"..v)
+		ARCBank.Msg("#### Loading: /arcbank/shared/"..v)
 		include( "arcbank/shared/"..v )
 	end
 	local clientfiles, _ = file.Find( "arcbank/client/*.lua", "LUA" )
 	for i, v in pairs( clientfiles ) do
-		ARCBankMsg("#### Loading: /arcbank/client/"..v)
+		ARCBank.Msg("#### Loading: /arcbank/client/"..v)
 		include( "arcbank/client/"..v )
 	end
-	ARCBankMsg("####    Loading Clientside Plugins..    ####")
+	ARCBank.Msg("####    Loading Clientside Plugins..    ####")
 	local sharedfiles, _ = file.Find( "arcbank_plugins/shared/*.lua", "LUA" )
 	for i, v in pairs( sharedfiles ) do
-		ARCBankMsg("#### Loading: /arcbank_plugins/shared/"..v)
+		ARCBank.Msg("#### Loading: /arcbank_plugins/shared/"..v)
 		include( "arcbank_plugins/shared/"..v )
 	end
 	local clientfiles, _ = file.Find( "arcbank_plugins/client/*.lua", "LUA" )
 	for i, v in pairs( clientfiles ) do
-		ARCBankMsg("#### Loading: /arcbank_plugins/client/"..v)
+		ARCBank.Msg("#### Loading: /arcbank_plugins/client/"..v)
 		include( "arcbank_plugins/client/"..v )
 	end
 
 	
-	ARCBankMsg("####  Clientside Lua Loading Complete.  ####")
+	ARCBank.Msg("####  Clientside Lua Loading Complete.  ####")
 end
 

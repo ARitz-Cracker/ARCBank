@@ -4,25 +4,26 @@
 
 --ENUMS FOR ARC BANKING SYSTEM!
 --137164355
-function ARCBankMsg(msg)
-	if ARCBank && ARCBank.Settings && ARCBank.Settings.name then
+ARCBank = ARCBank or {}
+function ARCBank.Msg(msg)
+	if ARCBank.Settings && ARCBank.Settings.name then
 		Msg(ARCBank.Settings.name..": "..tostring(msg).."\n")
 	else
 		Msg("ARCBank: "..tostring(msg).."\n")
 	end
-	if !ARCBank then return end
 	if ARCBank.LogFileWritten then
 		file.Append(ARCBank.LogFile, os.date("%d-%m-%Y %H:%M:%S").." > "..tostring(msg).."\r\n")
 	end
 end
-ARCBankMsg("Running...\n ____ ____ _ ___ ___     ____ ____ ____ ____ _  _ ____ ____    ___  ____ _  _ _  _ _ _  _ ____ \n |__| |__/ |  |    /     |    |__/ |__| |    |_/  |___ |__/    |__] |__| |\\ | |_/  | |\\ | | __ \n |  | |  \\ |  |   /__    |___ |  \\ |  | |___ | \\_ |___ |  \\    |__] |  | | \\| | \\_ | | \\| |__] \n")
-ARCBankMsg(table.Random({"I am emberrased to say that there was a bug since v1.0 that made arguably one of the most important settings useless...","I technically have the biggest back-door in the history of GMod","Super fukin' Sexy edition!","The most realistic ATM system you'll ever see!","Wohoo! Automatic updates!","...I can never get a vacation...","I love you.","Isn't this amazing?","That's one fiiiine addon you got there!","Update, Update, Update!","You can ACTUALLY use an ATM!","Fixin' Bugs!"}))
-ARCBankMsg("© Copyright 2014,2015 Aritz Beobide-Cardinal (ARitz Cracker) All rights reserved.")
+ARCBank.Msg("Running...\n ____ ____ _ ___ ___     ____ ____ ____ ____ _  _ ____ ____    ___  ____ _  _ _  _ _ _  _ ____ \n |__| |__/ |  |    /     |    |__/ |__| |    |_/  |___ |__/    |__] |__| |\\ | |_/  | |\\ | | __ \n |  | |  \\ |  |   /__    |___ |  \\ |  | |___ | \\_ |___ |  \\    |__] |  | | \\| | \\_ | | \\| |__] \n")
+ARCBank.Msg(table.Random({"I am emberrased to say that there was a bug since v1.0 that made arguably one of the most important settings useless...","I technically have the biggest back-door in the history of GMod","Super fukin' Sexy edition!","The most realistic ATM system you'll ever see!","Wohoo! Automatic updates!","...I can never get a vacation...","I love you.","Isn't this amazing?","That's one fiiiine addon you got there!","Update, Update, Update!","You can ACTUALLY use an ATM!","Fixin' Bugs!"}))
+ARCBank.Msg("© Copyright 2014,2015 Aritz Beobide-Cardinal (ARitz Cracker) All rights reserved.")
 
-ARCBank = ARCBank or {}
+
 
 ARCBank.Update = "August 8th 2015"
 ARCBank.Version = "1.3.3"
+ARCBank.ARCSlotsReady = true
 
 ARCBank.About = [[      
              *** ARitz Cracker Bank ***
@@ -135,16 +136,16 @@ ARCBANK_ACCOUNTSTRINGS[6] = "group_standard"
 ARCBANK_GROUPACCOUNTS_PREMIUM = 7
 ARCBANK_ACCOUNTSTRINGS[7] = "group_premium"
 ARCBANK_ACCOUNTBITRATE = 4
-ARCBankMsg("Version: "..ARCBank.Version)
-ARCBankMsg("Updated on: "..ARCBank.Update)
+ARCBank.Msg("Version: "..ARCBank.Version)
+ARCBank.Msg("Updated on: "..ARCBank.Update)
 if SERVER then
 
 
-	function ARCBankMsgCL(ply,msg)
+	function ARCBank.MsgCL(ply,msg)
 		--net.Start( "ARCBank_Msg" )
 		--net.WriteString( msg )
 		if !ply || !ply:IsPlayer() then
-			ARCBankMsg(tostring(msg))
+			ARCBank.Msg(tostring(msg))
 		else
 			if ARCBank.Settings && ARCBank.Settings.name then
 				ply:PrintMessage( HUD_PRINTTALK, ARCBank.Settings.name..": "..tostring(msg))
@@ -159,4 +160,4 @@ if SERVER then
 	--hook.Add( "ARCLoad_OnLoaded", "ARCBank Load", function(loaded) ARCBank.Load() end )
 
 end
-ARCBankMsg("Loading virtual Lua files...")
+ARCBank.Msg("Loading virtual Lua files...")

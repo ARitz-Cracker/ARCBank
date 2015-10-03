@@ -54,7 +54,7 @@ function SWEP:PrimaryAttack()
 		timer.Simple(0.3,function() 
 			local trace = self.Owner:GetEyeTrace()
 			local side = trace.Entity:WorldToLocal(trace.HitPos):__index("y")
-			if (trace.HitPos:Distance(self.Owner:GetShootPos()) <= 25 && trace.Entity.IsAFuckingATM && !trace.Entity.InUse && !trace.Entity.Hacked && ARCBank.Loaded && trace.Entity.HackRecover < CurTime()) && (side > 13.2 || side < -20.2) then
+			if (trace.HitPos:Distance(self.Owner:GetShootPos()) <= 25 && (trace.Entity.IsAFuckingATM || trace.Entity.CasinoVault) && !trace.Entity.InUse && !trace.Entity.Hacked && ARCBank.Loaded && trace.Entity.HackRecover < CurTime()) && (side > 13.2 || side < -20.2) then
 				self.Weapon:SendWeaponAnim( ACT_SLAM_TRIPMINE_ATTACH2 ) 
 				if !SERVER then return end
 				local trace = self.Owner:GetEyeTrace()
@@ -106,7 +106,7 @@ function SWEP:Think()
 			side = trace.Entity:WorldToLocal(trace.HitPos):__index("y")
 		end
 		--MsgN(ARCBank.Enabled)
-		if (IsValid(trace.Entity) && trace.HitPos:Distance(self.Owner:GetShootPos()) <= 25 && trace.Entity:GetClass() == "sent_arc_atm" && !trace.Entity.InUse && !trace.Entity.Hacked && ARCBank.Loaded && trace.Entity.HackRecover < CurTime()) && (side > 13.2 || side < -20.2) then
+		if (IsValid(trace.Entity) && trace.HitPos:Distance(self.Owner:GetShootPos()) <= 25 && (trace.Entity.IsAFuckingATM || trace.Entity.CasinoVault) && !trace.Entity.InUse && !trace.Entity.Hacked && ARCBank.Loaded && trace.Entity.HackRecover < CurTime()) && (side > 13.2 || side < -20.2) then
 			if !self.Aiming then
 				self.Aiming = true
 				self.Weapon:SendWeaponAnim( ACT_SLAM_THROW_TO_TRIPMINE_ND )

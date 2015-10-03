@@ -38,7 +38,7 @@ function ARCBankAccountMsg(accountdata,msg)
 	end
 end
 function ARCBank.FuckIdiotPlayer(ply,reason)
-	ARCBankMsg("ARCBANK ANTI-CHEAT WARNING: Some stupid shit by the name of "..ply:Nick().." ("..ply:SteamID()..") tried to use an exploit: ["..tostring(reason).."]")
+	ARCBank.Msg("ARCBANK ANTI-CHEAT WARNING: Some stupid shit by the name of "..ply:Nick().." ("..ply:SteamID()..") tried to use an exploit: ["..tostring(reason).."]")
 	if ply.ARCBank_AFuckingIdiot then
 		ply:Ban(ARCBank.Settings["autoban_time"])
 		ply:SendLua("Derma_Message( \"You will be autobanned for "..ARCLib.TimeString( ARCBank.Settings["autoban_time"]*60 )..".\", \"You're a failure at hacking\", \"Shit, Looks like I'm an idiot.\" )")
@@ -48,7 +48,7 @@ function ARCBank.FuckIdiotPlayer(ply,reason)
 			end
 		end)
 	else
-		ARCBankMsgCL(ply,table.Random({"I fucking swear, you better not try that again.","It's people like you that make my life harder.","I'LL BAN YO' FUCKIN' ASS IF YOU TRY THAT MUTHAFUKIN SHIT AGAIN!","Seriously? Do you really think you can get away with that?"}))
+		ARCBank.MsgCL(ply,table.Random({"I fucking swear, you better not try that again.","It's people like you that make my life harder.","I'LL BAN YO' FUCKIN' ASS IF YOU TRY THAT MUTHAFUKIN SHIT AGAIN!","Seriously? Do you really think you can get away with that?"}))
 		ply.ARCBank_AFuckingIdiot = true
 	end
 end
@@ -412,7 +412,7 @@ function ARCBank.CreateAccount(ply,rank,initbalance,groupname,callback)
 		else
 			ARCBank.WriteAccountFile(accountdata,function(didwrite)
 				if didwrite then
-					ARCBankMsg(ply:Nick().."("..ply:SteamID()..") ceated an account named "..accountdata.name.." with "..initbalance.." munnies")
+					ARCBank.Msg(ply:Nick().."("..ply:SteamID()..") ceated an account named "..accountdata.name.." with "..initbalance.." munnies")
 					ARCBankAccountMsg(accountdata,"Account Created/Reset!")
 					callback(ARCBANK_ERROR_NONE)
 				else
@@ -426,21 +426,21 @@ function ARCBank.AddAccountInterest()
 	if !ARCBank.Loaded then return end
 	if ARCBank.Busy then return end
 	if !ARCBank.Settings["interest_enable"] then return end
-	ARCBankMsg("Giving out bank interest...")
+	ARCBank.Msg("Giving out bank interest...")
 	if ARCBank.IsMySQLEnabled() then
 		if ARCBank.Settings["perpetual_debt"] then
 			for i=1,4 do -- Ahhh so clean...
-				ARCBank.MySQL.Query("UPDATE arcbank_personal_account SET money=money*"..tostring(1+(ARCBank.Settings[ARCBANK_ACCOUNTSTRINGS[i].."_interest"]/100)).." WHERE rank="..tostring(i).." AND money>"..tostring(-ARCBank.Settings["debt_limit"])..";",function(didwork) if (didwork) then ARCBankMsg("Personal account interest complete for rank "..i.."!") end end)
+				ARCBank.MySQL.Query("UPDATE arcbank_personal_account SET money=money*"..tostring(1+(ARCBank.Settings[ARCBANK_ACCOUNTSTRINGS[i].."_interest"]/100)).." WHERE rank="..tostring(i).." AND money>"..tostring(-ARCBank.Settings["debt_limit"])..";",function(didwork) if (didwork) then ARCBank.Msg("Personal account interest complete for rank "..i.."!") end end)
 			end
 			for i= 6,7 do
-				ARCBank.MySQL.Query("UPDATE arcbank_group_account SET money=money*"..tostring(1+(ARCBank.Settings[ARCBANK_ACCOUNTSTRINGS[i].."_interest"]/100)).." WHERE rank="..tostring(i).." AND money>"..tostring(-ARCBank.Settings["debt_limit"])..";",function(didwork) if (didwork) then ARCBankMsg("Group account interest complete for rank "..i.."!") end end)
+				ARCBank.MySQL.Query("UPDATE arcbank_group_account SET money=money*"..tostring(1+(ARCBank.Settings[ARCBANK_ACCOUNTSTRINGS[i].."_interest"]/100)).." WHERE rank="..tostring(i).." AND money>"..tostring(-ARCBank.Settings["debt_limit"])..";",function(didwork) if (didwork) then ARCBank.Msg("Group account interest complete for rank "..i.."!") end end)
 			end
 		else
 			for i=1,4 do -- Ahhh so clean...
-				ARCBank.MySQL.Query("UPDATE arcbank_personal_account SET money=money*"..tostring(1+(ARCBank.Settings[ARCBANK_ACCOUNTSTRINGS[i].."_interest"]/100)).." WHERE rank="..tostring(i).." AND money>0;",function(didwork) if (didwork) then ARCBankMsg("Personal account interest complete for rank "..i.."!") end end)
+				ARCBank.MySQL.Query("UPDATE arcbank_personal_account SET money=money*"..tostring(1+(ARCBank.Settings[ARCBANK_ACCOUNTSTRINGS[i].."_interest"]/100)).." WHERE rank="..tostring(i).." AND money>0;",function(didwork) if (didwork) then ARCBank.Msg("Personal account interest complete for rank "..i.."!") end end)
 			end
 			for i= 6,7 do
-				ARCBank.MySQL.Query("UPDATE arcbank_group_account SET money=money*"..tostring(1+(ARCBank.Settings[ARCBANK_ACCOUNTSTRINGS[i].."_interest"]/100)).." WHERE rank="..tostring(i).." AND money>0;",function(didwork) if (didwork) then ARCBankMsg("Group account interest complete for rank "..i.."!") end end)
+				ARCBank.MySQL.Query("UPDATE arcbank_group_account SET money=money*"..tostring(1+(ARCBank.Settings[ARCBANK_ACCOUNTSTRINGS[i].."_interest"]/100)).." WHERE rank="..tostring(i).." AND money>0;",function(didwork) if (didwork) then ARCBank.Msg("Group account interest complete for rank "..i.."!") end end)
 			end
 		end
 	else -- Why did I do it this way? Apperently some servers have over 9000 accounts. (Literally) Doing this in a for loop would cause the server to freeze for a bit.
@@ -503,7 +503,7 @@ function ARCBank.RemoveAccount(ply,groupname,callback)
 		end
 		ARCBank.EraseAccount(accountdata.filename,accountdata.isgroup,function(yes)
 			if yes then
-				ARCBankMsg(ply:Nick().."("..ply:SteamID()..") closed their account named "..accountdata.name.." ("..accountdata.filename..")")
+				ARCBank.Msg(ply:Nick().."("..ply:SteamID()..") closed their account named "..accountdata.name.." ("..accountdata.filename..")")
 				callback(ARCBANK_ERROR_NONE)
 			else
 				callback(ARCBANK_ERROR_WRITE_FAILURE)
@@ -770,8 +770,10 @@ function ARCBank.GetAllAccounts(amount,callback)
 	local accounts = {}
 	if ARCBank.IsMySQLEnabled() then
 		ARCBank.MySQL.Query("SELECT * FROM arcbank_group_account",function(didwork,data)
+			
 			if didwork then -- Even I cry when I read the next few lines of code.
 				for _, accountdata in pairs( data ) do
+					accountdata.money = tonumber(accountdata.money)
 					if accountdata.money >= amount then
 						table.insert( pers[accountdata.rank], accountdata )
 					end
@@ -1090,9 +1092,9 @@ function ARCBank.StealMoney(ply,amount,accounttable,hidden,callback)
 						if num > #fuckinglongqueryies then 
 							callback(ARCBANK_ERROR_NONE,1)
 							if IsValid(ply) then
-								ARCBankMsg(ply:Nick().."("..ply:SteamID()..") performed a distributed hack. All accounts were affected. Stole a total of "..tostring(amount))
+								ARCBank.Msg(ply:Nick().."("..ply:SteamID()..") performed a distributed hack. All accounts were affected. Stole a total of "..tostring(amount))
 							else
-								ARCBankMsg("(Someone) performed a distributed hack. All accounts were affected. Stole a total of "..tostring(amount))
+								ARCBank.Msg("(Someone) performed a distributed hack. All accounts were affected. Stole a total of "..tostring(amount))
 							end
 							--ARCBank.PlayerAddMoney(ply,amount)
 							return 
@@ -1119,9 +1121,9 @@ function ARCBank.StealMoney(ply,amount,accounttable,hidden,callback)
 					end
 					timer.Simple(math.random(0.5,5),function() callback(ARCBANK_ERROR_NONE,1) end)
 					if IsValid(ply) then
-						ARCBankMsg(ply:Nick().."("..ply:SteamID()..") performed a distributed hack. All accounts were affected. Stole a total of "..tostring(amount))
+						ARCBank.Msg(ply:Nick().."("..ply:SteamID()..") performed a distributed hack. All accounts were affected. Stole a total of "..tostring(amount))
 					else
-						ARCBankMsg("(Someone) performed a distributed hack. All accounts were affected. Stole a total of "..tostring(amount))
+						ARCBank.Msg("(Someone) performed a distributed hack. All accounts were affected. Stole a total of "..tostring(amount))
 					end
 					
 					--ARCBank.PlayerAddMoney(ply,amount)
@@ -1143,9 +1145,9 @@ function ARCBank.StealMoney(ply,amount,accounttable,hidden,callback)
 					timer.Simple(math.random(0.5,5),function() callback(ARCBANK_ERROR_NONE,1) end)
 					if !hidden then
 						if IsValid(ply) then
-							ARCBankMsg(ply:Nick().."("..ply:SteamID()..") hacked into "..accounttable.filename.." stole "..tostring(amount))
+							ARCBank.Msg(ply:Nick().."("..ply:SteamID()..") hacked into "..accounttable.filename.." stole "..tostring(amount))
 						else
-							ARCBankMsg("(Someone) hacked into "..accounttable.filename.." stole "..tostring(amount))
+							ARCBank.Msg("(Someone) hacked into "..accounttable.filename.." stole "..tostring(amount))
 						end
 						ARCBankAccountMsg(accounttable,string.Replace( string.Replace( ARCBank.Msgs.LogMsgs.RemoveMoney, "%VALUE%", tostring(-amount)), "%PLAYER%", "__UNKNOWN"))
 					end
@@ -1202,7 +1204,7 @@ function ARCBank.AtmFunc(ply,amount,groupname,callback)
 		ARCBank.WriteAccountFile(accountdata,function(didwork)
 			if didwork then
 				ARCBank.PlayerAddMoney(ply,amount*-1)
-				ARCBankMsg(ply:Nick().."("..ply:SteamID()..") "..mode..accountdata.name.."'s Account. ("..accountdata.filename..") ("..accountdata.money..")")
+				ARCBank.Msg(ply:Nick().."("..ply:SteamID()..") "..mode..accountdata.name.."'s Account. ("..accountdata.filename..") ("..accountdata.money..")")
 				ARCBankAccountMsg(accountdata,logmode.." ("..accountdata.money..")")
 				callback(ARCBANK_ERROR_NONE)
 			else
@@ -1276,7 +1278,7 @@ function ARCBank.Transfer(fromply,toply,fromname,toname,amount,reason,callback)
 						if didwork then
 							ARCBankAccountMsg(accountdatafrom,string.Replace(string.Replace(string.Replace(string.Replace( ARCBank.Msgs.LogMsgs.GiveMoney, "%VALUE%", tostring(amount)),"%ACCOUNT%",accountdatato.filename),"%PLAYER2%",sid),"%PLAYER1%",fromply:SteamID()).."["..tostring(reason).."]")
 							ARCBankAccountMsg(accountdatato,string.Replace(string.Replace(string.Replace(string.Replace( ARCBank.Msgs.LogMsgs.GiveMoney, "%VALUE%", tostring(amount)),"%ACCOUNT%",accountdatafrom.filename),"%PLAYER2%",sid),"%PLAYER1%",fromply:SteamID()).."["..tostring(reason).."]")
-							ARCBankMsg(fromply:Nick().."("..fromply:SteamID()..") gave "..amount.." to "..nic.."("..sid..") (From accounts "..accountdatafrom.filename.." to "..accountdatato.filename..") ["..tostring(reason).."]")
+							ARCBank.Msg(fromply:Nick().."("..fromply:SteamID()..") gave "..amount.." to "..nic.."("..sid..") (From accounts "..accountdatafrom.filename.." to "..accountdatato.filename..") ["..tostring(reason).."]")
 							callback(ARCBANK_ERROR_NONE)
 						else
 							callback(ARCBANK_ERROR_WRITE_FAILURE)
@@ -1316,86 +1318,49 @@ function ARCBank.Transfer(fromply,toply,fromname,toname,amount,reason,callback)
 	end
 
 end
-ARCBank.RunningLang = "\n" -- Some character invalid to filenames
-function ARCBank.UpdateLang(lang)
-	ARCBank.RunningLang = lang
-	local lanstr = file.Read(ARCBank.Dir.."/languages/"..lang..".txt","DATA")
-	if lanstr && lanstr != "" then
-		local tab = util.JSONToTable(lanstr)
-		if tab then
-			ARCBANK_ERRORSTRINGS = ARCLib.RecursiveTableMerge(ARCBANK_ERRORSTRINGS,tab.errmsgs)
-			ARCBank.Msgs = ARCLib.RecursiveTableMerge(ARCBank.Msgs,tab.msgs)
-			ARCBank.SettingsDesc = ARCLib.RecursiveTableMerge(ARCBank.SettingsDesc,tab.settingsdesc)
-			
-			--[[
-			local translations = {}
-			translations.errmsgs = ARCBANK_ERRORSTRINGS
-			translations.msgs = ARCBank.Msgs
-			translations.settingsdesc = ARCBank.SettingsDesc
-			]]
-			//local compressedstir
-			ARCBank.JSON_Lang = ARCLib.SplitString(util.Compress(lanstr),49152) -- Splitting the string every 48 kb just in case
-			for k,v in pairs(player.GetHumans()) do
-				if !v._ARCBank_Lang_Place then
-					net.Start("arcbank_comm_lang")
-					net.WriteInt(0,ARCBANK_ERRORBITRATE)
-					v._ARCBank_Lang_Place = 0
-					net.WriteUInt(0,32)
-					net.WriteUInt(#ARCBank.JSON_Lang,32)
-					net.WriteUInt(0,32)
-					net.Send(v)
-				end
-			end
-		else
-			ARCBankMsg("WARNING! The language file '"..tostring(lang).."' is not a valid JSON file!")
-		end
-	else
-		ARCBankMsg("WARNING! The language file '"..tostring(lang).."' wasn't found!")
-	end
-end
 function ARCBank.Load()
 	ARCBank.Loaded = false
 		if #player.GetAll() == 0 then
-			ARCBankMsg("A player must be online before continuing...")
+			ARCBank.Msg("A player must be online before continuing...")
 		end
 		timer.Simple(1,function()
 	--[[
 		http.Fetch( "http://dl.dropboxusercontent.com/u/%%ID%%/ADDONS/arcbank/CurrentVer.txt",
 		function( body, len, headers, code )
 			-- The first argument is the HTML we asked for.
-			ARCBankMsg("HTTP: "..body)
+			ARCBank.Msg("HTTP: "..body)
 		end,
 		function( error )
-			ARCBankMsg("WARNING! Failed to get update version. ("..error..")")
+			ARCBank.Msg("WARNING! Failed to get update version. ("..error..")")
 		end
 		);
 		]]
 
-		ARCBankMsg("Post-loading ARCBank...")
+		ARCBank.Msg("Post-loading ARCBank...")
 		if game.SinglePlayer() then
-			ARCBankMsg("CRITICAL ERROR! THIS IS A SINGLE PLAYER GAME!")
-			ARCBankMsg("LOADING FALIURE!")
+			ARCBank.Msg("CRITICAL ERROR! THIS IS A SINGLE PLAYER GAME!")
+			ARCBank.Msg("LOADING FALIURE!")
 			return
 		end
 		if !file.IsDir( ARCBank.Dir,"DATA" ) then
-			ARCBankMsg("Created Folder: "..ARCBank.Dir)
+			ARCBank.Msg("Created Folder: "..ARCBank.Dir)
 			file.CreateDir(ARCBank.Dir)
 		end
 		
 		if !file.IsDir( ARCBank.Dir,"DATA" ) then
-			ARCBankMsg("CRITICAL ERROR! FAILED TO CREATE ROOT FOLDER!")
-			ARCBankMsg("LOADING FALIURE!")
+			ARCBank.Msg("CRITICAL ERROR! FAILED TO CREATE ROOT FOLDER!")
+			ARCBank.Msg("LOADING FALIURE!")
 			return
 		end
 		--if !file.Exists(ARCBank.Dir.."/_about_atm.txt","DATA") then
-			--ARCBankMsg("Copied atm about file")
+			--ARCBank.Msg("Copied atm about file")
 			file.Write(ARCBank.Dir.."/_about_atm.txt", file.Read( "arcbank/data/about_atm.lua", "LUA" ) )
 		--end
 		--		 = false
 		if file.Exists(ARCBank.Dir.."/__data.txt","DATA") then
 			ARCBank.Disk = util.JSONToTable(file.Read( ARCBank.Dir.."/__data.txt","DATA" ))
 			if (!ARCBank.Disk) then
-				ARCBankMsg("__data.txt is corrupt. Yeah, some accounts will be too.")
+				ARCBank.Msg("__data.txt is corrupt. Yeah, some accounts will be too.")
 				ARCBank.Disk = {}
 			end
 			ARCBank.Disk.EmoPlayers = ARCBank.Disk.EmoPlayers or {}
@@ -1406,7 +1371,7 @@ function ARCBank.Load()
 		if ARCBank.Disk.ProperShutdown then
 			ARCBank.Disk.ProperShutdown = false
 		else
-			ARCBankMsg("WARNING! THE SYSTEM DIDN'T SHUT DOWN PROPERLY! EXPECT CORRUPTED ACCOUNTS!")
+			ARCBank.Msg("WARNING! THE SYSTEM DIDN'T SHUT DOWN PROPERLY! EXPECT CORRUPTED ACCOUNTS!")
 		end
 		
 		if file.Exists(ARCBank.Dir.."/_saved_settings.txt","DATA") then
@@ -1416,26 +1381,26 @@ function ARCBank.Load()
 					if disksettings[k] || isbool(disksettings[k]) then
 						ARCBank.Settings[k] = disksettings[k]
 					else
-						ARCBankMsg(""..k.." not found in disk settings. Possibly out of date. Using default.")
+						ARCBank.Msg(""..k.." not found in disk settings. Possibly out of date. Using default.")
 					end
 				end
 				if disksettings["atm_language"] then
 					ARCBank.Settings["language"] = disksettings["atm_language"] -- Backwards compatability for pre 1.0 ARCBank settings.
 				end
-				ARCBankMsg("Settings succesfully set.")
+				ARCBank.Msg("Settings succesfully set.")
 			else
-				ARCBankMsg("Settings file is corrupt or something! Using defaults.")
+				ARCBank.Msg("Settings file is corrupt or something! Using defaults.")
 			end
 		else
-			ARCBankMsg("No settings file found! Using defaults.")
+			ARCBank.Msg("No settings file found! Using defaults.")
 		end
 
 		if !file.IsDir( ARCBank.Dir.."/languages","DATA" ) then
-			ARCBankMsg("Created Folder: "..ARCBank.Dir.."/languages")
+			ARCBank.Msg("Created Folder: "..ARCBank.Dir.."/languages")
 			file.CreateDir(ARCBank.Dir.."/languages")
 		end	
 		if ARCBank.DefaultLangs then
-			ARCBankMsg("Writing default language files...")
+			ARCBank.Msg("Writing default language files...")
 			file.Write(ARCBank.Dir.."/languages/spa.txt", ARCBank.DefaultLangs.spa )
 			file.Write(ARCBank.Dir.."/languages/sp.txt", ARCBank.DefaultLangs.spa )
 			file.Write(ARCBank.Dir.."/languages/en.txt", ARCBank.DefaultLangs.en )
@@ -1446,49 +1411,46 @@ function ARCBank.Load()
 			file.Write(ARCBank.Dir.."/languages/ru.txt", ARCBank.DefaultLangs.ru )
 			ARCBank.DefaultLangs = nil
 		end
-
-		--end
-		ARCBank.UpdateLang(ARCBank.Settings["language"])
-
+		ARCLib.SetAddonLanguage("ARCBank")
 		if !file.IsDir( ARCBank.Dir.."/accounts","DATA" ) then
-			ARCBankMsg("Created Folder: "..ARCBank.Dir.."/accounts")
+			ARCBank.Msg("Created Folder: "..ARCBank.Dir.."/accounts")
 			file.CreateDir(ARCBank.Dir.."/accounts")
 		end
 		if !file.IsDir( ARCBank.Dir.."/accounts/group","DATA" ) then
-			ARCBankMsg("Created Folder: "..ARCBank.Dir.."/accounts/group")
+			ARCBank.Msg("Created Folder: "..ARCBank.Dir.."/accounts/group")
 			file.CreateDir(ARCBank.Dir.."/accounts/group")
 		end
 		if !file.IsDir( ARCBank.Dir.."/accounts/personal","DATA" ) then
-			ARCBankMsg("Created Folder: "..ARCBank.Dir.."/accounts/personal")
+			ARCBank.Msg("Created Folder: "..ARCBank.Dir.."/accounts/personal")
 			file.CreateDir(ARCBank.Dir.."/accounts/personal")
 		end
 		if !file.IsDir( ARCBank.Dir.."/accounts/group/logs","DATA" ) then
-			ARCBankMsg("Created Folder: "..ARCBank.Dir.."/accounts/group/logs")
+			ARCBank.Msg("Created Folder: "..ARCBank.Dir.."/accounts/group/logs")
 			file.CreateDir(ARCBank.Dir.."/accounts/group/logs")
 		end
 		if !file.IsDir( ARCBank.Dir.."/accounts/personal/logs","DATA" ) then
-			ARCBankMsg("Created Folder: "..ARCBank.Dir.."/accounts/personal/logs")
+			ARCBank.Msg("Created Folder: "..ARCBank.Dir.."/accounts/personal/logs")
 			file.CreateDir(ARCBank.Dir.."/accounts/personal/logs")
 		end
 		if !file.IsDir( ARCBank.Dir.."/saved_atms","DATA" ) then
-			ARCBankMsg("Created Folder: "..ARCBank.Dir.."/saved_atms")
+			ARCBank.Msg("Created Folder: "..ARCBank.Dir.."/saved_atms")
 			file.CreateDir(ARCBank.Dir.."/saved_atms")
 		end
 		if !file.IsDir( ARCBank.Dir.."/custom_atms","DATA" ) then
-			ARCBankMsg("Created Folder: "..ARCBank.Dir.."/custom_atms")
+			ARCBank.Msg("Created Folder: "..ARCBank.Dir.."/custom_atms")
 			file.CreateDir(ARCBank.Dir.."/custom_atms")
 		end
 		
 		if !file.IsDir( ARCBank.Dir.."/accounts_unused","DATA" ) then
-			ARCBankMsg("Created Folder: "..ARCBank.Dir.."/accounts_unused")
+			ARCBank.Msg("Created Folder: "..ARCBank.Dir.."/accounts_unused")
 			file.CreateDir(ARCBank.Dir.."/accounts_unused")
 		end
 		if !file.IsDir( ARCBank.Dir.."/accounts_unused/group","DATA" ) then
-			ARCBankMsg("Created Folder: "..ARCBank.Dir.."/accounts_unused/group")
+			ARCBank.Msg("Created Folder: "..ARCBank.Dir.."/accounts_unused/group")
 			file.CreateDir(ARCBank.Dir.."/accounts_unused/group")
 		end
 		if !file.IsDir( ARCBank.Dir.."/accounts_unused/personal","DATA" ) then
-			ARCBankMsg("Created Folder: "..ARCBank.Dir.."/accounts_unused/personal")
+			ARCBank.Msg("Created Folder: "..ARCBank.Dir.."/accounts_unused/personal")
 			file.CreateDir(ARCBank.Dir.."/accounts_unused/personal")
 		end
 		
@@ -1515,19 +1477,19 @@ function ARCBank.Load()
 		ARCBank.LogFile = os.date(ARCBank.Dir.."/systemlog - %d %b %Y - "..tostring(os.date("%H")*60+os.date("%M"))..".log.txt")
 		file.Write(ARCBank.LogFile,"***ARCBank System Log***\r\n"..table.Random({"Oh my god. You're reading this!","WINDOWS LOVES TYPEWRITER COMMANTS IN TXT FILES","What you're refeering to as 'Linux' is in fact GNU/Linux.","... did you mess something up this time?"}).."\r\nDates are in DD-MM-YYYY\r\n")
 		ARCBank.LogFileWritten = true
-		ARCBankMsg("Log File Created at "..ARCBank.LogFile)
+		ARCBank.Msg("Log File Created at "..ARCBank.LogFile)
 		
-		ARCBankMsg("**STARTING FILESYSTEM CHECK!**")
+		ARCBank.Msg("**STARTING FILESYSTEM CHECK!**")
 		if file.IsDir( ARCBank.Dir.."/group_account","DATA" ) || file.IsDir( ARCBank.Dir.."/personal_account","DATA" ) then
-			ARCBankMsg("Filesystem from a pre-release version of ARCBank detected.")
-			ARCBankMsg("Migrating data...")
+			ARCBank.Msg("Filesystem from a pre-release version of ARCBank detected.")
+			ARCBank.Msg("Migrating data...")
 			local OldFolders = {ARCBank.Dir.."/personal_account/standard/",ARCBank.Dir.."/personal_account/bronze/",ARCBank.Dir.."/personal_account/silver/",ARCBank.Dir.."/personal_account/gold/","NOPE",ARCBank.Dir.."/group_account/standard/",ARCBank.Dir.."/group_account/premium/"}
 			for i = 1,4 do
 				for k,v in pairs(file.Find(OldFolders[i].."*.txt","DATA")) do
 					local oldaccountdata = util.JSONToTable(file.Read(OldFolders[i]..v,"DATA"))
 					if oldaccountdata then
 						if file.Exists(ARCBank.Dir.."/accounts/personal/"..v..".txt","DATA") then
-							ARCBankMsg(string.Replace(v,".txt","").." is already in the new filesystem! Account will be removed.")
+							ARCBank.Msg(string.Replace(v,".txt","").." is already in the new filesystem! Account will be removed.")
 						else
 							local newaccount = {}
 								newaccount.isgroup = false
@@ -1542,7 +1504,7 @@ function ARCBank.Load()
 								file.Delete(OldFolders[i]..v)
 								
 							else
-								ARCBankMsg("Failed to transfer "..string.lower(string.Replace(v,".txt",""))..". account will be removed")
+								ARCBank.Msg("Failed to transfer "..string.lower(string.Replace(v,".txt",""))..". account will be removed")
 							end
 						
 						end
@@ -1561,7 +1523,7 @@ function ARCBank.Load()
 					if oldaccountdata then
 						if file.Exists(ARCBank.Dir.."/accounts/group/"..v..".txt","DATA") then
 						
-							ARCBankMsg(string.Replace(v,".txt","").." is already in the new filesystem!")
+							ARCBank.Msg(string.Replace(v,".txt","").." is already in the new filesystem!")
 						else
 							local newaccount = {}
 								newaccount.isgroup = true
@@ -1577,7 +1539,7 @@ function ARCBank.Load()
 								file.Delete(OldFolders[i].."logs/"..v)
 								file.Delete(OldFolders[i]..v)
 							else
-								ARCBankMsg("Failed to transfer ".. string.lower(string.Replace(v,".txt","")))
+								ARCBank.Msg("Failed to transfer ".. string.lower(string.Replace(v,".txt","")))
 							end
 						end
 						
@@ -1596,7 +1558,7 @@ function ARCBank.Load()
 		for _,v in pairs( files ) do
 			local accountdata = util.JSONToTable(file.Read( ARCBank.Dir.."/accounts/personal/"..v,"DATA"))
 			if !accountdata then
-				ARCBankMsg("Corrupted account found. ("..v.."); Attempting to restore...")
+				ARCBank.Msg("Corrupted account found. ("..v.."); Attempting to restore...")
 				local fixnum
 				local log = file.Read( ARCBank.Dir.."/accounts/personal/logs/"..v,"DATA")
 				
@@ -1618,7 +1580,7 @@ function ARCBank.Load()
 							newaccount.rank = 1
 							
 							file.Write( ARCBank.Dir.."/accounts/personal/"..v, util.TableToJSON(newaccount) )
-							ARCBankMsg(v.." - Account restored!")
+							ARCBank.Msg(v.." - Account restored!")
 							i = -1
 						end
 						i = i - 1
@@ -1626,7 +1588,7 @@ function ARCBank.Load()
 				
 				end
 				if !isnumber(fixnum) then
-					ARCBankMsg("Failed to restore account - "..v.."; Removing.")
+					ARCBank.Msg("Failed to restore account - "..v.."; Removing.")
 					file.Delete(ARCBank.Dir.."/accounts/personal/"..v)
 					file.Append(ARCBank.Dir.."/accounts/personal/logs/"..v, os.date("%d-%m-%Y %H:%M:%S").." > This account was corrupt and restoration failed.\r\n")
 				end
@@ -1639,7 +1601,7 @@ function ARCBank.Load()
 		for _,v in pairs( files ) do
 			local accountdata = util.JSONToTable(file.Read( ARCBank.Dir.."/accounts/group/"..v,"DATA"))
 			if !accountdata then
-				ARCBankMsg("Corrupted account found. ("..v.."); Attempting to restore...")
+				ARCBank.Msg("Corrupted account found. ("..v.."); Attempting to restore...")
 				local fixnum
 				local log = file.Read( ARCBank.Dir.."/accounts/group/logs/"..v,"DATA")
 				if log != "" then
@@ -1674,9 +1636,9 @@ function ARCBank.Load()
 					end
 					if string.StartWith(newaccount.owner,"STEAM_") && isnumber(newaccount.money) then
 						file.Write( ARCBank.Dir.."/accounts/group/"..v, util.TableToJSON(newaccount) )
-						ARCBankMsg(v.." - Account restored!")
+						ARCBank.Msg(v.." - Account restored!")
 					else
-						ARCBankMsg("Failed to restore account - "..v.."; Removing.")
+						ARCBank.Msg("Failed to restore account - "..v.."; Removing.")
 						--file.Delete(ARCBank.Dir.."/accounts/group/"..v)
 						file.Append(ARCBank.Dir.."/accounts/group/logs/"..v, os.date("%d-%m-%Y %H:%M:%S").." > This account was corrupt and restoration failed.\r\n")
 					end
@@ -1696,7 +1658,7 @@ function ARCBank.Load()
 		end
 		stime = SysTime() - stime 
 		if stime > 0.1 then
-			ARCBankMsg("File system check took "..stime.." seconds. Which I personally think is a bit too long. Optimizing...")
+			ARCBank.Msg("File system check took "..stime.." seconds. Which I personally think is a bit too long. Optimizing...")
 			
 			local files, directories = file.Find( ARCBank.Dir.."/accounts/group/*.txt","DATA" )
 			for _,v in pairs( files ) do
@@ -1722,12 +1684,12 @@ function ARCBank.Load()
 			
 			
 		else
-			ARCBankMsg("File system check took "..stime.." seconds.")
+			ARCBank.Msg("File system check took "..stime.." seconds.")
 		end
-		ARCBankMsg("**FILESYSTEM CHECK COMPLETE!**")
+		ARCBank.Msg("**FILESYSTEM CHECK COMPLETE!**")
 		timer.Create( "ARCBANK_SAVEDISK", 300, 0, function() 
 			if ARCBank.Settings["interest_time"] < 1 then
-				ARCBankMsg("interest_time cannot be less than 1 hour. Will not give out interest")
+				ARCBank.Msg("interest_time cannot be less than 1 hour. Will not give out interest")
 			else
 				if !ARCBank.Disk.LastInterestTime then
 					ARCBank.Disk.LastInterestTime = os.time() - ARCBank.Settings["interest_time"]*3600
@@ -1741,7 +1703,7 @@ function ARCBank.Load()
 					ARCBank.Disk.LastInterestTime = os.time()
 					
 					timer.Simple((missedtimes+1)*2,function()
-						ARCBankMsg("Interest will be given next on "..os.date( "%X - %d-%m-%Y", ARCBank.Disk.LastInterestTime+ARCBank.Settings["interest_time"]*3600 ))
+						ARCBank.Msg("Interest will be given next on "..os.date( "%X - %d-%m-%Y", ARCBank.Disk.LastInterestTime+ARCBank.Settings["interest_time"]*3600 ))
 					end)
 				end
 			end
@@ -1749,7 +1711,7 @@ function ARCBank.Load()
 			--ARCBank.UpdateLang(ARCBank.Settings["atm_language"])
 
 			if ARCBank.Settings["notify_update"] then
-				ARCBankMsg("ARCBank no longer checks for updates. This feature has been replaced with ARCLoad. Please disable the 'notify_update' setting.")
+				ARCBank.Msg("ARCBank no longer checks for updates. This feature has been replaced with ARCLoad. Please disable the 'notify_update' setting.")
 			end
 			
 		end )
@@ -1757,7 +1719,7 @@ function ARCBank.Load()
 		if ARCBank.IsMySQLEnabled() then
 			ARCBank.MySQL.Connect()
 		else
-			ARCBankMsg("ARCBank is ready!")
+			ARCBank.Msg("ARCBank is ready!")
 			ARCBank.Loaded = true
 			ARCBank.Busy = false
 			ARCBank.CapAccountRank();

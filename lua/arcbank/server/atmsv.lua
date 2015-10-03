@@ -7,24 +7,24 @@ ARCBank.Loaded = false
 function ARCBank.SpawnATMs()
 	local shit = file.Read(ARCBank.Dir.."/saved_atms/"..string.lower(game.GetMap())..".txt", "DATA" )
 	if !shit then
-		ARCBankMsg("Cannot spawn ATMs. No file associated with this map.")
+		ARCBank.Msg("Cannot spawn ATMs. No file associated with this map.")
 		return false
 	end
 	local atmdata = util.JSONToTable(shit)
 	if !atmdata then
-		ARCBankMsg("Cannot spawn ATMs. Corrupt file associated with this map.")
+		ARCBank.Msg("Cannot spawn ATMs. Corrupt file associated with this map.")
 		return false
 	end
 	for _, oldatms in pairs( ents.FindByClass("sent_arc_atm") ) do
 		oldatms.ARCBank_MapEntity = false
 		oldatms:Remove()
 	end
-	ARCBankMsg("Spawning Map ATMs...")
+	ARCBank.Msg("Spawning Map ATMs...")
 	for i=1,atmdata.atmcount do
 			local shizniggle = ents.Create("sent_arc_atm")
 			if !IsValid(shizniggle) then
 				atmdata.atmcount = 1
-				ARCBankMsg("ATMs failed to spawn.")
+				ARCBank.Msg("ATMs failed to spawn.")
 			return false end
 			if atmdata.pos[i] && atmdata.angles[i] then
 				shizniggle:SetPos(atmdata.pos[i]+Vector(0,0,ARCLib.BoolToNumber(!atmdata.NewATMModel)*8.6))
@@ -38,7 +38,7 @@ function ARCBank.SpawnATMs()
 			else
 				shizniggle:Remove()
 				atmdata.atmcount = 1
-				ARCBankMsg("Corrupt File")
+				ARCBank.Msg("Corrupt File")
 				return false 
 			end
 			local phys = shizniggle:GetPhysicsObject()
@@ -51,7 +51,7 @@ function ARCBank.SpawnATMs()
 	return true
 end
 function ARCBank.SaveATMs()
-	ARCBankMsg("Saving ATMs...")
+	ARCBank.Msg("Saving ATMs...")
 	local atmdata = {}
 	atmdata.angles = {}
 	atmdata.pos = {}
@@ -60,7 +60,7 @@ function ARCBank.SaveATMs()
 	atmdata.atmcount = table.maxn(atms)
 	atmdata.NewATMModel = true
 	if atmdata.atmcount <= 0 then
-		ARCBankMsg("No ATMs to save!")
+		ARCBank.Msg("No ATMs to save!")
 		return false
 	end
 	for i=1,atmdata.atmcount do
@@ -78,18 +78,18 @@ function ARCBank.SaveATMs()
 	local savepos = ARCBank.Dir.."/saved_atms/"..string.lower(game.GetMap())..".txt"
 	file.Write(savepos,util.TableToJSON(atmdata))
 	if file.Exists(savepos,"DATA") then
-		ARCBankMsg("ATMs Saved in: "..savepos)
+		ARCBank.Msg("ATMs Saved in: "..savepos)
 		return true
 	else
-		ARCBankMsg("Error while saving map.")
+		ARCBank.Msg("Error while saving map.")
 		return false
 	end
 end
 function ARCBank.UnSaveATMs()
-	ARCBankMsg("UnSaving ATMs...")
+	ARCBank.Msg("UnSaving ATMs...")
 	local atms = ents.FindByClass("sent_arc_atm")
 	if table.maxn(atms) <= 0 then
-		ARCBankMsg("No ATMs to Unsave!")
+		ARCBank.Msg("No ATMs to Unsave!")
 		return false
 	end
 	for i=1,table.maxn(atms) do
@@ -109,6 +109,6 @@ function ARCBank.ClearATMs() -- Make sure this doesn't crash (dump %%CONFIRMATIO
 		oldatms.ARCBank_MapEntity = false
 		oldatms:Remove()
 	end
-	ARCBankMsg("All ATMs Removed.")
+	ARCBank.Msg("All ATMs Removed.")
 end
 

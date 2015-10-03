@@ -45,7 +45,7 @@ function ENT:BeginHack()
 	if self.OurHealth <= 0 then return end
 	self:EmitSound("npc/dog/dog_servo12.wav",75,75)
 	local atm = self:GetParent()
-	if IsValid(atm) && atm:GetClass() == "sent_arc_atm" then
+	if IsValid(atm) && (atm.IsAFuckingATM || atm.CasinoVault) then
 		if atm.Hacked || atm.InUse then
 			local pos = self:GetParent():WorldToLocal(self:GetPos()) - Vector(0,-self.left,0)
 			self:SetPos(pos)
@@ -198,7 +198,15 @@ function ENT:Think()
 			timer.Simple(math.random(),function()
 				if !self || self == NULL then return end
 				local atm = self:GetParent()
-				if !atm || atm == NULL || !atm.IsAFuckingATM || !atm.Hacked then return end
+				if !IsValid(atm) || !atm.Hacked then return end
+				if atm.CasinoVault then
+					atm.Vault:BeginHacked(self.HackMoneh)
+					return
+				elseif !atm.IsAFuckingATM then 
+					return
+				end
+				
+				
 				atm.TakingMoney = true
 				if self.Hacker.ARCBank_Secrets then
 					atm:EmitSound("^arcbank/atm/spit-out.wav")
@@ -268,12 +276,12 @@ function ENT:Think()
 							ARCBank.StealMoney(self.Hacker,self.HackMoneh,accounttable,false,function(errcode,per)
 								if errcode == ARCBANK_ERROR_DOWNLOADING then
 									if per > nextper then
-										ARCBankMsgCL(self.Hacker,ARCBank.Msgs.Items.Hacker..": (%"..tostring(math.floor(per*100))..")")
+										ARCBank.MsgCL(self.Hacker,ARCBank.Msgs.Items.Hacker..": (%"..math.floor(per)..")")
 										nextper = nextper + 0.1
 									end
 									
 								elseif errcode == 0 then
-									ARCBankMsgCL(self.Hacker,ARCBank.Msgs.Items.Hacker..": (%100)")
+									ARCBank.MsgCL(self.Hacker,ARCBank.Msgs.Items.Hacker..": (%100)")
 									
 									
 									timer.Simple(atm.ATMType.PauseBeforeWithdrawAnimation,function() 
@@ -334,7 +342,7 @@ function ENT:Think()
 				self.HackSound:ChangePitch( 85+((((self.hacktime-CurTime())/self.bhacktime)-1)*-100), 0.2 ) 
 				local pos = self.StartPos - Vector(0.0,((((self.hacktime-CurTime())/self.bhacktime)-1)*0.32)*-self.left,0)
 				self:SetPos(pos)
-				if !self.HackRandom || math.random(1,101) == 101 then
+				if !self.HackRandom || math.random(1,501) == 501 then
 					self.spark:Fire( "SparkOnce","",math.Rand(0,0.2) )
 					if ARCBank.Settings.atm_hack_radar then
 						net.Start("ARCATMHACK_BEACON")
@@ -382,7 +390,16 @@ function ENT:Think()
 		end
 		self:NextThink( CurTime() + 0.5 )
 		local basetime = math.Round((((self.HackMoneh/200)^2+28)*(1+ARCLib.BoolToNumber(self.HackRandom))/ARCBank.Settings["atm_hack_time_rate"]))
-		self.bhacktime = math.Rand(basetime-math.Round(basetime^0.725),basetime+math.Round(basetime^0.725))
+		if self:GetParent().CasinoVault then
+			if self.HackRandom then
+				self.bhacktime = basetime
+			else
+				self.bhacktime = basetime/4
+			end
+			self:GetParent().Vault.Screens[3]:SetScrType(9)
+		else
+			self.bhacktime = math.Rand(basetime-math.Round(basetime^0.725),basetime+math.Round(basetime^0.725))
+		end
 		self.hacktime = self.bhacktime + CurTime()
 		self.energy = self.baseenergy + CurTime()
 		net.Start( "ARCATMHACK_BEGIN" )
