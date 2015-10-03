@@ -1373,7 +1373,7 @@ function ARCBank.Load()
 		else
 			ARCBank.Msg("WARNING! THE SYSTEM DIDN'T SHUT DOWN PROPERLY! EXPECT CORRUPTED ACCOUNTS!")
 		end
-		ARCLib.AddonLoadSettings("ARCBank",{"atm_language" = "language"})
+		ARCLib.AddonLoadSettings("ARCBank",{atm_language = "language"})
 
 		if !file.IsDir( ARCBank.Dir.."/languages","DATA" ) then
 			ARCBank.Msg("Created Folder: "..ARCBank.Dir.."/languages")

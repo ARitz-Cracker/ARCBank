@@ -21,8 +21,8 @@ ARCBank.Msg("© Copyright 2014,2015 Aritz Beobide-Cardinal (ARitz Cracker) All r
 
 
 
-ARCBank.Update = "August 8th 2015"
-ARCBank.Version = "1.3.3"
+ARCBank.Update = "October 8th 2015"
+ARCBank.Version = "1.3.4"
 ARCBank.ARCSlotsReady = true
 
 ARCBank.About = [[      
