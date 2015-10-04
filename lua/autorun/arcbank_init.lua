@@ -223,5 +223,19 @@ else
 
 	
 	ARCBank.Msg("####  Clientside Lua Loading Complete.  ####")
+	
 end
-
+local arcload_exists
+if SERVER then
+	arcload_exists = file.Exists("autorun/server/arcload_1_1.lua","LUA")
+else
+	arcload_exists = file.Exists("autorun/client/arcload_1_1.lua","LUA")
+end
+if !arcload_exists then
+	hook.Add("ARCLib_OnPlayerFullyLoaded","ARCBank DevLoad",function(ply)
+		hook.Call( "ARCLoad_OnPlayerLoaded",GM,ply)
+	end)
+end
+hook.Add("InitPostEntity","ARCBank DevLoad",function(ply)
+	hook.Call( "ARCLoad_OnLoaded",GM,"ARCBank")
+end)
