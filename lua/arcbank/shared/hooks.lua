@@ -142,7 +142,7 @@ else
 				if pay <= 0 then return end
 				ARCBank.AtmFunc(ply,pay,"",function(errcode)
 					if errcode == 0 then
-						ARCLib.NotifyPlayer(ply,string.Replace(ARCBank.Msgs.UserMsgs.Paycheck,"ARCBank",ARCBank.Settings.name),NOTIFY_HINT,4,false)
+						ARCLib.NotifyPlayer(ply,string.Replace(ARCBank.Msgs.UserMsgs.Paycheck.." ("..pay..")","ARCBank",ARCBank.Settings.name),NOTIFY_HINT,4,false)
 					elseif errcode != ARCBANK_ERROR_NIL_ACCOUNT then
 						ARCLib.NotifyPlayer(ply,string.Replace(ARCBank.Msgs.UserMsgs.PaycheckFail,"ARCBank",ARCBank.Settings.name).." ("..ARCBANK_ERRORSTRINGS[errcode]..")",NOTIFY_ERROR,4,true)
 					end
@@ -159,7 +159,7 @@ else
 				if pay <= 0 then return end
 				ARCBank.AtmFunc(ply,pay,"",function(errcode)
 					if errcode == 0 then
-						ARCLib.NotifyPlayer(ply,string.Replace(ARCBank.Msgs.UserMsgs.Paycheck,"ARCBank",ARCBank.Settings.name),NOTIFY_HINT,4,false)
+						ARCLib.NotifyPlayer(ply,string.Replace(ARCBank.Msgs.UserMsgs.Paycheck.." ("..pay..")","ARCBank",ARCBank.Settings.name),NOTIFY_HINT,4,false)
 					elseif errcode != ARCBANK_ERROR_NIL_ACCOUNT then
 						ARCLib.NotifyPlayer(ply,string.Replace(ARCBank.Msgs.UserMsgs.PaycheckFail,"ARCBank",ARCBank.Settings.name).." ("..ARCBANK_ERRORSTRINGS[errcode]..")",NOTIFY_ERROR,4,true)
 					end
