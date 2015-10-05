@@ -135,31 +135,35 @@ else
 		
 
 	hook.Add( "PlayerGetSalary", "ARCBank PaydayATM DRP2.4", function(ply, amount)
-		if amount == 0 then return end
-		if ARCBank.Settings["use_bank_for_payday"] then
-			ARCBank.AtmFunc(ply,amount,"",function(errcode)
-				if errcode == 0 then
-				
-					ARCLib.NotifyPlayer(ply,string.Replace(ARCBank.Msgs.UserMsgs.Paycheck,"ARCBank",ARCBank.Settings.name),NOTIFY_HINT,4,false)
-				elseif errcode != ARCBANK_ERROR_NIL_ACCOUNT then
-					ARCLib.NotifyPlayer(ply,string.Replace(ARCBank.Msgs.UserMsgs.PaycheckFail,"ARCBank",ARCBank.Settings.name).." ("..ARCBANK_ERRORSTRINGS[errcode]..")",NOTIFY_ERROR,4,true)
-				end
+		if ARCBank.Settings["use_bank_for_payday"] && amount > 0 then
+			local pay = ply:GetDarkRPVar("money")
+			timer.Simple(0.01,function()
+				pay = ply:GetDarkRPVar("money") - pay 
+				if pay <= 0 then return end
+				ARCBank.AtmFunc(ply,pay,"",function(errcode)
+					if errcode == 0 then
+						ARCLib.NotifyPlayer(ply,string.Replace(ARCBank.Msgs.UserMsgs.Paycheck,"ARCBank",ARCBank.Settings.name),NOTIFY_HINT,4,false)
+					elseif errcode != ARCBANK_ERROR_NIL_ACCOUNT then
+						ARCLib.NotifyPlayer(ply,string.Replace(ARCBank.Msgs.UserMsgs.PaycheckFail,"ARCBank",ARCBank.Settings.name).." ("..ARCBANK_ERRORSTRINGS[errcode]..")",NOTIFY_ERROR,4,true)
+					end
+				end)
 			end)
 		end
 	end)
 
 	hook.Add( "playerGetSalary", "ARCBank PaydayATM", function(ply, amount)
-		--TODO: Look at amount before/after payday to properly determine tax stuffs
-		--TODO: Add money amount to notification
-		MsgN(tostring(ply).." : "..ply:getDarkRPVar("money"))
-		if amount == 0 then return end
-		if ARCBank.Settings["use_bank_for_payday"] then
-			ARCBank.AtmFunc(ply,amount,"",function(errcode)
-				if errcode == 0 then
-					ARCLib.NotifyPlayer(ply,string.Replace(ARCBank.Msgs.UserMsgs.Paycheck,"ARCBank",ARCBank.Settings.name),NOTIFY_HINT,4,false)
-				elseif errcode != ARCBANK_ERROR_NIL_ACCOUNT then
-					ARCLib.NotifyPlayer(ply,string.Replace(ARCBank.Msgs.UserMsgs.PaycheckFail,"ARCBank",ARCBank.Settings.name).." ("..ARCBANK_ERRORSTRINGS[errcode]..")",NOTIFY_ERROR,4,true)
-				end
+		if ARCBank.Settings["use_bank_for_payday"] && amount > 0 then
+			local pay = ply:getDarkRPVar("money")
+			timer.Simple(0.01,function()
+				pay = ply:getDarkRPVar("money") - pay 
+				if pay <= 0 then return end
+				ARCBank.AtmFunc(ply,pay,"",function(errcode)
+					if errcode == 0 then
+						ARCLib.NotifyPlayer(ply,string.Replace(ARCBank.Msgs.UserMsgs.Paycheck,"ARCBank",ARCBank.Settings.name),NOTIFY_HINT,4,false)
+					elseif errcode != ARCBANK_ERROR_NIL_ACCOUNT then
+						ARCLib.NotifyPlayer(ply,string.Replace(ARCBank.Msgs.UserMsgs.PaycheckFail,"ARCBank",ARCBank.Settings.name).." ("..ARCBANK_ERRORSTRINGS[errcode]..")",NOTIFY_ERROR,4,true)
+					end
+				end)
 			end)
 		end
 	end)
