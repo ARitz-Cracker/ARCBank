@@ -1080,6 +1080,7 @@ net.Receive( "ARCATM_COMM_BEEP", function(length,ply)
 end)
 function ENT:Draw()--Good
 	self:DrawModel()
+	if LocalPlayer():GetPos():DistToSqr(self:GetPos()) > 2000000 then return end
 	self:DrawShadow( true )
 	if !self.ATMType then return end
 	if ARCBank.Settings["atm_holo"] then

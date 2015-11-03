@@ -1676,6 +1676,9 @@ function ARCBank.Load()
 				end
 				local missedtimes = math.floor((os.time() - ARCBank.Disk.LastInterestTime)/(ARCBank.Settings["interest_time"]*3600))
 				if missedtimes > 0 then
+					if missedtimes > 1 then
+						ARCBank.Msg("MISSED "..missedtimes.." INTEREST PAYMENTS! Looks like we'll have to catch up!")
+					end
 					for i=1,missedtimes do
 						timer.Simple(i*2,ARCBank.AddAccountInterest)
 					end

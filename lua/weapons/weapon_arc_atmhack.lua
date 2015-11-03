@@ -188,7 +188,7 @@ function SWEP:Initialize()
 		self:CreateModels(self.WElements) // create worldmodels
 		
 		// init view model bone build function
-		if IsValid(self.Owner) then
+		if IsValid(self.Owner) && self.Owner:IsPlayer() then
 			local vm = self.Owner:GetViewModel()
 			if IsValid(vm) then
 				self:ResetBonePositions(vm)

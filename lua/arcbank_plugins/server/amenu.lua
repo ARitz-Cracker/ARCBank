@@ -8,18 +8,22 @@ if ARCBank then
 	ARCBank.Commands["admin_gui"] = {
 		command = function(ply,args) 
 			if !ARCBank.Loaded then ARCBank.MsgCL(ply,ARCBank.Msgs.CommandOutput.SysReset) return end
-			if !args[1] then
-				net.Start( "ARCBank_Admin_GUI" )
-				net.WriteString("")
-				net.WriteTable({})
-				net.Send(ply)
-			elseif args[1] == "logs" then
-				net.Start( "ARCBank_Admin_GUI" )
-				net.WriteString("logs")
-				net.WriteTable(file.Find( ARCBank.Dir.."/systemlog*", "DATA", "datedesc" ) )
-				net.Send(ply)
+			if ply then
+				if !args[1] then
+					net.Start( "ARCBank_Admin_GUI" )
+					net.WriteString("")
+					net.WriteTable({})
+					net.Send(ply)
+				elseif args[1] == "logs" then
+					net.Start( "ARCBank_Admin_GUI" )
+					net.WriteString("logs")
+					net.WriteTable(file.Find( ARCBank.Dir.."/systemlog*", "DATA", "datedesc" ) )
+					net.Send(ply)
+				else
+					ARCBank.MsgCL(ply,"Invalid AdminGUI request")
+				end
 			else
-				ARCBank.MsgCL(ply,"Invalid AdminGUI request")
+				ARCBank.MsgCL(ply,"This command doesn't work via RCON. Please enter the command in a console from within Garry's Mod.")
 			end
 		end, 
 		usage = "",
