@@ -73,7 +73,7 @@ function ARCBank.MySQL.CreateQuery(str,succfunc,errfunc)
 				else
 					errfunc(results[1].error,str)
 				end
-				ARCBank.Msg("tmysql4 query took "..results[1].time.." seconds and affected "..results[1].affected.." rows with error "..tostring(results[1].error) )
+				--ARCBank.Msg("tmysql4 query took "..results[1].time.." seconds and affected "..results[1].affected.." rows with error "..tostring(results[1].error) )
 			else
 				ARCBank.Msg("I HAVE NO IDEA WHAT TO DO WITH THE RESULT TO QUERY: "..str)
 				ARCBank.Msg("The result table was as follows:")
@@ -81,8 +81,6 @@ function ARCBank.MySQL.CreateQuery(str,succfunc,errfunc)
 				ARCBank.Msg("Finished printing result to console.")
 				errfunc("ARCBank tmysql4 support error!",str)
 			end
-			print( "Query completed" )
-			PrintTable( results[1].data )
 		end
 
 		ARCBank.DataBase:Query( str, onCompleted )
