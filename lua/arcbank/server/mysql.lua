@@ -156,10 +156,12 @@ function ARCBank.MySQL.Connect()
 		ARCBank.DataBase:connect()
 	elseif MYSQL_TYPE == 2 then
 		local Database, err = tmysql.Connect(ARCBank.MySQL.Host, ARCBank.MySQL.Username, ARCBank.MySQL.Password, ARCBank.MySQL.DatabaseName, ARCBank.MySQL.DatabasePort, nil, CLIENT_MULTI_STATEMENTS)
-		ARCBank.DataBase = Database
-		MsgN("DATABASE: "..tostring(DataBase))
-		MsgN("ERR: "..tostring(err))
-		onConnected()
+		if err then
+			onConnectionFailed(err)
+		else
+			ARCBank.DataBase = Database
+			onConnected()
+		end
 	end
 	
 
