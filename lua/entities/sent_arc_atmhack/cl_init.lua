@@ -51,7 +51,9 @@ net.Receive( "ARCATMHACK_BEGIN", function(length)
 		atm.HackTime = 0
 		atm.HackDelay = 0
 		atm.Hacked = false
-		atm.HackRecover = time
+		if !atm.CasinoVault then
+			atm.HackRecover = time
+		end
 		atm.Percent = 0
 	end
 end)

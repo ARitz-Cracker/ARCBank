@@ -68,7 +68,12 @@ function ENT:StopHack()
 		self.baseenergy = self.energy - CurTime()
 		if self.baseenergy < 0 then self.baseenergy = 0 end
 		local atm = self:GetParent()
-		atm.HackRecover = CurTime() + math.Rand(5,60) + (self.bhacktime/23)
+		
+		if self:GetParent().CasinoVault then
+			self:GetParent().Vault.Screens[3]:SetScrType(3)
+		else
+			atm.HackRecover = CurTime() + math.Rand(5,60) + (self.bhacktime/23)
+		end
 		net.Start( "ARCATMHACK_BEGIN" )
 		net.WriteDouble(atm.HackRecover)
 		net.WriteDouble(atm.HackRecover)
