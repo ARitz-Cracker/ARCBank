@@ -32,30 +32,34 @@ function ENT:Draw()
 	self.displayangle1 = self:GetAngles()
 	self.displayangle1:RotateAroundAxis( self.displayangle1:Up(), 90 )
 	--self.displayangle1:RotateAroundAxis( self.displayangle1:Forward(), -13 )
-	if self.ScreenScrollDelay < CurTime() && string.len(self.BottomScreenText) > 11 then
-		self.ScreenScrollDelay = CurTime() + 0.1
-		self.ScreenScroll = self.ScreenScroll + 1
-		if (self.ScreenScroll) > string.len("             "..self.BottomScreenText.."             ") then
-			self.ScreenScroll = 1
+	if #self.BottomScreenText > 0 then
+		if self.ScreenScrollDelay < CurTime() && string.len(self.BottomScreenText) > 11 then
+			self.ScreenScrollDelay = CurTime() + 0.1
+			self.ScreenScroll = self.ScreenScroll + 1
+			if (self.ScreenScroll) > string.len(self.BottomScreenText) then
+				self.ScreenScroll = -string.len(self.BottomScreenText)
+			end
 		end
 	end
-	if self.SScreenScrollDelay < CurTime() && string.len(self.TopScreenText) > 11 then
-		self.SScreenScrollDelay = CurTime() + 0.1
-		self.SScreenScroll = self.SScreenScroll + 1
-		if (self.SScreenScroll) > string.len("             "..self.TopScreenText.."             ") then
-			self.SScreenScroll = 1
+	if #self.TopScreenText > 0 then
+		if self.SScreenScrollDelay < CurTime() && string.len(self.TopScreenText) > 11 then
+			self.SScreenScrollDelay = CurTime() + 0.1
+			self.SScreenScroll = self.SScreenScroll + 1
+			if (self.SScreenScroll) > string.len(self.TopScreenText) then
+				self.SScreenScroll = -string.len(self.TopScreenText)
+			end
 		end
 	end
 	cam.Start3D2D(self.DisplayPos, self.displayangle1, 0.055)
 			surface.SetDrawColor( 0, 255, 0, 200 )
 			surface.DrawRect( 0, 0, 77, 24 ) 
 			if string.len(self.TopScreenText) > 11 then
-				draw.SimpleText( string.Right(string.Left( "             "..self.TopScreenText.."             ", self.SScreenScroll ),11), "ARCBankATM",0,0, Color(0,0,0,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_BOTTOM  )
+				draw.SimpleText( ARCLib.ScrollChars(self.TopScreenText,self.SScreenScroll,11), "ARCBankATM",0,0, Color(0,0,0,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_BOTTOM  )
 			else
 				draw.SimpleText( self.TopScreenText, "ARCBankATM",0,0, Color(0,0,0,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_BOTTOM  )
 			end
 			if string.len(self.BottomScreenText) > 11 then
-				draw.SimpleText( string.Right(string.Left( "             "..self.BottomScreenText.."             ", self.ScreenScroll ),11), "ARCBankATM",0,12, Color(0,0,0,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_BOTTOM  )
+				draw.SimpleText( ARCLib.ScrollChars(self.BottomScreenText,self.ScreenScroll,11), "ARCBankATM",0,12, Color(0,0,0,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_BOTTOM  )
 			else
 				draw.SimpleText( self.BottomScreenText, "ARCBankATM",0,12, Color(0,0,0,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_BOTTOM  )
 			end

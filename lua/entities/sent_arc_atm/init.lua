@@ -379,6 +379,7 @@ function ENT:ATM_USE(activator)
 			
 		end
 	end
+	return true
 end
 
 util.AddNetworkString( "ARCATM_COMM_CASH" )

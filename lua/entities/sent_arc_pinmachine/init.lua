@@ -126,9 +126,9 @@ function ENT:ATM_USE(ply)
 				ARCLib.NotifyPlayer(ply,ARCBANK_ERRORSTRINGS[errcode],NOTIFY_ERROR,5,true)
 			end
 		end)
-
+		return true
 	else
-		ARCLib.NotifyPlayer(ply,ARCBank.Msgs.CardMsgs.NoCard,NOTIFY_GENERIC,5,true)
+		return false
 	end
 end
 function ENT:SetScreenMsg(strtop,strbottom)
