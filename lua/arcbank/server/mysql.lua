@@ -134,7 +134,6 @@ function ARCBank.MySQL.Connect()
 		local function gqonError( err, sql )
 			ARCBank.Msg( "Unable to create group account table. "..tostring(err) )
 		end
-		gq:start()
 		ARCBank.MySQL.CreateQuery("CREATE TABLE IF NOT EXISTS arcbank_group_account(filename varchar(255),isgroup boolean,name varchar(255),owner varchar(255),money BIGINT,rank int);",gqonSuccess,gqonError)
 	end
 
