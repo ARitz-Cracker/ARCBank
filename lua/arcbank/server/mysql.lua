@@ -6,20 +6,30 @@
 -- I actually got off my ass and started to make ARCBank compatable with MySQL. 
 -- After started, I realized that this... WILL BE HARD!	
 
+local MYSQL_TYPE = 0
+
 if system.IsLinux() then
 	ARCBank.Msg(table.Random{"You know, I created a skin using LXDE that made ubuntu look like, sound like, and feel like windows 98.","GANOO/LOONIX","I <3 Linux","Linux is best","I don't like systemd."})
-	if file.Exists( "lua/bin/gmsv_mysqloo_linux.dll", "MOD") then
+	if file.Exists( "lua/bin/gmsv_tmysql4_linux.dll", "MOD") then
+		MYSQL_TYPE = 2
+		require( "tmysql4" )
+	elseif file.Exists( "lua/bin/gmsv_mysqloo_linux.dll", "MOD") then
+		MYSQL_TYPE = 1
 		require( "mysqloo" )
 	end
-	if file.Exists( "lua/bin/gmsv_mysqloo_win32.dll", "MOD") then
+	if file.Exists( "lua/bin/gmsv_mysqloo_win32.dll", "MOD") || file.Exists( "lua/bin/gmsv_tmysql4_win32.dll", "MOD") then
 		ARCBank.Msg("...You do realize that you tried to install a windows .dll on a linux machine, right?")
 	end
 elseif system.IsWindows() then
-	ARCBank.Msg("Yeah, go ahead and waste system resources on GUIs that people won't see.")
-	if file.Exists( "lua/bin/gmsv_mysqloo_win32.dll", "MOD") then
+	ARCBank.Msg(table.Random{"Windows server... >_>","I hope you aren't using a windows server by choice.","Once you learn a little bit more about computers in general, you'll hate windows server. (Unless you're an idiot.)"})
+	if file.Exists( "lua/bin/gmsv_tmysql4_win32.dll", "MOD") then
+		MYSQL_TYPE = 2
+		require( "tmysql4" )
+	elseif file.Exists( "lua/bin/gmsv_mysqloo_win32.dll", "MOD") then
+		MYSQL_TYPE = 1
 		require( "mysqloo" )
 	end
-	if file.Exists( "lua/bin/gmsv_mysqloo_linux.dll", "MOD") then
+	if file.Exists( "lua/bin/gmsv_mysqloo_linux.dll", "MOD") || file.Exists( "lua/bin/gmsv_tmysql4_linux.dll", "MOD") then
 		ARCBank.Msg("...You do realize that you tried to install a linux .dll on a windows machine, right?")
 	end
 elseif system.IsOSX() then
@@ -37,28 +47,69 @@ ARCBank.MySQL.Password = "password"
 ARCBank.MySQL.DatabaseName = "arcbank"
 ARCBank.MySQL.DatabasePort = 3306
 
+function ARCBank.MySQL.Escape(str)
+	if MYSQL_TYPE == 1 then
+		return ARCBank.DataBase:escape(str)
+	elseif MYSQL_TYPE == 2 then
+		return ARCBank.DataBase:Escape(str)
+	end
+end
+
+function ARCBank.MySQL.CreateQuery(str,succfunc,errfunc)
+	if MYSQL_TYPE == 1 then
+		local q = ARCBank.DataBase:query( str )
+		function q:onSuccess( data )
+			succfunc(data)
+		end
+		function q:onError( err, sqlq )
+			errfunc(err,sqlq)
+		end
+		q:start()
+	elseif MYSQL_TYPE == 2 then
+		local function onCompleted( results )
+			if #results == 1 then
+				if results[1].status then
+					succfunc(results[1].data)
+				else
+					errfunc(results[1].error,str)
+				end
+				ARCBank.Msg("tmysql4 query took "..results[1].time.." seconds and affected "..results[1].affected.." rows with error "..tostring(results[1].error) )
+			else
+				ARCBank.Msg("I HAVE NO IDEA WHAT TO DO WITH THE RESULT TO QUERY: "..str)
+				ARCBank.Msg("The result table was as follows:")
+				PrintTable(results)
+				ARCBank.Msg("Finished printing result to console.")
+				errfunc("ARCBank tmysql4 support error!",str)
+			end
+			print( "Query completed" )
+			PrintTable( results[1].data )
+		end
+
+		ARCBank.DataBase:Query( str, onCompleted )
+	end
+end
 
 function ARCBank.MySQL.Connect()
 	ARCBank.Msg("INITIALIZING MYSQL SEQUENCE!")
-	if !mysqloo then
-		ARCBank.Msg("MySQLOO Not found.")
-		ARCBank.Msg("You might wanna go here. http://facepunch.com/showthread.php?t=1357773")
-		return
+	if MYSQL_TYPE == 0 then
+		ARCBank.Msg("No suitable MySQL module has been found. This addon supports MySQLOO or tmysql4 is supported.")
+		ARCBank.Msg("You can download tmysql4 here: https://facepunch.com/showthread.php?t=1442438")
+		return 
 	end
-	ARCBank.DataBase = mysqloo.connect( ARCBank.MySQL.Host, ARCBank.MySQL.Username, ARCBank.MySQL.Password, ARCBank.MySQL.DatabaseName, ARCBank.MySQL.DatabasePort )
+	if MYSQL_TYPE == 1 then
+		ARCBank.Msg("Still running MySQLOO? Why not try tmysql4? MySQLOO is full of memory-leaks and crashes.")
+		ARCBank.Msg("You can download tmysql4 here: https://facepunch.com/showthread.php?t=1442438")
+	end
+	
 
-	function ARCBank.DataBase:onConnected()
+	local function onConnected()
 
 		ARCBank.Msg( "Database connected. Good, nothing broke" )
-		local gq = self:query( "CREATE TABLE IF NOT EXISTS arcbank_group_account(filename varchar(255),isgroup boolean,name varchar(255),owner varchar(255),money BIGINT,rank int);" )
-		function gq:onSuccess( data )
+		local function gqonSuccess( data )
 			ARCBank.Msg("Created/Verified Group account table!")
-			local pq = ARCBank.DataBase:query( "CREATE TABLE IF NOT EXISTS arcbank_personal_account(filename varchar(255),isgroup boolean,name varchar(255),money BIGINT,rank int);" )
-			function pq:onSuccess( data )
+			function pqonSuccess( data )
 				ARCBank.Msg("Created/Verified Personal account table!")
-				
-				local aq = ARCBank.DataBase:query( "CREATE TABLE IF NOT EXISTS arcbank_account_members(filename varchar(255),steamid varchar(255));" )
-				function aq:onSuccess( data )
+				function aqonSuccess( data )
 					ARCBank.Msg("Created/Verified account members table!")
 					ARCBank.Loaded = true
 					ARCBank.Busy = false
@@ -66,45 +117,62 @@ function ARCBank.MySQL.Connect()
 					ARCBank.CapAccountRank();
 			
 				end
-				function aq:onError( err, sql )
+				function aqonError( err, sql )
 					ARCBank.Msg( "Unable to create account members table. "..tostring(err) )
 				end
-				aq:start()
+				ARCBank.MySQL.CreateQuery("CREATE TABLE IF NOT EXISTS arcbank_account_members(filename varchar(255),steamid varchar(255));",aqonSuccess,aqonError)
 				--lua_run ARCBank.CreateAccount(player.GetAll()[1],1,1000,"",function(err) MsgN(err) end)
 			end
 	
-			function pq:onError( err, sql )
+			function pqonError( err, sql )
 				ARCBank.Msg( "Unable to create personal account table. "..tostring(err) )
 			end
-			pq:start()
-			
+			ARCBank.MySQL.CreateQuery("CREATE TABLE IF NOT EXISTS arcbank_personal_account(filename varchar(255),isgroup boolean,name varchar(255),money BIGINT,rank int);",pqonSuccess,pqonError)
 			
 		end
 	
-		function gq:onError( err, sql )
+		local function gqonError( err, sql )
 			ARCBank.Msg( "Unable to create group account table. "..tostring(err) )
 		end
 		gq:start()
-
+		ARCBank.MySQL.CreateQuery("CREATE TABLE IF NOT EXISTS arcbank_group_account(filename varchar(255),isgroup boolean,name varchar(255),owner varchar(255),money BIGINT,rank int);",gqonSuccess,gqonError)
 	end
 
-	function ARCBank.DataBase:onConnectionFailed( err )
+
+	
+	
+	local function onConnectionFailed( err )
 
 		ARCBank.Msg( "...SOMETHING BROKE! "..tostring(err) )
 
 	end
 	
 	ARCBank.Msg("Connecting to database. Hopefully nothing blows up....")
-	ARCBank.DataBase:connect()
+	if MYSQL_TYPE == 1 then
+		ARCBank.DataBase = mysqloo.connect( ARCBank.MySQL.Host, ARCBank.MySQL.Username, ARCBank.MySQL.Password, ARCBank.MySQL.DatabaseName, ARCBank.MySQL.DatabasePort )
+		function ARCBank.DataBase:onConnectionFailed( err )
+			onConnectionFailed(err)
+		end
+		function ARCBank.DataBase:onConnected()
+			onConnected()
+		end
+		ARCBank.DataBase:connect()
+	elseif MYSQL_TYPE == 2 then
+		local Database, err = tmysql.Connect(ARCBank.MySQL.Host, ARCBank.MySQL.Username, ARCBank.MySQL.Password, ARCBank.MySQL.DatabaseName, ARCBank.MySQL.DatabasePort, nil, CLIENT_MULTI_STATEMENTS)
+		ARCBank.DataBase = Database
+		MsgN("DATABASE: "..DataBase)
+		MsgN("ERR: "..tostring(err))
+		onConnected()
+	end
+	
 
 end
 function ARCBank.MySQL.Query(str,callback)
-	local q = ARCBank.DataBase:query( str )
-	function q:onSuccess( data )
+	local function onSuccess( data )
 		callback(true,data)
 	end
 	
-	function q:onError( err, sqlq )
+	local function onError( err, sqlq )
 		ARCBank.Msg( "MySQL ERROR: "..tostring(err))
 		ARCBank.Msg( "In Query ("..tostring(sqlq)..")")
 		ARCBank.Msg(tostring(#err).." - "..tostring(#sqlq))
@@ -133,13 +201,11 @@ function ARCBank.MySQL.Query(str,callback)
 			ARCBank.Msg( "REPORT THIS TO ARITZ CRACKER ASAP!!! (Unless it's your fault)" )
 		end
 	end
-
-	q:start()
+	ARCBank.MySQL.CreateQuery(str,onSuccess,onError)
 end
 --
 function ARCBank.MySQL.RunCustomCommand(str)
-	local q = ARCBank.DataBase:query( str )
-	function q:onSuccess( data )
+	local function onSuccess( data )
 		print( "Query successful!" )
 		print(#data)
 		PrintTable( data )
@@ -149,7 +215,7 @@ function ARCBank.MySQL.RunCustomCommand(str)
 	
 	end
 	
-	function q:onError( err, sql )
+	local function onError( err, sql )
 
 		print( "Query errored!" )
 		print( "Query:", sql )
@@ -157,7 +223,7 @@ function ARCBank.MySQL.RunCustomCommand(str)
 	
 	end
 
-	q:start()
+	ARCBank.MySQL.CreateQuery(str,onSuccess,onError)
 end
 
 ARCBank.Commands["mysql"] = {
@@ -185,9 +251,9 @@ ARCBank.Commands["mysql"] = {
 							for kk,vv in pairs(v.members) do
 								table.insert(Queries,"INSERT INTO arcbank_account_members (filename,steamid) VALUES ('"..v.filename.."','"..vv.."')")
 							end
-							table.insert(Queries,"INSERT INTO arcbank_group_account (filename, isgroup, name, owner, money, rank) VALUES ('"..tostring(v.filename).."',"..tostring(v.isgroup)..",'"..ARCBank.DataBase:escape(tostring(v.name)).."','"..tostring(v.owner).."',"..tonumber(v.money)..","..tostring(v.rank).."); ")
+							table.insert(Queries,"INSERT INTO arcbank_group_account (filename, isgroup, name, owner, money, rank) VALUES ('"..tostring(v.filename).."',"..tostring(v.isgroup)..",'"..ARCBank.MySQL.Escape(tostring(v.name)).."','"..tostring(v.owner).."',"..tonumber(v.money)..","..tostring(v.rank).."); ")
 						else
-							table.insert(Queries,"INSERT INTO arcbank_personal_account (filename, isgroup, name, money, rank) VALUES ('"..tostring(v.filename).."',"..tostring(v.isgroup)..",'"..ARCBank.DataBase:escape(tostring(v.name)).."',"..tonumber(v.money)..","..tostring(v.rank).."); ")
+							table.insert(Queries,"INSERT INTO arcbank_personal_account (filename, isgroup, name, money, rank) VALUES ('"..tostring(v.filename).."',"..tostring(v.isgroup)..",'"..ARCBank.MySQL.Escape(tostring(v.name)).."',"..tonumber(v.money)..","..tostring(v.rank).."); ")
 						end
 					end
 					

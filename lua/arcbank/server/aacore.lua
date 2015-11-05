@@ -146,15 +146,15 @@ function ARCBank.WriteAccountFile(accounttable,callback)
 				end
 				if accounttable.isgroup then
 					if !data.filename then
-						ARCBank.MySQL.Query("INSERT INTO arcbank_group_account (filename, isgroup, name, owner, money, rank) VALUES ('"..tostring(accounttable.filename).."',"..tostring(accounttable.isgroup)..",'"..ARCBank.DataBase:escape(tostring(accounttable.name)).."','"..tostring(accounttable.owner).."',"..accounttable.money..","..tostring(accounttable.rank).."); ",gWriteCallback)
+						ARCBank.MySQL.Query("INSERT INTO arcbank_group_account (filename, isgroup, name, owner, money, rank) VALUES ('"..tostring(accounttable.filename).."',"..tostring(accounttable.isgroup)..",'"..ARCBank.MySQL.Escape(tostring(accounttable.name)).."','"..tostring(accounttable.owner).."',"..accounttable.money..","..tostring(accounttable.rank).."); ",gWriteCallback)
 					else
 						ARCBank.MySQL.Query("UPDATE arcbank_group_account SET money="..accounttable.money..", rank="..tostring(accounttable.rank).." WHERE filename='"..tostring(accounttable.filename).."';",gWriteCallback)
 					end
 				else
 					if !data.filename then
-						ARCBank.MySQL.Query("INSERT INTO arcbank_personal_account (filename, isgroup, name, money, rank) VALUES ('"..tostring(accounttable.filename).."',"..tostring(accounttable.isgroup)..",'"..ARCBank.DataBase:escape(tostring(accounttable.name)).."',"..tonumber(accounttable.money)..","..tostring(accounttable.rank).."); ",writeCallback)
+						ARCBank.MySQL.Query("INSERT INTO arcbank_personal_account (filename, isgroup, name, money, rank) VALUES ('"..tostring(accounttable.filename).."',"..tostring(accounttable.isgroup)..",'"..ARCBank.MySQL.Escape(tostring(accounttable.name)).."',"..tonumber(accounttable.money)..","..tostring(accounttable.rank).."); ",writeCallback)
 					else
-						ARCBank.MySQL.Query("UPDATE arcbank_personal_account SET name='"..ARCBank.DataBase:escape(accounttable.name).."', money="..accounttable.money..", rank="..tostring(accounttable.rank).." WHERE filename='"..tostring(accounttable.filename).."';",writeCallback)
+						ARCBank.MySQL.Query("UPDATE arcbank_personal_account SET name='"..ARCBank.MySQL.Escape(accounttable.name).."', money="..accounttable.money..", rank="..tostring(accounttable.rank).." WHERE filename='"..tostring(accounttable.filename).."';",writeCallback)
 					end
 				end
 			else
