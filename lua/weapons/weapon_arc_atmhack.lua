@@ -213,7 +213,7 @@ end
 
 function SWEP:Holster()
 	
-	if CLIENT and IsValid(self.Owner) then
+	if CLIENT and IsValid(self.Owner) and self.Owner:IsPlayer() then
 		local vm = self.Owner:GetViewModel()
 		if IsValid(vm) then
 			self:ResetBonePositions(vm)
