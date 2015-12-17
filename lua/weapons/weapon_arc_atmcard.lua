@@ -250,7 +250,7 @@ function SWEP:PrimaryAttack()
 	if trace.HitPos:Distance(self:GetPos()) < 75 then
 		if isfunction(trace.Entity.ATM_USE) then
 			if (!trace.Entity:ATM_USE(self.Owner)) then
-				ARCLib.NotifyPlayer(activator,ARCBank.Msgs.CardMsgs.NoCard,NOTIFY_GENERIC,5,true)
+				ARCLib.NotifyPlayer(self.Owner,ARCBank.Msgs.CardMsgs.NoCard,NOTIFY_GENERIC,5,true)
 			end
 		else
 			ARCLib.NotifyPlayer(self.Owner,ARCBank.Msgs.UserMsgs.CardNo,NOTIFY_GENERIC,5,true)

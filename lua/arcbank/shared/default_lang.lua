@@ -383,6 +383,8 @@ ARCBank.SettingsDesc["atm_hack_radar"] = "Cops will have an icon on their screen
 ARCBank.SettingsDesc["atm_hack_allowed"] = "Players on these teams will be able to use a hacking device."
 ARCBank.SettingsDesc["atm_hack_allowed_use"] = "Enable/Disable the atm_hack_allowed setting"
 
+ARCBank.Settings["atm_hack_noob_chat"] = "When enabled, players will automatically say \"I AM A NOOB HACKER!\" when an ATM hack fails."
+
 ARCBank.SettingsDesc["language"] = "Which language file to use. (without .txt) they are located in data/_arcbank/languages. Defaults: en fr ger pt_br sp nl ru"
 ARCBank.SettingsDesc["use_bank_for_payday"] = "Payday checks will be sent to your Bank account."
 ARCBank.SettingsDesc["atm_holo"] = "Floating sign above the ATM"

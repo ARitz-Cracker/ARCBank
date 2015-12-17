@@ -136,9 +136,9 @@ else
 
 	hook.Add( "PlayerGetSalary", "ARCBank PaydayATM DRP2.4", function(ply, amount)
 		if ARCBank.Settings["use_bank_for_payday"] && amount > 0 then
-			local pay = ply:GetDarkRPVar("money")
+			local pay = ply.DarkRPVars["money"]
 			timer.Simple(0.01,function()
-				pay = ply:GetDarkRPVar("money") - pay 
+				pay = ply.DarkRPVars["money"] - pay 
 				if pay <= 0 then return end
 				ARCBank.AtmFunc(ply,pay,"",function(errcode)
 					if errcode == 0 then

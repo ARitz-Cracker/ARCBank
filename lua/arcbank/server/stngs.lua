@@ -59,6 +59,8 @@ function ARCBank.SettingsReset() --DO NOT EDIT THIS!!!!
 	ARCBank.Settings["atm_hack_allowed_use"] = false
 	ARCBank.Settings["atm_hack_allowed"] = {"TEAM_GANG","TEAM_MOB","TEAM_POLICE","TEAM_MAYOR","TEAM_CHIEF"}
 	ARCBank.Settings["atm_hack_radar"] = true
+
+	ARCBank.Settings["atm_hack_noob_chat"] = true
 	
 	ARCBank.Settings["language"] = "en" --DO NOT EDIT THIS!!!!
 	
