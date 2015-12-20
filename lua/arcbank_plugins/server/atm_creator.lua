@@ -49,7 +49,7 @@ if ARCBank then
 						ATMCreationTable.CardInsertAnimationAng = angle_zero
 						
 						ATMCreationTable.CardRemoveAnimationPos = vector_origin
-						ATMCreationTable.CardInsertAnimationSpeed = vector_origin
+						ATMCreationTable.CardRemoveAnimationSpeed = vector_origin
 						ATMCreationTable.CardRemoveAnimationAng = angle_zero
 						
 						ATMCreationTable.CardInsertAnimation = ""
