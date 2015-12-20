@@ -103,7 +103,7 @@ net.Receive( "ARCCHIPMACHINE_MENU_CUSTOMER", function(length)
 		ent:EmitSound("buttons/button18.wav",75,255)
 		ent.FromAccount = value
 	end--$é
-	AccountSelect:SetText(ent.FromAccount)
+	AccountSelect:SetText(ent.FromAccount or ARCBank.Msgs.ATMMsgs.PersonalAccount)
 	for i=1,#accounts do
 		AccountSelect:AddChoice(accounts[i])
 	end
@@ -218,7 +218,7 @@ net.Receive( "ARCCHIPMACHINE_MENU_OWNER", function(length)
 		ent:EmitSound("buttons/button18.wav",75,255)
 		ent.ToAccount = value
 	end
-	AccountSelect:SetText(tostring(ent.ToAccount))
+	AccountSelect:SetText(ent.ToAccount or ARCBank.Msgs.ATMMsgs.PersonalAccount)
 	for i=1,#accounts do
 		AccountSelect:AddChoice(accounts[i])
 	end
