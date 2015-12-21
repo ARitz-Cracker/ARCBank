@@ -978,7 +978,7 @@ function ARCBank.PlayerAddMoney(ply,amount)
 			amount = amount * -1
 			ply:TakeItem("item_money", amount)
 		end
-	elseif string.lower(GAMEMODE.Name) == "underdone" then
+	elseif string.lower(GAMEMODE.Name) == "underdone - rpg" then
 		if amount > 0 then
 			ply:AddItem("money", amount)
 		else
