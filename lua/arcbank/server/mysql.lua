@@ -241,7 +241,7 @@ ARCBank.Commands["mysql"] = {
 				end
 				ARCBank.Busy = true
 				if errcode == 0 then
-					Queries = {}
+					local Queries = {}
 					table.insert(Queries,"DELETE FROM arcbank_account_members")
 					table.insert(Queries,"DELETE FROM arcbank_group_account")
 					table.insert(Queries,"DELETE FROM arcbank_personal_account")
