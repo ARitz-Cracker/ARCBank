@@ -229,7 +229,7 @@ ARCBank.Commands["mysql"] = {
 	command = function(ply,args) 
 		if !ARCBank.Loaded then ARCBank.MsgCL(ply,"System reset required!") return end -- This is just to check if the ARCBank system is working properly. 
 		if !ARCBank.IsMySQLEnabled() then ARCBank.MsgCL(ply,"MySQL must be enabled.") return end
-		if (IsValid(ply) || ply:IsPlayer()) && !ply:SteamID() == "STEAM_0:0:18610144" then -- For Singleplayer and localhost testing. Note: Remove SteamID when released.
+		if (IsValid(ply) && ply:IsPlayer() && !ply:IsListenServerHost()) then -- For Singleplayer and localhost testing. Note: Remove SteamID when released.
 			ARCBank.MsgCL(ply,"This command cannot be used by a player.")
 			return
 		end
