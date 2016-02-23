@@ -867,7 +867,7 @@ function ENT:Screen_Log()
 	surface.DrawOutlinedRect( -137, 112, 274, 20)
 	for i = 1,20 do
 		if self.LogTable[i+((self.LogPage-1)*20)] then
-			draw.SimpleText(self.LogTable[i+((self.LogPage-1)*20)],"ARCBankATMSmall", -135, -130+(i*12), Color(textcol,textcol,textcol,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_TOP  )
+			draw.SimpleText(self.LogTable[i+((self.LogPage-1)*20)],"ARCBankATMSmall", -135, -130+(i*12), Color(textcol,textcol,textcol,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_BOTTOM  )
 		end
 	end
 	draw.SimpleText("<< "..ARCBank.Msgs.ATMMsgs.FilePrev,"ARCBankATMBigger", -135, 122, Color(textcol,textcol,textcol,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_CENTER  )
@@ -889,7 +889,7 @@ function ENT:Screen_Options()
 			surface.SetDrawColor( light, light, light, 255 )
 			surface.DrawOutlinedRect( xpos, ypos, 134, 40)
 			for ii = 1,#fitstr do
-				draw.SimpleText( fitstr[ii], "ARCBankATMNormal",xpos+37+((i%2)*63), ypos+((ii-1)*12), Color(light,light,light,255), (i%2)*2 , TEXT_ALIGN_BOTTOM  )
+				draw.SimpleText( fitstr[ii], "ARCBankATMNormal",xpos+37+((i%2)*63), ypos+((ii-1)*12), Color(light,light,light,255), (i%2)*2 , TEXT_ALIGN_TOP  )
 			end
 			surface.SetDrawColor( 255, 255, 255, 255 )
 			surface.SetTexture(ARCLib.Icons32t[self.ScreenOptions[i+(self.Page*8)].icon])
@@ -950,23 +950,23 @@ function ENT:Screen_HAX()
 		hackmsg = "Decoding Security Syetem"
 		for i=-12,13 do
 			if (self.Percent) > 0.005 then
-				draw.SimpleText( math.random(10000000000000,99999999999999), "ARCBankATM",self.Resolutionx/-2, i*12, Color(255,255,255,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_TOP  )
+				draw.SimpleText( math.random(10000000000000,99999999999999), "ARCBankATM",self.Resolutionx/-2, i*12, Color(255,255,255,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_BOTTOM  )
 			end
 			if (self.Percent) > 0.0195 then
-				draw.SimpleText( math.random(10000000000000,99999999999999), "ARCBankATM",-41, i*12, Color(255,255,255,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_TOP  ) 	
+				draw.SimpleText( math.random(10000000000000,99999999999999), "ARCBankATM",-41, i*12, Color(255,255,255,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_BOTTOM  ) 	
 			end
 			if (self.Percent) > 0.030 then
-				draw.SimpleText( math.random(100000000000,999999999999), "ARCBankATM",57, i*12, Color(255,255,255,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_TOP  ) 	
+				draw.SimpleText( math.random(100000000000,999999999999), "ARCBankATM",57, i*12, Color(255,255,255,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_BOTTOM  ) 	
 			end
 		end
 	else
 		--[[
 		hackmsg = "Accesing Network..."
-		draw.SimpleText( "Using username \"root\"", "ARCBankATM",self.Resolutionx/-2, -140, Color(255,255,255,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_TOP  )
-		draw.SimpleText( "Authenticating...", "ARCBankATM",self.Resolutionx/-2, -124, Color(255,255,255,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_TOP  )
-		draw.SimpleText( "Login Successful!", "ARCBankATM",self.Resolutionx/-2, -108, Color(255,255,255,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_TOP  )
-		draw.SimpleText( "**ARCBank ATM**", "ARCBankATM",self.Resolutionx/-2, -92, Color(255,255,255,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_TOP  )
-		draw.SimpleText( "root@atm_"..tostring(self:EntIndex()).."~$", "ARCBankATM",self.Resolutionx/-2, -76, Color(255,255,255,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_TOP  )
+		draw.SimpleText( "Using username \"root\"", "ARCBankATM",self.Resolutionx/-2, -140, Color(255,255,255,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_BOTTOM  )
+		draw.SimpleText( "Authenticating...", "ARCBankATM",self.Resolutionx/-2, -124, Color(255,255,255,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_BOTTOM  )
+		draw.SimpleText( "Login Successful!", "ARCBankATM",self.Resolutionx/-2, -108, Color(255,255,255,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_BOTTOM  )
+		draw.SimpleText( "**ARCBank ATM**", "ARCBankATM",self.Resolutionx/-2, -92, Color(255,255,255,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_BOTTOM  )
+		draw.SimpleText( "root@atm_"..tostring(self:EntIndex()).."~$", "ARCBankATM",self.Resolutionx/-2, -76, Color(255,255,255,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_BOTTOM  )
 		]]
 	end
 	--[[

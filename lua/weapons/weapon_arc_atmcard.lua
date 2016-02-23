@@ -42,8 +42,8 @@ if CLIENT then
 			surface.SetTexture( self.WepSelectIcon ) 
 			--surface.DrawOutlinedRect( surface.ScreenWidth() - 512, surface.ScreenHeight() - 256, 512, 256 )
 			surface.DrawTexturedRect( surface.ScreenWidth() - 512, surface.ScreenHeight() - 256, 512, 256 )
-			draw.SimpleText(self.Owner:SteamID(), "ARCBankCard", surface.ScreenWidth() - 430, surface.ScreenHeight() - 94, Color(255,255,255,200), TEXT_ALIGN_LEFT, TEXT_ALIGN_BOTTOM)
-			draw.SimpleText(self.Owner:Nick(), "ARCBankCard", surface.ScreenWidth() - 430, surface.ScreenHeight() - 55, Color(255,255,255,200), TEXT_ALIGN_LEFT, TEXT_ALIGN_BOTTOM)
+			draw.SimpleText(self.Owner:SteamID(), "ARCBankCard", surface.ScreenWidth() - 430, surface.ScreenHeight() - 94, Color(255,255,255,200), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
+			draw.SimpleText(self.Owner:Nick(), "ARCBankCard", surface.ScreenWidth() - 430, surface.ScreenHeight() - 55, Color(255,255,255,200), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
 		--end
 	end
 		

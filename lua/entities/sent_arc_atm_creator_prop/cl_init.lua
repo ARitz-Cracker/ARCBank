@@ -126,7 +126,7 @@ function ENT:Screen_Options()
 		surface.SetDrawColor( light, light, light, 255 )
 		surface.DrawOutlinedRect( xpos, ypos, 134, 40)
 		for ii = 1,#fitstr do
-			draw.SimpleText( fitstr[ii], "ARCBankATMNormal",xpos+37+((i%2)*63), ypos+((ii-1)*12), Color(light,light,light,255), (i%2)*2 , TEXT_ALIGN_BOTTOM  )
+			draw.SimpleText( fitstr[ii], "ARCBankATMNormal",xpos+37+((i%2)*63), ypos+((ii-1)*12), Color(light,light,light,255), (i%2)*2 , TEXT_ALIGN_TOP  )
 		end
 		surface.SetDrawColor( 255, 255, 255, 255 )
 		surface.SetTexture(ARCLib.Icons32t["information"])

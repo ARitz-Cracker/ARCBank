@@ -228,13 +228,13 @@ function SWEP:OnRemove()
 end
 function SWEP:DrawHUD()
 		local power = math.floor((0-ARCBank.Settings["atm_hack_charge_rate"])*(self.energystart - CurTime()))
-		draw.SimpleText( ARCBank.Msgs.Hack.Power..tostring(ARCLib.TimeString(power,ARCBank.Msgs.Time)),"ARCBankCard", surface.ScreenWidth() - 48*2, surface.ScreenHeight() - 48 - 24, Color(255,255,0,255),TEXT_ALIGN_RIGHT , TEXT_ALIGN_TOP  ) 
+		draw.SimpleText( ARCBank.Msgs.Hack.Power..tostring(ARCLib.TimeString(power,ARCBank.Msgs.Time)),"ARCBankCard", surface.ScreenWidth() - 48*2, surface.ScreenHeight() - 48 - 24, Color(255,255,0,255),TEXT_ALIGN_RIGHT , TEXT_ALIGN_BOTTOM  ) 
 		if power < (self.hacktime - self.hacktimeoff) then
-			draw.SimpleText( ARCBank.Msgs.Hack.NoEnergy,"ARCBankCard", surface.ScreenWidth() - 48*2, surface.ScreenHeight() - 48, Color(255,0,0,255),TEXT_ALIGN_RIGHT , TEXT_ALIGN_TOP  )
+			draw.SimpleText( ARCBank.Msgs.Hack.NoEnergy,"ARCBankCard", surface.ScreenWidth() - 48*2, surface.ScreenHeight() - 48, Color(255,0,0,255),TEXT_ALIGN_RIGHT , TEXT_ALIGN_BOTTOM  )
 		elseif power > (self.hacktime + self.hacktimeoff) then
-			draw.SimpleText( ARCBank.Msgs.Hack.GoodEnergy,"ARCBankCard", surface.ScreenWidth() - 48*2, surface.ScreenHeight() - 48, Color(0,255,0,255),TEXT_ALIGN_RIGHT , TEXT_ALIGN_TOP  )
+			draw.SimpleText( ARCBank.Msgs.Hack.GoodEnergy,"ARCBankCard", surface.ScreenWidth() - 48*2, surface.ScreenHeight() - 48, Color(0,255,0,255),TEXT_ALIGN_RIGHT , TEXT_ALIGN_BOTTOM  )
 		else
-			draw.SimpleText( ARCBank.Msgs.Hack.Chance..tostring(math.floor(((power - (self.hacktime - self.hacktimeoff))/(2*self.hacktimeoff))*100)).."%","ARCBankCard", surface.ScreenWidth() - 48*2, surface.ScreenHeight() - 48, Color(255,255,0,255),TEXT_ALIGN_RIGHT , TEXT_ALIGN_TOP  )
+			draw.SimpleText( ARCBank.Msgs.Hack.Chance..tostring(math.floor(((power - (self.hacktime - self.hacktimeoff))/(2*self.hacktimeoff))*100)).."%","ARCBankCard", surface.ScreenWidth() - 48*2, surface.ScreenHeight() - 48, Color(255,255,0,255),TEXT_ALIGN_RIGHT , TEXT_ALIGN_BOTTOM  )
 		end
 end
 if CLIENT then

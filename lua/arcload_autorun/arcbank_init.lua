@@ -17,7 +17,7 @@ function ARCBank.Msg(msg)
 end
 ARCBank.Msg("Running...\n ____ ____ _ ___ ___     ____ ____ ____ ____ _  _ ____ ____    ___  ____ _  _ _  _ _ _  _ ____ \n |__| |__/ |  |    /     |    |__/ |__| |    |_/  |___ |__/    |__] |__| |\\ | |_/  | |\\ | | __ \n |  | |  \\ |  |   /__    |___ |  \\ |  | |___ | \\_ |___ |  \\    |__] |  | | \\| | \\_ | | \\| |__] \n")
 ARCBank.Msg(table.Random({"tbh script enforcer is kinda shit.","I am embarrassed to say that there was a bug from v1.0 to v1.3 that made arguably one of the most important settings useless...","I technically have the biggest back-door in the history of GMod","Super fukin' Sexy edition!","The most realistic ATM system you'll ever see!","Wohoo! Automatic updates!","...I can never get a vacation...","I love you.","Isn't this amazing?","That's one fiiiine addon you got there!","Update, Update, Update!","You can ACTUALLY use an ATM!","Fixin' Bugs!"}))
-ARCBank.Msg("© Copyright 2014,2015 Aritz Beobide-Cardinal (ARitz Cracker) All rights reserved.")
+ARCBank.Msg("© Copyright 2014-2016 Aritz Beobide-Cardinal (ARitz Cracker) All rights reserved.")
 
 
 
@@ -28,7 +28,7 @@ ARCBank.ARCSlotsReady = true
 
 ARCBank.About = [[      
              *** ARitz Cracker Bank ***
-    © Copyright Aritz Beobide-Cardinal 2014,2015
+    © Copyright Aritz Beobide-Cardinal 2014-2016
                 All rights reserved.
 				
 				

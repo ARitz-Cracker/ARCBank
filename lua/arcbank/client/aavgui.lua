@@ -186,11 +186,11 @@ function ARCBank_Draw:Window_MsgBox(x,y,l,title,text,dark,typ,icon,mat,col)
 		surface.SetTexture( icon )
 		surface.DrawTexturedRect( x+4, y+22, 32, 32 )
 		for i = 1,#fitstr do
-			draw.SimpleText( fitstr[i], "ARCBankATMBigger",x+38, y+(i*16)+10, Color(light,light,light,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_BOTTOM  )
+			draw.SimpleText( fitstr[i], "ARCBankATMBigger",x+38, y+(i*16)+10, Color(light,light,light,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_TOP  )
 		end
 	else
 		for i = 1,#fitstr do
-			draw.SimpleText( fitstr[i], "ARCBankATMBigger",x+(l*.5)+10, y+(i*16)+10, Color(light,light,light,255), TEXT_ALIGN_CENTER , TEXT_ALIGN_BOTTOM  )
+			draw.SimpleText( fitstr[i], "ARCBankATMBigger",x+(l*.5)+10, y+(i*16)+10, Color(light,light,light,255), TEXT_ALIGN_CENTER , TEXT_ALIGN_TOP  )
 		end
 	end
 	if typ == 1 then

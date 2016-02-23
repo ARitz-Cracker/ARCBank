@@ -54,14 +54,14 @@ function ENT:Draw()
 			surface.SetDrawColor( 0, 255, 0, 200 )
 			surface.DrawRect( 0, 0, 77, 24 ) 
 			if string.len(self.TopScreenText) > 11 then
-				draw.SimpleText( ARCLib.ScrollChars(self.TopScreenText,self.SScreenScroll,11), "ARCBankATM",0,0, Color(0,0,0,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_BOTTOM  )
+				draw.SimpleText( ARCLib.ScrollChars(self.TopScreenText,self.SScreenScroll,11), "ARCBankATM",0,0, Color(0,0,0,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_TOP  )
 			else
-				draw.SimpleText( self.TopScreenText, "ARCBankATM",0,0, Color(0,0,0,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_BOTTOM  )
+				draw.SimpleText( self.TopScreenText, "ARCBankATM",0,0, Color(0,0,0,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_TOP  )
 			end
 			if string.len(self.BottomScreenText) > 11 then
-				draw.SimpleText( ARCLib.ScrollChars(self.BottomScreenText,self.ScreenScroll,11), "ARCBankATM",0,12, Color(0,0,0,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_BOTTOM  )
+				draw.SimpleText( ARCLib.ScrollChars(self.BottomScreenText,self.ScreenScroll,11), "ARCBankATM",0,12, Color(0,0,0,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_TOP  )
 			else
-				draw.SimpleText( self.BottomScreenText, "ARCBankATM",0,12, Color(0,0,0,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_BOTTOM  )
+				draw.SimpleText( self.BottomScreenText, "ARCBankATM",0,12, Color(0,0,0,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_TOP  )
 			end
 	cam.End3D2D()
 end
