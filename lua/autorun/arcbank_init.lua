@@ -233,6 +233,7 @@ else
 end
 if !arcload_exists then
 	hook.Add("ARCLib_OnPlayerFullyLoaded","ARCBank DevLoad",function(ply)
+		ply.ARCLoad_Loaded = true
 		hook.Call( "ARCLoad_OnPlayerLoaded",GM,ply)
 	end)
 end

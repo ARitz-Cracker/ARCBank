@@ -480,7 +480,7 @@ function ARCBank.AddAccountInterest()
 	end
 	
 end
-
+--todo: Add compatibility with steamid.
 function ARCBank.RemoveAccount(ply,groupname,callback)
 	if !ARCBank.Loaded then callback(ARCBANK_ERROR_NOT_LOADED) return end
 	if ARCBank.Busy then callback(ARCBANK_ERROR_BUSY) return end
@@ -1028,7 +1028,6 @@ function ARCBank.AddMoney(ply,amount,groupaccount,reason,callback)
 					accountdata.money = accountdata.money + amount
 					ARCBank.WriteAccountFile(accountdata,function(diditwork) 
 						if diditwork then
-							callback(ARCBANK_ERROR_NONE)
 							if reason == "" then
 								reason = "No reason specified"
 							end
@@ -1037,6 +1036,7 @@ function ARCBank.AddMoney(ply,amount,groupaccount,reason,callback)
 							else
 								ARCBankAccountMsg(accountdata,string.Replace( string.Replace( ARCBank.Msgs.LogMsgs.RemoveMoney, "%VALUE%", tostring(-amount)), "%PLAYER%", ply:SteamID()).."["..tostring(reason).."]")
 							end
+							callback(ARCBANK_ERROR_NONE)
 						else
 							callback(ARCBANK_ERROR_WRITE_FAILURE)
 						end

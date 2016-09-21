@@ -402,7 +402,7 @@ net.Receive( "ARCATM_COMM_CASH", function(length,ply)
 		net.Start( "ARCATM_COMM_CASH" )
 		net.WriteEntity( atm )
 		net.WriteInt(ARCBANK_ERROR_EXPLOIT,ARCBANK_ERRORBITRATE)
-		net.Send(atm.UsePlayer)	
+		net.Send(ply)	
 		return
 	end
 	if amount < 0 then -- This should never happen, but apperently, unsigned ints turn into ints. Which kind makes the limit 2^31 - 1 instead of 2^32 - 1
