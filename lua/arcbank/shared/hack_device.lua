@@ -30,5 +30,5 @@ ARCBank.HackTimeCalculate = function(device,money,stealth)
 		error("ARCBank.HackTimeCalculate bad argument #1 table or valid entity expected got "..type(device))
 	end
 	local relTimeMax = ARCBank.HackTimeGetSetting(device,"TimeMax") - ARCBank.HackTimeGetSetting(device,"TimeMin")
-	return (ARCBank.HackTimeGetSetting(device,"TimeMin") + ARCLib.BetweenNumberScale(ARCBank.HackTimeGetSetting(device,"TimeMin"),money,ARCBank.HackTimeGetSetting(device,"TimeMax")) ^ ARCBank.HackTimeGetSetting(device,"TimeCurve") * relTimeMax)*(1+ARCLib.BoolToNumber(stealth)*ARCBank.HackTimeGetSetting(device,"TimeStealth"))
+	return (ARCBank.HackTimeGetSetting(device,"TimeMin") + ARCLib.BetweenNumberScale(ARCBank.HackTimeGetSetting(device,"MoneyMin"),money,ARCBank.HackTimeGetSetting(device,"MoneyMax")) ^ ARCBank.HackTimeGetSetting(device,"TimeCurve") * relTimeMax)*(1+ARCLib.BoolToNumber(stealth)*ARCBank.HackTimeGetSetting(device,"TimeStealth"))
 end

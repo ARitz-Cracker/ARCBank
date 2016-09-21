@@ -250,17 +250,17 @@ function SWEP:DrawHUD()
 	if (self.HackEnt) then
 		power = math.floor((0-ARCBank.Settings["atm_hack_charge_rate"])*(self.energystart - CurTime()))
 		
-		totalpower = power/(self.HackTime + self.HackTimeOff)
+		totalpower = math.Clamp(power/(self.HackTime + self.HackTimeOff),0,1)
 		succhance = ARCLib.BetweenNumberScale(self.HackTime - self.HackTimeOff,power,self.HackTime + self.HackTimeOff)
 		
 		self.TopScreenText = self.HackEnt.Name
-		self.MiddleScreenText = ARCBank.Msgs.Hack.Power..tostring(ARCLib.TimeString(3213,ARCBank.Msgs.Time))
+		self.MiddleScreenText = ARCBank.Msgs.Hack.Power..tostring(ARCLib.TimeString(power,ARCBank.Msgs.Time))
 		if power < (self.HackTime - self.HackTimeOff) then
 			self.BottomScreenText = ARCBank.Msgs.Hack.NoEnergy
 		elseif power > (self.HackTime + self.HackTimeOff) then
 			self.BottomScreenText = ARCBank.Msgs.Hack.GoodEnergy
 		else
-			self.BottomScreenText = ARCBank.Msgs.Hack.Chance..tostring(succhance*100).."%"
+			self.BottomScreenText = ARCBank.Msgs.Hack.Chance..math.floor(succhance*100).."%"
 		end
 		
 	else
@@ -269,7 +269,7 @@ function SWEP:DrawHUD()
 		self.BottomScreenText = ARCBank.Msgs.Hack.NoEntPlz
 	end
 	bartab[1] = succhance
-	bartab[2] = power
+	bartab[2] = totalpower
 	
 	if #self.BottomScreenText > 0 then
 		if self.ScreenScrollDelay < CurTime() && utf8.len(self.BottomScreenText) > 14 then
@@ -320,7 +320,7 @@ function SWEP:DrawHUD()
 	end
 	
 	if utf8.len(self.MiddleScreenText) > 14 then
-		draw.SimpleText( ARCLib.ScrollChars(self.MiddleScreenText,self.SScreenScroll,14), "ARCBankHacker",x,y+50, Color(0,0,0,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_TOP  )
+		draw.SimpleText( ARCLib.ScrollChars(self.MiddleScreenText,self.SSScreenScroll,14), "ARCBankHacker",x,y+50, Color(0,0,0,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_TOP  )
 	else
 		draw.SimpleText( self.MiddleScreenText, "ARCBankHacker",x,y+50, Color(0,0,0,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_TOP  )
 	end
@@ -340,7 +340,6 @@ function SWEP:DrawHUD()
 		
 	end
 	
-	draw.SimpleText( "Estimated time remaining" ,"ARCBankCard", surface.ScreenWidth() - 48*2, surface.ScreenHeight() - 48 - 24, Color(255,255,0,255),TEXT_ALIGN_RIGHT , TEXT_ALIGN_BOTTOM  ) 
 	--surface.SetDrawColor( 0,0, 0, 255 )
 	--surface.DrawOutlinedRect( (102)/-2, (202)/-2, 102, 202 )
 	--[[

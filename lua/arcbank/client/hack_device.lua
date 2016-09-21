@@ -69,9 +69,16 @@ net.Receive( "arcatmhack_gui", function(length)
 	
 	
 	local UpdateValues = function()
+		if !IsValid(weapon) then return end
 		weapon.HackTime = ARCBank.HackTimeCalculate(weapon.HackEnt,NumSlider2:GetValue(),StealthCheckbox:GetChecked())
 		weapon.HackTimeOff = ARCBank.HackTimeOffset(weapon.HackEnt,weapon.HackTime)
-		HackTimeL:SetText( ARCBank.Msgs.Hack.ETA..ARCLib.TimeString(weapon.hacktime,ARCBank.Msgs.Time).."\n"..ARCBank.Msgs.Hack.GiveOrTake..ARCLib.TimeString(weapon.hacktimeoff,ARCBank.Msgs.Time) )
+		weapon.ScreenScroll = 1
+		weapon.ScreenScrollDelay = CurTime() + 0.1
+		weapon.SScreenScroll = 1
+		weapon.SScreenScrollDelay = CurTime() + 0.1
+		weapon.SSScreenScroll = 1
+		weapon.SSScreenScrollDelay = CurTime() + 0.1
+		HackTimeL:SetText( ARCBank.Msgs.Hack.ETA..ARCLib.TimeString(weapon.HackTime,ARCBank.Msgs.Time).."\n"..ARCBank.Msgs.Hack.GiveOrTake..ARCLib.TimeString(weapon.HackTimeOff,ARCBank.Msgs.Time) )
 		HackTimeL:SizeToContents()
 	end
 	
@@ -103,7 +110,7 @@ net.Receive( "arcatmhack_gui", function(length)
 		net.Start("arcatmhack_gui")
 		net.WriteEntity(weapon)
 		net.WriteUInt(weapon.HackEnt._i,8)
-		net.WriteTable({math.Clamp(NumSlider2:GetValue(),0,ARCBank.Settings["hack_max"]),StealthCheckbox:GetChecked()})
+		net.WriteTable({math.Clamp(NumSlider2:GetValue(),ARCBank.HackTimeGetSetting(weapon.HackEnt,"MoneyMin"),ARCBank.HackTimeGetSetting(weapon.HackEnt,"MoneyMax")),StealthCheckbox:GetChecked()})
 		net.SendToServer()
 	end
 end)

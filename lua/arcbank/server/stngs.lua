@@ -60,12 +60,12 @@ function ARCBank.SettingsReset() --DO NOT EDIT THIS!!!!
 	ARCBank.Settings["atm_hack_min"] = 25 --DO NOT EDIT THIS!!!!
 	
 	
-	ARCBank.Settings["atm_hack_time_max"] = 300 --DO NOT EDIT THIS!!!!
+	ARCBank.Settings["atm_hack_time_max"] = 666 --DO NOT EDIT THIS!!!!
 	ARCBank.Settings["atm_hack_time_min"] = 20 --DO NOT EDIT THIS!!!!
 	
-	ARCBank.Settings["atm_hack_time_stealth_rate"] = 4 --DO NOT EDIT THIS!!!!
+	ARCBank.Settings["atm_hack_time_stealth_rate"] = 2.5 --DO NOT EDIT THIS!!!!
 	
-	ARCBank.Settings["atm_hack_time_curve"] = 1.5 --DO NOT EDIT THIS!!!!
+	ARCBank.Settings["atm_hack_time_curve"] = 2.25 --DO NOT EDIT THIS!!!!
 	
 	ARCBank.Settings["atm_hack_charge_rate"] = 1.5 --DO NOT EDIT THIS!!!!
 	
