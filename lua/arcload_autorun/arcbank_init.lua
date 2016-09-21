@@ -2,8 +2,7 @@
 -- Any 3rd party content has been used as either public domain or with permission.
 -- © Copyright 2014 Aritz Beobide-Cardinal All rights reserved.
 
---ENUMS FOR ARC BANKING SYSTEM!
---137164355
+
 ARCBank = ARCBank or {}
 function ARCBank.Msg(msg)
 	if ARCBank.Settings && ARCBank.Settings.name then
@@ -16,7 +15,7 @@ function ARCBank.Msg(msg)
 	end
 end
 ARCBank.Msg("Running...\n ____ ____ _ ___ ___     ____ ____ ____ ____ _  _ ____ ____    ___  ____ _  _ _  _ _ _  _ ____ \n |__| |__/ |  |    /     |    |__/ |__| |    |_/  |___ |__/    |__] |__| |\\ | |_/  | |\\ | | __ \n |  | |  \\ |  |   /__    |___ |  \\ |  | |___ | \\_ |___ |  \\    |__] |  | | \\| | \\_ | | \\| |__] \n")
-ARCBank.Msg(table.Random({"tbh script enforcer is kinda shit.","I am embarrassed to say that there was a bug from v1.0 to v1.3 that made arguably one of the most important settings useless...","I technically have the biggest back-door in the history of GMod","Super fukin' Sexy edition!","The most realistic ATM system you'll ever see!","Wohoo! Automatic updates!","...I can never get a vacation...","I love you.","Isn't this amazing?","That's one fiiiine addon you got there!","Update, Update, Update!","You can ACTUALLY use an ATM!","Fixin' Bugs!"}))
+ARCBank.Msg(table.Random({"Product of BlueStone Technological Enterprises Inc. (Even before that company existed)","tbh script enforcer is kinda shit.","I am embarrassed to say that there was a bug from v1.0 to v1.3 that made arguably one of the most important settings useless...","Eh, ARCLoad was a paranoid idiots dream anyway...","Super fukin' Sexy edition!","The most realistic ATM system you'll ever see!","Wohoo! Manual Updates!","...I can never get a vacation...","I love you.","Isn't this amazing?","That's one fiiiine addon you got there!","Update, Update, Update!","You can ACTUALLY use an ATM!","Fixin' Bugs!"}))
 ARCBank.Msg("© Copyright 2014-2016 Aritz Beobide-Cardinal (ARitz Cracker) All rights reserved.")
 
 
@@ -24,7 +23,8 @@ ARCBank.Msg("© Copyright 2014-2016 Aritz Beobide-Cardinal (ARitz Cracker) All r
 ARCBank.Update = "%%UPDATE%%"
 ARCBank.Version = "%%VERSION%%"
 
-ARCBank.ARCSlotsReady = true
+ARCBank.Features = {}
+ARCBank.Features.
 
 ARCBank.About = [[      
              *** ARitz Cracker Bank ***
@@ -69,7 +69,7 @@ Special Thanks:
  *    All my great customers, and my future customers.
  *    Noddy (Senior Crayfish) - For inspiring me to create this and place this on CoderHire.
  *    My family - For supporting me.
- *    Snow Lou - Being a great friend, being an amazing girlfriend, believing in me, and for being the best girl a man could ever hope to have.
+ *    Snow Lou - I wouldn't be who I am without you.
  *    You - For supporting me by using this addon
 	
 Originally made for:

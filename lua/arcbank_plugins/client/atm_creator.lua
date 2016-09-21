@@ -292,7 +292,7 @@ if ARCBank then
 				end
 			end
 			
-			local AList2= vgui.Create( "DComboBox", ScreenColour)
+			local AList2 = vgui.Create( "DComboBox", ScreenColour)
 			AList2:SetPos(10,10)
 			AList2:SetSize( 257, 20 )
 			if CurrentColour == 1 then

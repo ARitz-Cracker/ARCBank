@@ -448,79 +448,8 @@ net.Receive( "arcbank_comm_atmspawn", function(length)
 		MainPanel:Remove()
 	end
 end)
-ARCBank.Settings = {}
 
-net.Receive( "arcatmhack_gui", function(length)
-	local weapon = LocalPlayer():GetActiveWeapon()
-	if (!weapon.ARCBank_IsHacker) then return end
-	local setting = net.ReadTable()
-	weapon.hacktime = math.Round((((setting[1]/200)^2+28)*(1+ARCLib.BoolToNumber(setting[2])*3))/ARCBank.Settings["atm_hack_time_rate"])
-	weapon.hacktimeoff = math.Round(weapon.hacktime^0.725)
-	local DermaPanel = vgui.Create( "DFrame" )
-	DermaPanel:SetPos( surface.ScreenWidth()/2-130,surface.ScreenHeight()/2-100 )
-	DermaPanel:SetSize( 260, 200 )
-	DermaPanel:SetTitle( "ATM Hacking Unit Settings" )
-	DermaPanel:SetVisible( true )
-	DermaPanel:SetDraggable( true )
-	DermaPanel:ShowCloseButton( false )
-	DermaPanel:MakePopup()
-	local NumLabel2 = vgui.Create( "DLabel", DermaPanel )
-	NumLabel2:SetPos( 10, 30 )
-	NumLabel2:SetText( ARCBank.Msgs.Hack.Money )
-	NumLabel2:SizeToContents()
-	local HackTimeL = vgui.Create( "DLabel", DermaPanel )
-	HackTimeL:SetPos( 10, 138 )
-	HackTimeL:SetText( ARCBank.Msgs.Hack.ETA..ARCLib.TimeString(weapon.hacktime,ARCBank.Msgs.Time).."\n"..ARCBank.Msgs.Hack.GiveOrTake..ARCLib.TimeString(weapon.hacktimeoff,ARCBank.Msgs.Time) )
-	HackTimeL:SizeToContents()
 
-	local StealthCheckbox = vgui.Create( "DCheckBoxLabel", DermaPanel ) // Create the checkbox
-	StealthCheckbox:SetPos( 10, 75 )                        // Set the position
-	StealthCheckbox:SetText( ARCBank.Msgs.Hack.StealthMode )                   // Set the text next to the box
-	StealthCheckbox:SetValue( ARCLib.BoolToNumber(setting[2]) )             // Initial value ( will determine whether the box is ticked too )
-	StealthCheckbox:SizeToContents()                      // Make its size the same as the contents
 
-	local About = vgui.Create( "DLabel", DermaPanel )
-	About:SetText( ARCBank.Msgs.Hack.Descript )
-	About:SetPos( 10, 96 )
-	About:SetSize( 240, 40 )
-	About:SetWrap(true)
-	--About:SizeToContents()   
-	local NumSlider2 = vgui.Create( "Slider", DermaPanel )
-	NumSlider2:SetPos( 10, 40 )
-	NumSlider2:SetWide( 260 )
-	NumSlider2:SetMin(ARCBank.Settings["hack_min"])
-	NumSlider2:SetMax(ARCBank.Settings["hack_max"])
-	NumSlider2:SetDecimals(0)
-	NumSlider2:SetValue( setting[1] )
-	
-	NumSlider2.OnValueChanged = function( panel, value )
-		if value%25 != 0 then
-			NumSlider2:SetValue( math.Clamp(math.Round(value/25)*25,0,ARCBank.Settings["hack_max"]) )
-		end
-		--math.Clamp(NumSlider2:GetValue(),0,setting[3])
-		weapon.hacktime = math.Round((((math.Round(value/25)*25)/200)^2+28)*(1+ARCLib.BoolToNumber(StealthCheckbox:GetChecked())*3)/ARCBank.Settings["atm_hack_time_rate"])
-		weapon.hacktimeoff = math.Round(weapon.hacktime^0.725)
-		HackTimeL:SetText( ARCBank.Msgs.Hack.ETA..ARCLib.TimeString(weapon.hacktime,ARCBank.Msgs.Time).."\n"..ARCBank.Msgs.Hack.GiveOrTake..ARCLib.TimeString(weapon.hacktimeoff,ARCBank.Msgs.Time) )
-		HackTimeL:SizeToContents()
-	end
-	StealthCheckbox.OnChange = function( panel, value )
-		NumSlider2:SetValue( math.Clamp(math.Round(NumSlider2:GetValue()/25)*25,0,ARCBank.Settings["hack_max"]) )
-		weapon.hacktime = math.Round((((math.Round(NumSlider2:GetValue()/25)*25)/200)^2+28)*(1+ARCLib.BoolToNumber(value)*3)/ARCBank.Settings["atm_hack_time_rate"])
-		weapon.hacktimeoff = math.Round(weapon.hacktime^0.725)
-		HackTimeL:SetText( ARCBank.Msgs.Hack.ETA..ARCLib.TimeString(weapon.hacktime,ARCBank.Msgs.Time).."\n"..ARCBank.Msgs.Hack.GiveOrTake..ARCLib.TimeString(weapon.hacktimeoff,ARCBank.Msgs.Time) )
-		HackTimeL:SizeToContents()
-	end
-	local OkButton = vgui.Create( "DButton", DermaPanel )
-	OkButton:SetText( "OK" )
-	OkButton:SetPos( 10, 170 )
-	OkButton:SetSize( 240, 20 )
-	OkButton.DoClick = function()
-		DermaPanel:Remove()
-		net.Start("arcatmhack_gui")
-		net.WriteEntity(weapon)
-		net.WriteTable({math.Clamp(NumSlider2:GetValue(),0,ARCBank.Settings["hack_max"]),StealthCheckbox:GetChecked()})
-		net.SendToServer()
-	end
-end)
 
 

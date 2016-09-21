@@ -309,7 +309,7 @@ function ARCBank.MaxAccountRank(ply,group)
 	if group then
 		local result = ARCBANK_GROUPACCOUNTS_
 		
-		for k,v in pairs( ARCBank.Settings["everything_requirement"] ) do
+		for k,v in pairs( ARCBank.Settings["usergroup_all"] ) do
 			if ply:IsUserGroup( v ) then
 				result = ARCBANK_GROUPACCOUNTS_PREMIUM
 				break
@@ -317,7 +317,7 @@ function ARCBank.MaxAccountRank(ply,group)
 		end
 		if result>ARCBANK_GROUPACCOUNTS_ then return result end
 		for i=ARCBANK_GROUPACCOUNTS_STANDARD,ARCBANK_GROUPACCOUNTS_PREMIUM do
-			for k,v in pairs( ARCBank.Settings[""..ARCBANK_ACCOUNTSTRINGS[i].."_requirement"] ) do
+			for k,v in pairs( ARCBank.Settings["usergroup_"..i.."_"..ARCBANK_ACCOUNTSTRINGS[i]] ) do
 				if ply:IsUserGroup( v ) then
 					result = i
 					break
@@ -327,7 +327,7 @@ function ARCBank.MaxAccountRank(ply,group)
 		return result
 	else
 		local result = ARCBANK_PERSONALACCOUNTS_
-		for k,v in pairs( ARCBank.Settings["everything_requirement"] ) do
+		for k,v in pairs( ARCBank.Settings["usergroup_all"] ) do
 			if ply:IsUserGroup( v ) then
 				result = ARCBANK_PERSONALACCOUNTS_GOLD
 				break
@@ -335,7 +335,7 @@ function ARCBank.MaxAccountRank(ply,group)
 		end
 		if result>ARCBANK_PERSONALACCOUNTS_ then return result end
 		for i=ARCBANK_PERSONALACCOUNTS_STANDARD,ARCBANK_PERSONALACCOUNTS_GOLD do
-			for k,v in pairs( ARCBank.Settings[""..ARCBANK_ACCOUNTSTRINGS[i].."_requirement"] ) do
+			for k,v in pairs( ARCBank.Settings["usergroup_"..i.."_"..ARCBANK_ACCOUNTSTRINGS[i]] ) do
 				if ply:IsUserGroup( v ) then
 					result = i
 					break
@@ -351,7 +351,7 @@ function ARCBank.CreateAccount(ply,rank,initbalance,groupname,callback)
 	if !ARCBank.Loaded then callback(ARCBANK_ERROR_NOT_LOADED) return end
 	if ARCBank.Busy then callback(ARCBANK_ERROR_BUSY) return end
 	local newb = true
-	for k,v in pairs( ARCBank.Settings["everything_requirement"] ) do
+	for k,v in pairs( ARCBank.Settings["usergroup_all"] ) do
 		if ply:IsUserGroup( v ) then
 			newb = false
 		end
@@ -359,14 +359,14 @@ function ARCBank.CreateAccount(ply,rank,initbalance,groupname,callback)
 	if newb then
 		if rank < ARCBANK_GROUPACCOUNTS_ then
 			for i=rank,ARCBANK_PERSONALACCOUNTS_GOLD do
-				if table.HasValue(ARCBank.Settings[""..ARCBANK_ACCOUNTSTRINGS[i].."_requirement"],ply:GetUserGroup()) then
+				if table.HasValue(ARCBank.Settings["usergroup_"..i.."_"..ARCBANK_ACCOUNTSTRINGS[i]],ply:GetUserGroup()) then
 					newb = false
 					break
 				end
 			end
 		else
 			for i=rank,ARCBANK_GROUPACCOUNTS_PREMIUM do
-				if table.HasValue(ARCBank.Settings[""..ARCBANK_ACCOUNTSTRINGS[i].."_requirement"],ply:GetUserGroup()) then
+				if table.HasValue(ARCBank.Settings["usergroup_"..i.."_"..ARCBANK_ACCOUNTSTRINGS[i]],ply:GetUserGroup()) then
 					newb = false
 					break
 				end
@@ -428,52 +428,52 @@ function ARCBank.AddAccountInterest()
 	if !ARCBank.Settings["interest_enable"] then return end
 	ARCBank.Msg("Giving out bank interest...")
 	if ARCBank.IsMySQLEnabled() then
-		if ARCBank.Settings["perpetual_debt"] then
+		if ARCBank.Settings["interest_perpetual_debt"] then
 			for i=1,4 do -- Ahhh so clean...
-				ARCBank.MySQL.Query("UPDATE arcbank_personal_account SET money=money*"..tostring(1+(ARCBank.Settings[ARCBANK_ACCOUNTSTRINGS[i].."_interest"]/100)).." WHERE rank="..tostring(i).." AND money>"..tostring(-ARCBank.Settings["debt_limit"])..";",function(didwork) if (didwork) then ARCBank.Msg("Personal account interest complete for rank "..i.."!") end end)
+				ARCBank.MySQL.Query("UPDATE arcbank_personal_account SET money=money*"..tostring(1+(ARCBank.Settings["interest_"..i.."_"..ARCBANK_ACCOUNTSTRINGS[i]]/100)).." WHERE rank="..tostring(i).." AND money>"..tostring(-ARCBank.Settings["account_debt_limit"])..";",function(didwork) if (didwork) then ARCBank.Msg("Personal account interest complete for rank "..i.."!") end end)
 			end
 			for i= 6,7 do
-				ARCBank.MySQL.Query("UPDATE arcbank_group_account SET money=money*"..tostring(1+(ARCBank.Settings[ARCBANK_ACCOUNTSTRINGS[i].."_interest"]/100)).." WHERE rank="..tostring(i).." AND money>"..tostring(-ARCBank.Settings["debt_limit"])..";",function(didwork) if (didwork) then ARCBank.Msg("Group account interest complete for rank "..i.."!") end end)
+				ARCBank.MySQL.Query("UPDATE arcbank_group_account SET money=money*"..tostring(1+(ARCBank.Settings["interest_"..i.."_"..ARCBANK_ACCOUNTSTRINGS[i]]/100)).." WHERE rank="..tostring(i).." AND money>"..tostring(-ARCBank.Settings["account_debt_limit"])..";",function(didwork) if (didwork) then ARCBank.Msg("Group account interest complete for rank "..i.."!") end end)
 			end
 		else
 			for i=1,4 do -- Ahhh so clean...
-				ARCBank.MySQL.Query("UPDATE arcbank_personal_account SET money=money*"..tostring(1+(ARCBank.Settings[ARCBANK_ACCOUNTSTRINGS[i].."_interest"]/100)).." WHERE rank="..tostring(i).." AND money>0;",function(didwork) if (didwork) then ARCBank.Msg("Personal account interest complete for rank "..i.."!") end end)
+				ARCBank.MySQL.Query("UPDATE arcbank_personal_account SET money=money*"..tostring(1+(ARCBank.Settings["interest_"..i.."_"..ARCBANK_ACCOUNTSTRINGS[i]]/100)).." WHERE rank="..tostring(i).." AND money>0;",function(didwork) if (didwork) then ARCBank.Msg("Personal account interest complete for rank "..i.."!") end end)
 			end
 			for i= 6,7 do
-				ARCBank.MySQL.Query("UPDATE arcbank_group_account SET money=money*"..tostring(1+(ARCBank.Settings[ARCBANK_ACCOUNTSTRINGS[i].."_interest"]/100)).." WHERE rank="..tostring(i).." AND money>0;",function(didwork) if (didwork) then ARCBank.Msg("Group account interest complete for rank "..i.."!") end end)
+				ARCBank.MySQL.Query("UPDATE arcbank_group_account SET money=money*"..tostring(1+(ARCBank.Settings["interest_"..i.."_"..ARCBANK_ACCOUNTSTRINGS[i]]/100)).." WHERE rank="..tostring(i).." AND money>0;",function(didwork) if (didwork) then ARCBank.Msg("Group account interest complete for rank "..i.."!") end end)
 			end
 		end
 	else -- Why did I do it this way? Apperently some servers have over 9000 accounts. (Literally) Doing this in a for loop would cause the server to freeze for a bit.
 		for k,v in pairs(file.Find(ARCBank.Dir.."/accounts/personal/*.txt","DATA")) do
 			--ARCBank.Dir.."/accounts/personal/*.txt" 
 			ARCBank.ReadAccountFile(string.Replace(v,".txt",""),false,function(accdata)
-				accdata.money = math.floor(accdata.money*(1+(ARCBank.Settings[ARCBANK_ACCOUNTSTRINGS[accdata.rank].."_interest"]/100)))
+				accdata.money = math.floor(accdata.money*(1+(ARCBank.Settings["interest_"..accdata.rank.."_"..ARCBANK_ACCOUNTSTRINGS[accdata.rank]]/100)))
 				if accdata.money > 1e14 then
 					accdata.money = 1e14
 				end
-				if (accdata.money > 0 || (accdata.money < 0 && ARCBank.Settings["perpetual_debt"])) then
-					if accdata.money < -ARCBank.Settings["debt_limit"] then
-						accdata.money = -ARCBank.Settings["debt_limit"]
+				if (accdata.money > 0 || (accdata.money < 0 && ARCBank.Settings["interest_perpetual_debt"])) then
+					if accdata.money < -ARCBank.Settings["account_debt_limit"] then
+						accdata.money = -ARCBank.Settings["account_debt_limit"]
 					end
 					ARCBank.WriteAccountFile(accdata,function(wop) end)
-					ARCBankAccountMsg(accdata,string.Replace( ARCBank.Msgs.LogMsgs.Interest, "%VALUE%", tostring(ARCBank.Settings[ARCBANK_ACCOUNTSTRINGS[accdata.rank].."_interest"]) ).."("..accdata.money..")")
+					ARCBankAccountMsg(accdata,string.Replace( ARCBank.Msgs.LogMsgs.Interest, "%VALUE%", tostring(ARCBank.Settings["interest_"..accdata.rank.."_"..ARCBANK_ACCOUNTSTRINGS[accdata.rank]]) ).."("..accdata.money..")")
 				end
 			end)
 		end
 		for k,v in pairs(file.Find(ARCBank.Dir.."/accounts/group/*.txt","DATA")) do
 		--ARCBank.Dir.."/accounts/group/*.txt" 
 			ARCBank.ReadAccountFile(string.Replace(v,".txt",""),true,function(accdata)
-				accdata.money = math.floor(accdata.money*(1+(ARCBank.Settings[ARCBANK_ACCOUNTSTRINGS[accdata.rank].."_interest"]/100)))
+				accdata.money = math.floor(accdata.money*(1+(ARCBank.Settings["interest_"..accdata.rank.."_"..ARCBANK_ACCOUNTSTRINGS[accdata.rank]]/100)))
 				if accdata.money > 1e14 then
 					accdata.money = 1e14
 				end
 				
-				if (accdata.money > 0 || (accdata.money < 0 && ARCBank.Settings["perpetual_debt"])) then
-					if accdata.money < -ARCBank.Settings["debt_limit"] then
-						accdata.money = -ARCBank.Settings["debt_limit"]
+				if (accdata.money > 0 || (accdata.money < 0 && ARCBank.Settings["interest_perpetual_debt"])) then
+					if accdata.money < -ARCBank.Settings["account_debt_limit"] then
+						accdata.money = -ARCBank.Settings["account_debt_limit"]
 					end
 					ARCBank.WriteAccountFile(accdata,function(wop) end)
-					ARCBankAccountMsg(accdata,string.Replace( ARCBank.Msgs.LogMsgs.Interest, "%VALUE%", tostring(ARCBank.Settings[ARCBANK_ACCOUNTSTRINGS[accdata.rank].."_interest"]) ).."("..accdata.money..")")
+					ARCBankAccountMsg(accdata,string.Replace( ARCBank.Msgs.LogMsgs.Interest, "%VALUE%", tostring(ARCBank.Settings["interest_"..accdata.rank.."_"..ARCBANK_ACCOUNTSTRINGS[accdata.rank]]) ).."("..accdata.money..")")
 				end
 			end)
 		end
@@ -497,7 +497,7 @@ function ARCBank.RemoveAccount(ply,groupname,callback)
 			callback(ARCBANK_ERROR_DEBT)
 			return
 		end
-		if !accountdata.isgroup && ARCBank.Settings["starting_cash"] > 0 then
+		if !accountdata.isgroup && ARCBank.Settings["account_starting_cash"] > 0 then
 			callback(ARCBANK_ERROR_DELETE_REFUSED)
 			return
 		end
@@ -733,7 +733,7 @@ function ARCBank.CanAfford(ply,amount,groupname,callback)
 			return 
 		end
 
-		if accountdata.money+ARCBank.Settings["debt_limit"] < amount then
+		if accountdata.money+ARCBank.Settings["account_debt_limit"] < amount then
 			 callback(ARCBANK_ERROR_NO_CASH)
 			 return
 		end
@@ -1184,7 +1184,7 @@ function ARCBank.AtmFunc(ply,amount,groupname,callback)
 		if amount <= 0 then
 			mode = "Subtracted "..tostring(-amount).." from account."
 			logmode = string.Replace( string.Replace( ARCBank.Msgs.LogMsgs.RemoveMoney, "%VALUE%", tostring(-amount)), "%PLAYER%", ply:SteamID())
-			if accountdata.money+ARCBank.Settings["debt_limit"] < -amount then
+			if accountdata.money+ARCBank.Settings["account_debt_limit"] < -amount then
 				--MsgN("Can't Afford!")
 				callback(ARCBANK_ERROR_NO_CASH)
 				return
@@ -1258,7 +1258,7 @@ function ARCBank.Transfer(fromply,toply,fromname,toname,amount,reason,callback)
 				end
 			end
 			
-			if accountdatafrom.money+ARCBank.Settings["debt_limit"] < amount then
+			if accountdatafrom.money+ARCBank.Settings["account_debt_limit"] < amount then
 				callback(ARCBANK_ERROR_NO_CASH)
 				return
 			end
@@ -1373,7 +1373,7 @@ function ARCBank.Load()
 		else
 			ARCBank.Msg("WARNING! THE SYSTEM DIDN'T SHUT DOWN PROPERLY! EXPECT CORRUPTED ACCOUNTS!")
 		end
-		ARCLib.AddonLoadSettings("ARCBank",{atm_language = "language"})
+		ARCLib.AddonLoadSettings("ARCBank",{atm_language = "language", hack_max = "atm_hack_max", hack_min = "atm_hack_min", standard_interest = "interest_1_standard", bronze_interest = "interest_2_bronze", silver_interest = "interest_3_silver", gold_interest = "interest_4_gold", group_standard_interest = "interest_6_group_standard", group_premium_interest = "interest_7_group_premium", standard_requirement = "usergroup_1_standard", bronze_requirement = "usergroup_2_bronze", silver_requirement = "usergroup_3_silver", gold_requirement = "usergroup_4_gold", group_standard_requirement = "usergroup_6_group_standard", group_premium_requirement = "usergroup_7_group_premium", everything_requirement = "usergroup_all", starting_cash = "account_starting_cash", debt_limit = "account_debt_limit", starting_cash = "account_starting_cash", group_account_limit = "account_group_limit",perpetual_debt = "interest_perpetual_debt"})
 
 		if !file.IsDir( ARCBank.Dir.."/languages","DATA" ) then
 			ARCBank.Msg("Created Folder: "..ARCBank.Dir.."/languages")
@@ -1694,7 +1694,7 @@ function ARCBank.Load()
 			--ARCBank.UpdateLang(ARCBank.Settings["atm_language"])
 
 			if ARCBank.Settings["notify_update"] then
-				ARCBank.Msg("ARCBank no longer checks for updates. This feature has been replaced with ARCLoad. Please disable the 'notify_update' setting.")
+				ARCBank.Msg("TODO: Check for updates")
 			end
 			
 		end )
