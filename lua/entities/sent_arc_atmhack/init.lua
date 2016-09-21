@@ -69,8 +69,8 @@ function ENT:StopHack()
 		if self.baseenergy < 0 then self.baseenergy = 0 end
 		local atm = self:GetParent()
 		
-		if self:GetParent().CasinoVault then
-			self:GetParent().Vault.Screens[3]:SetScrType(3)
+		if atm.CasinoVault then
+			atm.Vault.Screens[3]:SetScrType(3)
 		else
 			atm.HackRecover = CurTime() + math.Rand(5,60) + (self.bhacktime/23)
 		end
@@ -210,133 +210,6 @@ function ENT:Think()
 				elseif !atm.IsAFuckingATM then 
 					return
 				end
-				
-				
-				atm.TakingMoney = true
-				if self.Hacker.ARCBank_Secrets then
-					atm:EmitSound("^arcbank/atm/spit-out.wav")
-					timer.Simple(6.5,function() atm:SetModel( "models/thedoctor/crackmachine_off.mdl" ) end)
-					timer.Simple(6.8,function() 
-						net.Start("ARCATM_COMM_BEEP")
-						net.WriteEntity(atm)
-						net.WriteBit(true)
-						net.Broadcast()
-						atm:EmitSound("arcbank/atm/lolhack.wav")
-						local moneyproppos = atm:GetPos() + ((atm:GetAngles():Up() * 0.2) + (atm:GetAngles():Forward() * -4.0) + (atm:GetAngles():Right() * -0.4))
-						atm.UsePlayer = nil
-						timer.Destroy( "ATM_WIN" ) 
-						timer.Create( "ATM_WIN", 0.2, math.Rand(10,20), function()
-						
-						local moneyprop = ents.Create( "base_anim" ) --I don't want to create another entity. 
-						moneyprop:SetModel( "models/props/cs_assault/money.mdl" )
-						moneyprop:SetPos( moneyproppos)
-						local moneyang = atm:GetAngles()
-						moneyang:RotateAroundAxis( moneyang:Up(), -90 )
-						moneyprop:SetAngles( moneyang )
-						moneyprop:PhysicsInit( SOLID_VPHYSICS )
-						moneyprop:SetMoveType( MOVETYPE_VPHYSICS )
-						moneyprop:SetSolid( SOLID_VPHYSICS )
-						moneyprop:GetPhysicsObject():SetVelocity(moneyprop:GetRight()) 
-						function moneyprop:Use( ply, caller )
-							ARCBank.PlayerAddMoney(ply,1000)
-							moneyprop:Remove()
-						end
-						moneyprop:Spawn()
-						
-						end)
-					end)
-					timer.Simple(11,function() 
-						atm:SetModel( "models/thedoctor/crackmachine_on.mdl" ) 
-						atm:EmitSound("arcbank/atm/close.wav")
-						net.Start("ARCATM_COMM_BEEP")
-						net.WriteEntity(atm)
-						net.WriteBit(false)
-						net.Broadcast()
-					end)
-				else
-				
-					----MsgN("HACK ERORR:"..tostring(accounts))
-					--self:StopHack()
-					atm.args = {} 
-					atm.args.money = self.HackMoneh
-					atm.UsePlayer = self.Hacker
-				--[[
-				if self.HackRandom then
-					atm.args.name = "*STEAL FROM MULTIPLE ACCOUNTS!!*"
-				else
-					atm.args.name = accounts[arc_randomexp(1,#accounts)]
-					PrintTable(accounts)
-					--arc_randomexp
-				end
-				]]
-					ARCBank.GetAllAccounts(self.HackMoneh,function(ercode,accounts)
-						if ercode == 0 then
-							local accounttable
-							if self.HackRandom then
-								accounttable = "*STEAL FROM MULTIPLE ACCOUNTS!!*"
-							else
-								accounttable = accounts[ARCLib.RandomExp(1,#accounts)]
-							end
-							local nextper = 0.1
-							ARCBank.StealMoney(self.Hacker,self.HackMoneh,accounttable,false,function(errcode,per)
-								if errcode == ARCBANK_ERROR_DOWNLOADING then
-									if per > nextper then
-										ARCBank.MsgCL(self.Hacker,ARCBank.Msgs.Items.Hacker..": (%"..math.floor(per)..")")
-										nextper = nextper + 0.1
-									end
-									
-								elseif errcode == 0 then
-									ARCBank.MsgCL(self.Hacker,ARCBank.Msgs.Items.Hacker..": (%100)")
-									
-									
-									timer.Simple(atm.ATMType.PauseBeforeWithdrawAnimation,function() 
-										if atm.ATMType.ModelOpen != "" then
-											atm:SetModel( atm.ATMType.ModelOpen ) 
-											atm:SetSkin(atm.ATMType.OpenSkin)
-										end
-										if atm.ATMType.OpenAnimation != "" then
-											atm:ARCLib_SetAnimationTime(atm.ATMType.OpenAnimation,atm.ATMType.OpenAnimationLength)
-										end
-									end)
-									timer.Simple(atm.ATMType.PauseBeforeWithdrawAnimation + atm.ATMType.PauseAfterWithdrawAnimation,function() 
-										if atm.ATMType.UseMoneyModel then
-											atm.moneyprop = ents.Create( "prop_physics" )
-											atm.moneyprop:SetModel( atm.ATMType.MoneyModel )
-											atm.moneyprop:SetKeyValue("spawnflags","516")
-											atm.moneyprop:SetPos( atm:LocalToWorld(atm.ATMType.WithdrawAnimationPos))
-											atm.moneyprop:SetAngles( atm:LocalToWorldAngles(atm.ATMType.WithdrawAnimationAng) )
-											atm.moneyprop:Spawn()
-											atm.moneyprop:GetPhysicsObject():EnableCollisions(false)
-											atm.moneyprop:GetPhysicsObject():EnableGravity(false)
-											timer.Simple(atm.ATMType.WithdrawAnimationLength,function() 
-												atm.moneyprop:GetPhysicsObject():SetVelocity(Vector(0,0,0)) 
-												atm.moneyprop:GetPhysicsObject():EnableMotion( false) 
-											end)
-											atm.moneyprop:GetPhysicsObject():SetVelocity(atm.moneyprop:GetForward()*atm.ATMType.WithdrawAnimationSpeed.x + atm.moneyprop:GetRight()*atm.ATMType.WithdrawAnimationSpeed.y + atm.moneyprop:GetUp()*atm.ATMType.WithdrawAnimationSpeed.z)
-										end
-										if atm.ATMType.WithdrawAnimation != "" then
-											atm:ARCLib_SetAnimationTime(atm.ATMType.WithdrawAnimation,atm.ATMType.WithdrawAnimationLength)
-										end
-									end)
-									atm:EmitSoundTable(atm.ATMType.WithdrawSound,65,100)
-									
-									atm.MonehDelay = CurTime() + 8.5
-									timer.Simple(atm.ATMType.PauseBeforeWithdrawAnimation + atm.ATMType.WithdrawAnimationLength + 0.5,function()
-										atm.PlayerNeedsToDoSomething = true
-									end)
-								else
-									ARCLib.NotifyPlayer(self.Hacker,ARCBank.Msgs.Items.Hacker..": "..ARCBANK_ERRORSTRINGS[errcode],NOTIFY_ERROR,6,true)
-									self:StopHack()
-									-- SHIT HAPPENED, BRAH
-								end
-							end)
-						else
-							ARCLib.NotifyPlayer(self.Hacker,ARCBank.Msgs.Items.Hacker..": "..ARCBANK_ERRORSTRINGS[ercode],NOTIFY_ERROR,6,true)
-							self:StopHack()
-							-- SHIT HAPPENED, BRAH
-						end
-					end)
-				end
 			end)
 			else
 			--[[
@@ -394,7 +267,11 @@ function ENT:Think()
 			end
 		end
 		self:NextThink( CurTime() + 0.5 )
-		local basetime = math.Round((((self.HackMoneh/200)^2+28)*(1+ARCLib.BoolToNumber(self.HackRandom))/ARCBank.Settings["atm_hack_time_rate"]))
+		--
+		--
+		
+		local relTimeMax = ARCBank.Settings["atm_hack_time_max"] - ARCBank.Settings["atm_hack_time_min"]
+		local basetime = (ARCBank.Settings["atm_hack_time_min"] + ARCLib.BetweenNumberScale(ARCBank.Settings["atm_hack_time_min"],self.HackMoneh,ARCBank.Settings["atm_hack_time_max"]) ^ ARCBank.Settings["atm_hack_time_curve"] * relTimeMax)*(1+ARCLib.BoolToNumber(self.HackRandom)*ARCBank.Settings["atm_hack_time_stealth_rate"])
 		if self:GetParent().CasinoVault then
 			if self.HackRandom then
 				self.bhacktime = basetime

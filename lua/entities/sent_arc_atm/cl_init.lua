@@ -943,6 +943,7 @@ function ENT:Screen_Loading()
 	end
 end
 
+local hexarr = {"0","1","2","3","4","5","6","7","8","9","A","B","C","D","E","F"}
 
 function ENT:Screen_HAX()
 	local hackmsg = ""
@@ -950,13 +951,13 @@ function ENT:Screen_HAX()
 		hackmsg = "Decoding Security Syetem"
 		for i=-12,13 do
 			if (self.Percent) > 0.005 then
-				draw.SimpleText( math.random(10000000000000,99999999999999), "ARCBankATM",self.Resolutionx/-2, i*12, Color(255,255,255,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_BOTTOM  )
+				draw.SimpleText( ARCLib.RandomString(14,hexarr), "ARCBankATM",self.Resolutionx/-2, i*12, Color(255,255,255,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_BOTTOM  )
 			end
 			if (self.Percent) > 0.0195 then
-				draw.SimpleText( math.random(10000000000000,99999999999999), "ARCBankATM",-41, i*12, Color(255,255,255,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_BOTTOM  ) 	
+				draw.SimpleText( ARCLib.RandomString(14,hexarr), "ARCBankATM",-41, i*12, Color(255,255,255,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_BOTTOM  ) 	
 			end
 			if (self.Percent) > 0.030 then
-				draw.SimpleText( math.random(100000000000,999999999999), "ARCBankATM",57, i*12, Color(255,255,255,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_BOTTOM  ) 	
+				draw.SimpleText( ARCLib.RandomString(12,hexarr), "ARCBankATM",57, i*12, Color(255,255,255,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_BOTTOM  ) 	
 			end
 		end
 	else

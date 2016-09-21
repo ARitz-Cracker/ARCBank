@@ -38,6 +38,22 @@ surface.CreateFont( "ARCBankATM", {
 	additive = false,
 	outline = false
 } )
+surface.CreateFont( "ARCBankHacker", {
+	font = "Lucida Console",
+	size = 24,
+	weight = 100,
+	blursize = 0,
+	scanlines = 0,
+	antialias = false,
+	underline = false,
+	italic = false,
+	strikeout = false,
+	symbol = false,
+	rotary = false,
+	shadow = false,
+	additive = false,
+	outline = false
+} )
 surface.CreateFont( "ARCBankATMSmall", {
 	font = "Arial",
 	size = 12,

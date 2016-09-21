@@ -186,7 +186,7 @@ net.Receive( "arcbank_comm_create", function(length,ply)
 	end
 	if ent.ARCBank_IsAValidDevice then
 		if accname == "" then
-			ARCBank.CreateAccount(ply,1,ARCBank.Settings["starting_cash"],accname,callback)
+			ARCBank.CreateAccount(ply,1,ARCBank.Settings["account_starting_cash"],accname,callback)
 		else
 			ARCBank.CreateAccount(ply,6,0,accname,callback)
 		end
@@ -238,7 +238,7 @@ net.Receive( "arcbank_comm_delete", function(length,ply)
 	end
 	if ent.ARCBank_IsAValidDevice then
 		if accname == "" then
-			if ARCBank.Settings["starting_cash"] > 0 then -- We don't want people closing their personal accounts and reopening them to make free money.
+			if ARCBank.Settings["account_starting_cash"] > 0 then -- We don't want people closing their personal accounts and reopening them to make free money.
 				net.Start("arcbank_comm_delete")
 				net.WriteEntity(ent)
 				net.WriteInt(ARCBANK_ERROR_DELETE_REFUSED,ARCBANK_ERRORBITRATE)
@@ -290,7 +290,7 @@ net.Receive( "arcbank_comm_upgrade", function(length,ply)
 				net.Send(ply)		
 			else
 				local newb = true
-				for k,v in pairs( ARCBank.Settings["everything_requirement"] ) do
+				for k,v in pairs( ARCBank.Settings["usergroup_all"] ) do
 					if ply:IsUserGroup( v ) then
 						newb = false
 					end
@@ -299,7 +299,7 @@ net.Receive( "arcbank_comm_upgrade", function(length,ply)
 					if accdata.owner == ply:SteamID() then
 						accdata.rank = accdata.rank + 1	
 						for i=accdata.rank,ARCBANK_GROUPACCOUNTS_PREMIUM do
-							if table.HasValue(ARCBank.Settings[""..ARCBANK_ACCOUNTSTRINGS[i].."_requirement"],ply:GetUserGroup()) then
+							if table.HasValue(ARCBank.Settings["usergroup_"..i.."_"..ARCBANK_ACCOUNTSTRINGS[i]],ply:GetUserGroup()) then
 								newb = false
 								break
 							end
@@ -321,7 +321,7 @@ net.Receive( "arcbank_comm_upgrade", function(length,ply)
 				else
 					accdata.rank = accdata.rank + 1
 					for i=accdata.rank,ARCBANK_PERSONALACCOUNTS_GOLD do
-						if table.HasValue(ARCBank.Settings[""..ARCBANK_ACCOUNTSTRINGS[i].."_requirement"],ply:GetUserGroup()) then
+						if table.HasValue(ARCBank.Settings["usergroup_"..i.."_"..ARCBANK_ACCOUNTSTRINGS[i]],ply:GetUserGroup()) then
 							newb = false
 							break
 						end

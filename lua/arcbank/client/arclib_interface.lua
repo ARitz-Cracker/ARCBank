@@ -1,4 +1,4 @@
-
+ARCBank.Settings = ARCBank.Settings || {}
 function ARCBank.OnSettingChanged(key,val)
 	if key == "name_long" || key == "card_weapon_slot" || key == "card_weapon_slotpos" then
 		for k,v in pairs(ents.FindByClass("weapon_arc_atmcard")) do

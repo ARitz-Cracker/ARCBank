@@ -69,7 +69,7 @@ function SWEP:PrimaryAttack()
 				blarg.Hacker = self.Owner
 				blarg.HackMoneh = self.Settings[1]
 				blarg.HackRandom = self.Settings[2]
-				blarg.baseenergy = (0-ARCBank.Settings["atm_hack_charge_rate"])*(self.energystart - CurTime())
+				blarg.BaseEnergy = (0-ARCBank.Settings["atm_hack_charge_rate"])*(self.energystart - CurTime())
 				self.Owner:StripWeapon(self:GetClass())
 				timer.Simple(math.Rand(0,2),function()
 					if blarg && blarg != NULL then
@@ -106,7 +106,7 @@ function SWEP:Think()
 			side = trace.Entity:WorldToLocal(trace.HitPos):__index("y")
 		end
 		--MsgN(ARCBank.Enabled)
-		if (IsValid(trace.Entity) && trace.HitPos:Distance(self.Owner:GetShootPos()) <= 25 && (trace.Entity.IsAFuckingATM || trace.Entity.CasinoVault) && !trace.Entity.InUse && !trace.Entity.Hacked && ARCBank.Loaded && trace.Entity.HackRecover < CurTime()) && (side > 13.2 || side < -20.2) then
+		if (ARCBank.Loaded && IsValid(trace.Entity) && trace.HitPos:Distance(self.Owner:GetShootPos()) <= 25 && (trace.Entity.IsAFuckingATM || trace.Entity.CasinoVault) && !trace.Entity.InUse && !trace.Entity.Hacked && trace.Entity.HackRecover < CurTime()) && (side > 13.2 || side < -20.2) then
 			if !self.Aiming then
 				self.Aiming = true
 				self.Weapon:SendWeaponAnim( ACT_SLAM_THROW_TO_TRIPMINE_ND )
@@ -129,6 +129,12 @@ end
 function SWEP:Deploy()
 		if SERVER then
 			self.Owner:SendLua("LocalPlayer():GetActiveWeapon().chargerate = "..tostring(ARCBank.Settings["atm_hack_charge_rate"]))
+		else
+			self.SScreenScroll = 1
+			self.SScreenScrollDelay = CurTime() + 0.1
+			self.ScreenScroll = 1
+			self.ScreenScrollDelay = CurTime() + 0.1
+		
 		end
 		self.PrintName = ARCBank.Msgs.Items.Hacker
         self.m_WeaponDeploySpeed=1
@@ -173,34 +179,44 @@ function SWEP:Initialize()
 	self.Aiming = false
 	self.ReloadButtonDelay = CurTime() + 1
 	self.StartTime = CurTime()
-	// other initialize code goes here
+	-- other initialize code goes here
 	self.energystart = CurTime()
 	if CLIENT then
+		self.TopScreenText = "This is a test message"
+		self.BottomScreenText = "This is a test message"
+		
+		self.SSScreenScroll = 1
+		self.SSScreenScrollDelay = CurTime() + 0.1
+		self.SScreenScroll = 1
+		self.SScreenScrollDelay = CurTime() + 0.1
+		self.ScreenScroll = 1
+		self.ScreenScrollDelay = CurTime() + 0.1
+		
 		self.chargerate = 1.5
-		self.hacktime = math.Round((((500/200)^2+28)*(1+ARCLib.BoolToNumber(false)*3)))
-		self.hacktimeoff = math.Round(self.hacktime^0.725)
-		// Create a new table for every weapon instance
+		self.HackTime =	1
+		self.HackTimeOff = 1
+		-- Create a new table for every weapon instance
 		self.VElements = table.FullCopy( self.VElements )
 		self.WElements = table.FullCopy( self.WElements )
 		self.ViewModelBoneMods = table.FullCopy( self.ViewModelBoneMods )
 
-		self:CreateModels(self.VElements) // create viewmodels
-		self:CreateModels(self.WElements) // create worldmodels
+		self:CreateModels(self.VElements) -- create viewmodels
+		self:CreateModels(self.WElements) -- create worldmodels
 		
-		// init view model bone build function
+		-- init view model bone build function
 		if IsValid(self.Owner) && self.Owner:IsPlayer() then
 			local vm = self.Owner:GetViewModel()
 			if IsValid(vm) then
 				self:ResetBonePositions(vm)
 				
-				// Init viewmodel visibility
+				-- Init viewmodel visibility
 				if (self.ShowViewModel == nil or self.ShowViewModel) then
 					vm:SetColor(Color(255,255,255,255))
 				else
-					// we set the alpha to 1 instead of 0 because else ViewModelDrawn stops being called
+					-- we set the alpha to 1 instead of 0 because else ViewModelDrawn stops being called
 					vm:SetColor(Color(255,255,255,1))
-					// ^ stopped working in GMod 13 because you have to do Entity:SetRenderMode(1) for translucency to kick in
-					// however for some reason the view model resets to render mode 0 every frame so we just apply a debug material to prevent it from drawing
+					-- ^ stopped working in GMod 13 because you have to do Entity:SetRenderMode(1) for translucency to kick in
+					-- however for some reason the view model resets to render mode 0 every frame so we just apply a debug material to prevent it from drawing
 					vm:SetMaterial("Debug/hsv")			
 				end
 			end
@@ -226,7 +242,108 @@ end
 function SWEP:OnRemove()
 	self:Holster()
 end
+local bartab = {0,0,0,0,0}
 function SWEP:DrawHUD()
+	local power = 0
+	local totalpower = 0
+	local succhance = 0
+	if (self.HackEnt) then
+		power = math.floor((0-ARCBank.Settings["atm_hack_charge_rate"])*(self.energystart - CurTime()))
+		
+		totalpower = power/(self.HackTime + self.HackTimeOff)
+		succhance = ARCLib.BetweenNumberScale(self.HackTime - self.HackTimeOff,power,self.HackTime + self.HackTimeOff)
+		
+		self.TopScreenText = self.HackEnt.Name
+		self.MiddleScreenText = ARCBank.Msgs.Hack.Power..tostring(ARCLib.TimeString(3213,ARCBank.Msgs.Time))
+		if power < (self.HackTime - self.HackTimeOff) then
+			self.BottomScreenText = ARCBank.Msgs.Hack.NoEnergy
+		elseif power > (self.HackTime + self.HackTimeOff) then
+			self.BottomScreenText = ARCBank.Msgs.Hack.GoodEnergy
+		else
+			self.BottomScreenText = ARCBank.Msgs.Hack.Chance..tostring(succhance*100).."%"
+		end
+		
+	else
+		self.TopScreenText = ARCBank.Msgs.Hack.NoEnt 
+		self.MiddleScreenText = ""
+		self.BottomScreenText = ARCBank.Msgs.Hack.NoEntPlz
+	end
+	bartab[1] = succhance
+	bartab[2] = power
+	
+	if #self.BottomScreenText > 0 then
+		if self.ScreenScrollDelay < CurTime() && utf8.len(self.BottomScreenText) > 14 then
+			self.ScreenScrollDelay = self.ScreenScrollDelay + 0.1
+			self.ScreenScroll = self.ScreenScroll + 1
+			if (self.ScreenScroll) > utf8.len(self.BottomScreenText) then
+				self.ScreenScroll = -14
+			end
+		end
+	end
+	
+	if #self.MiddleScreenText > 0 then
+		if self.SSScreenScrollDelay < CurTime() && utf8.len(self.MiddleScreenText) > 14 then
+			self.SSScreenScrollDelay = self.SSScreenScrollDelay + 0.1
+			self.SSScreenScroll = self.SSScreenScroll + 1
+			if (self.SSScreenScroll) > utf8.len(self.MiddleScreenText) then
+				self.SSScreenScroll = -14
+			end
+		end
+	end
+	
+	if #self.TopScreenText > 0 then
+		if self.SScreenScrollDelay < CurTime() && utf8.len(self.TopScreenText) > 14 then
+			self.SScreenScrollDelay = self.SScreenScrollDelay + 0.1
+			self.SScreenScroll = self.SScreenScroll + 1
+			if (self.SScreenScroll) > utf8.len(self.TopScreenText) then
+				self.SScreenScroll = -14
+			end
+		end
+	end
+
+	
+	
+
+	surface.SetDrawColor( 125, 150, 90, 255 )
+	local x = ScrW()-300
+	local y = ScrH()-500
+	local power = math.floor((0-ARCBank.Settings["atm_hack_charge_rate"])*(self.energystart - CurTime()))
+	
+	surface.DrawRect(x, y, 200, 400 ) 
+	draw.SimpleText( "*Hacking Unit*", "ARCBankHacker",x,y+2, Color(0,0,0,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_TOP  )
+	
+	
+	if utf8.len(self.TopScreenText) > 14 then
+		draw.SimpleText( ARCLib.ScrollChars(self.TopScreenText,self.SScreenScroll,14), "ARCBankHacker",x,y+26, Color(0,0,0,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_TOP  )
+	else
+		draw.SimpleText( self.TopScreenText, "ARCBankHacker",x,y+26, Color(0,0,0,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_TOP  )
+	end
+	
+	if utf8.len(self.MiddleScreenText) > 14 then
+		draw.SimpleText( ARCLib.ScrollChars(self.MiddleScreenText,self.SScreenScroll,14), "ARCBankHacker",x,y+50, Color(0,0,0,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_TOP  )
+	else
+		draw.SimpleText( self.MiddleScreenText, "ARCBankHacker",x,y+50, Color(0,0,0,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_TOP  )
+	end
+	
+	if utf8.len(self.BottomScreenText) > 14 then
+		draw.SimpleText( ARCLib.ScrollChars(self.BottomScreenText,self.ScreenScroll,14), "ARCBankHacker",x,y+74, Color(0,0,0,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_TOP  )
+	else
+		draw.SimpleText( self.BottomScreenText, "ARCBankHacker",x,y+74, Color(0,0,0,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_TOP  )
+	end
+	
+	draw.SimpleText( "Datastream:", "ARCBankHacker",x,y+118, Color(0,0,0,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_TOP  )
+	
+	surface.SetDrawColor( 0,0, 0, 255 )
+	for i=1,5 do
+		surface.DrawOutlinedRect( x+2, y+200+i*24, 192, 20 ) 
+		surface.DrawRect( x+2, y+200+i*24, 192*bartab[i], 20 ) 
+		
+	end
+	
+	draw.SimpleText( "Estimated time remaining" ,"ARCBankCard", surface.ScreenWidth() - 48*2, surface.ScreenHeight() - 48 - 24, Color(255,255,0,255),TEXT_ALIGN_RIGHT , TEXT_ALIGN_BOTTOM  ) 
+	--surface.SetDrawColor( 0,0, 0, 255 )
+	--surface.DrawOutlinedRect( (102)/-2, (202)/-2, 102, 202 )
+	--[[
 		local power = math.floor((0-ARCBank.Settings["atm_hack_charge_rate"])*(self.energystart - CurTime()))
 		draw.SimpleText( ARCBank.Msgs.Hack.Power..tostring(ARCLib.TimeString(power,ARCBank.Msgs.Time)),"ARCBankCard", surface.ScreenWidth() - 48*2, surface.ScreenHeight() - 48 - 24, Color(255,255,0,255),TEXT_ALIGN_RIGHT , TEXT_ALIGN_BOTTOM  ) 
 		if power < (self.hacktime - self.hacktimeoff) then
@@ -234,8 +351,9 @@ function SWEP:DrawHUD()
 		elseif power > (self.hacktime + self.hacktimeoff) then
 			draw.SimpleText( ARCBank.Msgs.Hack.GoodEnergy,"ARCBankCard", surface.ScreenWidth() - 48*2, surface.ScreenHeight() - 48, Color(0,255,0,255),TEXT_ALIGN_RIGHT , TEXT_ALIGN_BOTTOM  )
 		else
-			draw.SimpleText( ARCBank.Msgs.Hack.Chance..tostring(math.floor(((power - (self.hacktime - self.hacktimeoff))/(2*self.hacktimeoff))*100)).."%","ARCBankCard", surface.ScreenWidth() - 48*2, surface.ScreenHeight() - 48, Color(255,255,0,255),TEXT_ALIGN_RIGHT , TEXT_ALIGN_BOTTOM  )
+			draw.SimpleText( ARCBank.Msgs.Hack.Chance..tostring(*100)).."%","ARCBankCard", surface.ScreenWidth() - 48*2, surface.ScreenHeight() - 48, Color(255,255,0,255),TEXT_ALIGN_RIGHT , TEXT_ALIGN_BOTTOM  )
 		end
+	]]
 end
 if CLIENT then
 SWEP.VElements = {
@@ -256,7 +374,7 @@ SWEP.WElements = {
 
 		if (!self.vRenderOrder) then
 			
-			// we build a render order because sprites need to be drawn after models
+			-- we build a render order because sprites need to be drawn after models
 			self.vRenderOrder = {}
 
 			for k, v in pairs( self.VElements ) do
@@ -292,7 +410,7 @@ SWEP.WElements = {
 				ang:RotateAroundAxis(ang:Forward(), v.angle.r)
 
 				model:SetAngles(ang)
-				//model:SetModelScale(v.size)
+				--model:SetModelScale(v.size)
 				local matrix = Matrix()
 				matrix:Scale(v.size)
 				model:EnableMatrix( "RenderMultiply", matrix )
@@ -377,7 +495,7 @@ SWEP.WElements = {
 		if (IsValid(self.Owner)) then
 			bone_ent = self.Owner
 		else
-			// when the weapon is dropped
+			-- when the weapon is dropped
 			bone_ent = self
 		end
 		
@@ -408,7 +526,7 @@ SWEP.WElements = {
 				ang:RotateAroundAxis(ang:Forward(), v.angle.r)
 
 				model:SetAngles(ang)
-				//model:SetModelScale(v.size)
+				--model:SetModelScale(v.size)
 				local matrix = Matrix()
 				matrix:Scale(v.size)
 				model:EnableMatrix( "RenderMultiply", matrix )
@@ -477,8 +595,8 @@ SWEP.WElements = {
 			
 			if (!v) then return end
 			
-			// Technically, if there exists an element with the same name as a bone
-			// you can get in an infinite loop. Let's just hope nobody's that stupid.
+			-- Technically, if there exists an element with the same name as a bone
+			-- you can get in an infinite loop. Let's just hope nobody's that stupid.
 			pos, ang = self:GetBoneOrientation( basetab, v, ent )
 			
 			if (!pos) then return end
@@ -502,7 +620,7 @@ SWEP.WElements = {
 			
 			if (IsValid(self.Owner) and self.Owner:IsPlayer() and 
 				ent == self.Owner:GetViewModel() and self.ViewModelFlip) then
-				ang.r = -ang.r // Fixes mirrored models
+				ang.r = -ang.r -- Fixes mirrored models
 			end
 		
 		end
@@ -514,7 +632,7 @@ SWEP.WElements = {
 
 		if (!tab) then return end
 
-		// Create the clientside models here because Garry says we can't do it in the render hook
+		-- Create the clientside models here because Garry says we can't do it in the render hook
 		for k, v in pairs( tab ) do
 			if (v.type == "Model" and v.model and v.model != "" and (!IsValid(v.modelEnt) or v.createdModel != v.model) and 
 					string.find(v.model, ".mdl") and file.Exists (v.model, "GAME") ) then
@@ -535,7 +653,7 @@ SWEP.WElements = {
 				
 				local name = v.sprite.."-"
 				local params = { ["$basetexture"] = v.sprite }
-				// make sure we create a unique name based on the selected options
+				-- make sure we create a unique name based on the selected options
 				local tocheck = { "nocull", "additive", "vertexalpha", "vertexcolor", "ignorez" }
 				for i, j in pairs( tocheck ) do
 					if (v[j]) then
@@ -563,8 +681,8 @@ SWEP.WElements = {
 			
 			if (!vm:GetBoneCount()) then return end
 			
-			// !! WORKAROUND !! //
-			// We need to check all model names :/
+			-- !! WORKAROUND !! --
+			-- We need to check all model names :/
 			local loopthrough = self.ViewModelBoneMods
 			if (!hasGarryFixedBoneScalingYet) then
 				allbones = {}
@@ -583,13 +701,13 @@ SWEP.WElements = {
 				
 				loopthrough = allbones
 			end
-			// !! ----------- !! //
+			-- !! ----------- !! --
 			
 			for k, v in pairs( loopthrough ) do
 				local bone = vm:LookupBone(k)
 				if (!bone) then continue end
 				
-				// !! WORKAROUND !! //
+				-- !! WORKAROUND !! --
 				local s = Vector(v.scale.x,v.scale.y,v.scale.z)
 				local p = Vector(v.pos.x,v.pos.y,v.pos.z)
 				local ms = Vector(1,1,1)
@@ -603,7 +721,7 @@ SWEP.WElements = {
 				end
 				
 				s = s * ms
-				// !! ----------- !! //
+				-- !! ----------- !! --
 				
 				if vm:GetManipulateBoneScale(bone) != s then
 					vm:ManipulateBoneScale( bone, s )
@@ -631,40 +749,19 @@ SWEP.WElements = {
 		end
 		
 	end
-
-	/**************************
-		Global utility code
-	**************************/
-
-	// Fully copies the table, meaning all tables inside this table are copied too and so on (normal table.Copy copies only their reference).
-	// Does not copy entities of course, only copies their reference.
-	// WARNING: do not use on tables that contain themselves somewhere down the line or you'll get an infinite loop
-	function table.FullCopy( tab )
-
-		if (!tab) then return nil end
-		
-		local res = {}
-		for k, v in pairs( tab ) do
-			if (type(v) == "table") then
-				res[k] = table.FullCopy(v) // recursion ho!
-			elseif (type(v) == "Vector") then
-				res[k] = Vector(v.x, v.y, v.z)
-			elseif (type(v) == "Angle") then
-				res[k] = Angle(v.p, v.y, v.r)
-			else
-				res[k] = v
-			end
-		end
-		
-		return res
-		
-	end
 else
-	net.Receive( "arcatmhack_gui", function(length)
+	net.Receive( "arcatmhack_gui", function(length,ply)
 		local weapon = net.ReadEntity()
+		local i = net.ReadUInt(8)
 		local settings = net.ReadTable()
-		if settings[1] < 0 || settings[1] > ARCBank.Settings["hack_max"] || settings[1] < ARCBank.Settings["hack_min"] then
-			ARCBank.FuckIdiotPlayer(ply,"INVALID_HACK_OPERATION")
+		
+		if (weapon:GetOwner() != ply || weapon:GetClass() != "weapon_arc_atmhack") then
+			ARCBank.FuckIdiotPlayer(ply,"Changing hack device settings of other players")
+		end
+		weapon.HackEnt = ARCBank.HackableDevices[i]
+		
+		if settings[1] < ARCBank.HackTimeGetSetting(weapon.HackEnt,"MoneyMin") || settings[1] > ARCBank.HackTimeGetSetting(weapon.HackEnt,"MoneyMax") then
+			ARCBank.FuckIdiotPlayer(ply,"Hack amount is out of range")
 		end
 		if (!weapon.ARCBank_IsHacker) then return end
 		weapon.Settings = settings
