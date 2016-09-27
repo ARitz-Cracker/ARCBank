@@ -316,7 +316,7 @@ ARCBank.Msgs.Time.now = "now"
 
 ARCBank.Msgs.UserMsgs.Hack = "An ATM is being hacked!"
 ARCBank.Msgs.UserMsgs.HackNoCops = "There aren't enough law enforcers."
-ARCBank.Msgs.UserMsgs.HackNoPlayers = "There aren't people."
+ARCBank.Msgs.UserMsgs.HackNoPlayers = "There aren't enough people."
 ARCBank.Msgs.UserMsgs.Paycheck = "Your paycheck has been sent to your ARCBank account."
 ARCBank.Msgs.UserMsgs.PaycheckFail = "There was an error while sending your paycheck to your ARCBank account."
 

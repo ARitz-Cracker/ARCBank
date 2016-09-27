@@ -44,9 +44,13 @@ ARCBank.RegisterHackableDevice = function(obj)
 	ARCLib.TableMergeOptimized( table.FullCopy(HACKDEV) , obj )
 	ARCBank.HackableDevices[#ARCBank.HackableDevices + 1] = obj
 	obj._i = #ARCBank.HackableDevices
+	if (obj._i > 255) then
+		error("There can only be up to 255 hackable devices.")
+	end
 	net.Start("arcbank_add_hacking_device")
 	net.WriteTable(obj)
 	net.Broadcast()
+	
 end
 
 --Kinda useless if the ATMs are unhackable :)

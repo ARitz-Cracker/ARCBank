@@ -43,18 +43,59 @@ SWEP.WorldModel = "models/props_lab/reciever01d.mdl"
 SWEP.ShowViewModel = true
 SWEP.ShowWorldModel = false
 SWEP.ViewModelBoneMods = {
-	["Bip01_L_Forearm"] = { scale = Vector(1, 1, 1), pos = Vector(0, 0.5, 0.8), angle = Angle(0, 0, -0) },
+	["Bip01_L_Forearm"] = { scale = Vector(1, 1, 1), pos = Vector(0, 0.5, 0.8), angle = Angle(0, 0, 0) },
 	["Bip01_R_Forearm"] = { scale = Vector(1, 1, 1), pos = Vector(0, 1.6, -1.6), angle = Angle(0, 0, 0) },
-	["Slam_base"] = { scale = Vector(0.009, 0.009, 0.009), pos = Vector(-1.9, 0.5, 0.317), angle = Angle(0, 0, 0) }
+	["Slam_base"] = { scale = Vector(0.1, 0.1, 0.1), pos = Vector(-1.9, 0.5, 0.317), angle = Angle(0, 0, 0) }
 }
+
+function SWEP:ValidAim()
+	self.DebugText = "No ent"
+	self.Distance = 0
+	if (!self.HackEnt) then return false end
+	local trace = self.Owner:GetEyeTrace()
+	if (!IsValid(trace.Entity)) then return false end
+	if (trace.Entity:GetClass() != self.HackEnt.Class) then return false end
+	local side = false
+	if (self.HackEnt.Side) then
+		local corner = trace.Entity:OBBMaxs() - trace.Entity:OBBCenter()
+		local hitpos = trace.Entity:WorldToLocal(trace.HitPos) - trace.Entity:OBBCenter()
+		local axis
+		if #self.HackEnt.Side[2] > 0 then
+			axis = self.HackEnt.Side[2]
+			local mul = 0
+			if self.HackEnt.Side[1] == "-" then
+				mul = -0.9
+				if hitpos[axis] > math.abs(corner[axis])*mul then
+					return false
+				end
+			elseif self.HackEnt.Side[1] == "+" then
+				mul = 0.9
+				if hitpos[axis] < math.abs(corner[axis])*mul then
+					return false
+				end
+			end
+		else
+			axis = self.HackEnt.Side[1]
+			if math.abs(hitpos[axis]) < math.abs(corner[axis]*0.9) then
+				return false
+			end
+		end
+		side = hitpos[axis] < 0
+	end
+	local dist = trace.HitPos:Distance(self.Owner:GetShootPos())
+	self.Distance = ARCLib.BetweenNumberScaleReverse(25,dist,100)
+	if (dist > 25) then return false end
+	
+	return true,side
+end
+
 function SWEP:PrimaryAttack()
 	if self.Aiming then
 		self.Weapon:SendWeaponAnim( ACT_SLAM_TRIPMINE_ATTACH )
 		self.Owner:SetAnimation( PLAYER_ATTACK1 )
 		timer.Simple(0.3,function() 
-			local trace = self.Owner:GetEyeTrace()
-			local side = trace.Entity:WorldToLocal(trace.HitPos):__index("y")
-			if (trace.HitPos:Distance(self.Owner:GetShootPos()) <= 25 && (trace.Entity.IsAFuckingATM || trace.Entity.CasinoVault) && !trace.Entity.InUse && !trace.Entity.Hacked && ARCBank.Loaded && trace.Entity.HackRecover < CurTime()) && (side > 13.2 || side < -20.2) then
+			local aim,side = self:ValidAim()
+			if aim then
 				self.Weapon:SendWeaponAnim( ACT_SLAM_TRIPMINE_ATTACH2 ) 
 				if !SERVER then return end
 				local trace = self.Owner:GetEyeTrace()
@@ -66,14 +107,11 @@ function SWEP:PrimaryAttack()
 				blarg:SetAngles(Ang)
 				blarg:Spawn()
 				blarg:Activate()
-				blarg.Hacker = self.Owner
-				blarg.HackMoneh = self.Settings[1]
-				blarg.HackRandom = self.Settings[2]
-				blarg.BaseEnergy = (0-ARCBank.Settings["atm_hack_charge_rate"])*(self.energystart - CurTime())
+				blarg:Setup(self.Owner,self.HackEnt,(0-ARCBank.Settings["atm_hack_charge_rate"])*(self.StartEnergyTime - CurTime()),self.Settings[1],self.Settings[2],side)
 				self.Owner:StripWeapon(self:GetClass())
 				timer.Simple(math.Rand(0,2),function()
 					if blarg && blarg != NULL then
-						blarg:BeginHack()
+						blarg:HackBegin()
 					end
 				end)
 				--constraint.Weld( blarg, trace.Entity, 0, 0, 0, true, false ) 
@@ -106,7 +144,7 @@ function SWEP:Think()
 			side = trace.Entity:WorldToLocal(trace.HitPos):__index("y")
 		end
 		--MsgN(ARCBank.Enabled)
-		if (ARCBank.Loaded && IsValid(trace.Entity) && trace.HitPos:Distance(self.Owner:GetShootPos()) <= 25 && (trace.Entity.IsAFuckingATM || trace.Entity.CasinoVault) && !trace.Entity.InUse && !trace.Entity.Hacked && trace.Entity.HackRecover < CurTime()) && (side > 13.2 || side < -20.2) then
+		if self:ValidAim() then
 			if !self.Aiming then
 				self.Aiming = true
 				self.Weapon:SendWeaponAnim( ACT_SLAM_THROW_TO_TRIPMINE_ND )
@@ -178,9 +216,10 @@ function SWEP:Initialize()
 	self:SetHoldType( "slam" )
 	self.Aiming = false
 	self.ReloadButtonDelay = CurTime() + 1
-	self.StartTime = CurTime()
+	
+	self.StartEnergyTime = CurTime()
 	-- other initialize code goes here
-	self.energystart = CurTime()
+	
 	if CLIENT then
 		self.TopScreenText = "This is a test message"
 		self.BottomScreenText = "This is a test message"
@@ -193,8 +232,9 @@ function SWEP:Initialize()
 		self.ScreenScrollDelay = CurTime() + 0.1
 		
 		self.chargerate = 1.5
-		self.HackTime =	1
-		self.HackTimeOff = 1
+		self.HackTime =	math.huge
+		self.HackTimeOff = math.huge
+		self.HackRandom = false
 		-- Create a new table for every weapon instance
 		self.VElements = table.FullCopy( self.VElements )
 		self.WElements = table.FullCopy( self.WElements )
@@ -248,7 +288,7 @@ function SWEP:DrawHUD()
 	local totalpower = 0
 	local succhance = 0
 	if (self.HackEnt) then
-		power = math.floor((0-ARCBank.Settings["atm_hack_charge_rate"])*(self.energystart - CurTime()))
+		power = math.floor((0-ARCBank.Settings["atm_hack_charge_rate"])*(self.StartEnergyTime - CurTime()))
 		
 		totalpower = math.Clamp(power/(self.HackTime + self.HackTimeOff),0,1)
 		succhance = ARCLib.BetweenNumberScale(self.HackTime - self.HackTimeOff,power,self.HackTime + self.HackTimeOff)
@@ -270,7 +310,14 @@ function SWEP:DrawHUD()
 	end
 	bartab[1] = succhance
 	bartab[2] = totalpower
-	
+	if self.HackRandom then
+		bartab[3] = 0.2
+		bartab[4] = 0.1
+	else
+		bartab[3] = 0.8
+		bartab[4] = 0.9
+	end
+	bartab[5] = self.Distance || 0
 	if #self.BottomScreenText > 0 then
 		if self.ScreenScrollDelay < CurTime() && utf8.len(self.BottomScreenText) > 14 then
 			self.ScreenScrollDelay = self.ScreenScrollDelay + 0.1
@@ -307,7 +354,6 @@ function SWEP:DrawHUD()
 	surface.SetDrawColor( 125, 150, 90, 255 )
 	local x = ScrW()-300
 	local y = ScrH()-500
-	local power = math.floor((0-ARCBank.Settings["atm_hack_charge_rate"])*(self.energystart - CurTime()))
 	
 	surface.DrawRect(x, y, 200, 400 ) 
 	draw.SimpleText( "*Hacking Unit*", "ARCBankHacker",x,y+2, Color(0,0,0,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_TOP  )
@@ -339,20 +385,6 @@ function SWEP:DrawHUD()
 		surface.DrawRect( x+2, y+200+i*24, 192*bartab[i], 20 ) 
 		
 	end
-	
-	--surface.SetDrawColor( 0,0, 0, 255 )
-	--surface.DrawOutlinedRect( (102)/-2, (202)/-2, 102, 202 )
-	--[[
-		local power = math.floor((0-ARCBank.Settings["atm_hack_charge_rate"])*(self.energystart - CurTime()))
-		draw.SimpleText( ARCBank.Msgs.Hack.Power..tostring(ARCLib.TimeString(power,ARCBank.Msgs.Time)),"ARCBankCard", surface.ScreenWidth() - 48*2, surface.ScreenHeight() - 48 - 24, Color(255,255,0,255),TEXT_ALIGN_RIGHT , TEXT_ALIGN_BOTTOM  ) 
-		if power < (self.hacktime - self.hacktimeoff) then
-			draw.SimpleText( ARCBank.Msgs.Hack.NoEnergy,"ARCBankCard", surface.ScreenWidth() - 48*2, surface.ScreenHeight() - 48, Color(255,0,0,255),TEXT_ALIGN_RIGHT , TEXT_ALIGN_BOTTOM  )
-		elseif power > (self.hacktime + self.hacktimeoff) then
-			draw.SimpleText( ARCBank.Msgs.Hack.GoodEnergy,"ARCBankCard", surface.ScreenWidth() - 48*2, surface.ScreenHeight() - 48, Color(0,255,0,255),TEXT_ALIGN_RIGHT , TEXT_ALIGN_BOTTOM  )
-		else
-			draw.SimpleText( ARCBank.Msgs.Hack.Chance..tostring(*100)).."%","ARCBankCard", surface.ScreenWidth() - 48*2, surface.ScreenHeight() - 48, Color(255,255,0,255),TEXT_ALIGN_RIGHT , TEXT_ALIGN_BOTTOM  )
-		end
-	]]
 end
 if CLIENT then
 SWEP.VElements = {

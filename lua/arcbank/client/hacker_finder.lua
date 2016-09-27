@@ -1,9 +1,8 @@
 local tabOPos = {}
 local scrpos = {}
-net.Receive( "ARCATMHACK_BEACON", function(length)
+net.Receive( "arcbank_hacker_spark", function(length)
 	local stuffs = {}
 	stuffs.StartTime = CurTime()
-
 	stuffs.pos = net.ReadVector()
 	stuffs.failed = tobool(net.ReadBit())
 	if stuffs.failed then
@@ -15,7 +14,6 @@ net.Receive( "ARCATMHACK_BEACON", function(length)
 end)
 hook.Add("HUDPaint", "ARCBank ATMHackerDetector", function()
 	--%%CONFIRMATION_HASH%%
-	
 	for i=1,#tabOPos do
 		if !tabOPos[i] then
 			continue

@@ -4,8 +4,8 @@
 AddCSLuaFile("cl_init.lua")
 AddCSLuaFile("shared.lua")
 include('shared.lua')
-util.AddNetworkString( "ARCATMHACK_BEGIN" )
-util.AddNetworkString( "ARCATMHACK_BEACON" )
+util.AddNetworkString( "arcbank_hacker_status" )
+util.AddNetworkString( "arcbank_hacker_spark" )
 ARCBank.Loaded = false
 ENT.ARitzDDProtected = true
 function ENT:Initialize()
@@ -18,18 +18,14 @@ function ENT:Initialize()
 		self.phys:Wake()
 	end
 	self:SetCollisionGroup( COLLISION_GROUP_DEBRIS )
-	self.whirang = 0
-	self.hacktime = 0
-	self.left = 1
-	self.HackMoneh = 20
-	self.baseenergy = 2000
 		self.spark = ents.Create("env_spark")
 		self.spark:SetPos( self:GetPos() )
 		self.spark:Spawn()
 		self.spark:SetKeyValue("Magnitude",1)
 		self.spark:SetKeyValue("TrailLength",1)
 		self.spark:SetParent( self.Entity )
-	self.PickupTime = math.huge
+	self.PickupTime = CurTime()
+	self.Hacking = false
 	self.CopRefresh = CurTime()
 end
 function ENT:SpawnFunction( ply, tr )
@@ -41,70 +37,96 @@ function ENT:SpawnFunction( ply, tr )
 	blarg.Hacker = ply
 	return blarg
 end
-function ENT:BeginHack()
+function ENT:Setup(hacker,ent,energy,amount,rand,side)
+	self.Hacker = hacker
+	self.HackEnt = ent
+	self.EnergyLevel = amount
+	self.HackAmount = amount
+	self.HackRandom = rand
+	if (!IsValid(self:GetParent())) then
+		ErrorNoHalt("Parent not set!")
+	end
+
+	if (type(self:GetParent().HackStart) != "function") then
+		ErrorNoHalt("type(Parent.HackStart) != \"function\"")
+		self:Remove()
+		self.Hacker:Give("weapon_arc_atmhack")
+		self.Hacker:SelectWeapon("weapon_arc_atmhack")
+		return
+	end
+	if (type(self:GetParent().HackStop) != "function") then
+		ErrorNoHalt("type(Parent.HackStop) != \"function\"")
+		self:Remove()
+		self.Hacker:Give("weapon_arc_atmhack")
+		self.Hacker:SelectWeapon("weapon_arc_atmhack")
+		return
+	end
+	if (type(self:GetParent().HackProgress) != "function") then
+		ErrorNoHalt("type(Parent.HackProgress) != \"function\"")
+		self:Remove()
+		self.Hacker:Give("weapon_arc_atmhack")
+		self.Hacker:SelectWeapon("weapon_arc_atmhack")
+		return
+	end
+	if (type(self:GetParent().HackSpark) != "function") then
+		ErrorNoHalt("type(Parent.HackSpark) != \"function\"")
+		self:Remove()
+		self.Hacker:Give("weapon_arc_atmhack")
+		self.Hacker:SelectWeapon("weapon_arc_atmhack")
+		return
+	end
+	if (type(self:GetParent().HackComplete) != "function") then
+		ErrorNoHalt("type(Parent.HackComplete) != \"function\"")
+		self:Remove()
+		self.Hacker:Give("weapon_arc_atmhack")
+		self.Hacker:SelectWeapon("weapon_arc_atmhack")
+		return
+	end
+	
+	if (self.GetParent():GetClass() != self.HackEnt.Class) then
+		ErrorNoHalt("Parent class is "..self.GetParent():GetClass().." while the specified class is "..self.HackEnt.Class.."!!")
+		self:Remove()
+		self.Hacker:Give("weapon_arc_atmhack")
+		self.Hacker:SelectWeapon("weapon_arc_atmhack")
+		return
+	end
+	if (side) then
+		self.left = 1
+	else
+		self.left = -1
+	end
+	
+	net.Sart( "arcbank_hacker_status" )
+	net.WriteUInt(self:EntIndex(),16)
+	net.WriteUInt(0,4)
+	net.WriteEntity(hacker)
+	net.WriteUInt(self.HackEnt._i,8)
+	net.WriteDouble(energy)
+	net.WriteUInt(amount,32)
+	net.WriteBool(rand)
+	net.WriteBool(side)
+	net.Broadcast()
+	self:EmitSound("npc/roller/blade_cut.wav")
+end
+function ENT:HackBegin()
+	if (!self.HackEnt) then
+		error("ENT:HackBegin called before ENT:Setup!")
+	end
+	self.Rotate = true
+	self:EmitSound("npc/dog/dog_servo12.wav",70,70)
+end
+
+function ENT:HackStop()
 	if self.OurHealth <= 0 then return end
-	self:EmitSound("npc/dog/dog_servo12.wav",75,75)
-	local atm = self:GetParent()
-	if IsValid(atm) && (atm.IsAFuckingATM || atm.CasinoVault) then
-		if atm.Hacked || atm.InUse then
-			local pos = self:GetParent():WorldToLocal(self:GetPos()) - Vector(0,-self.left,0)
-			self:SetPos(pos)
-			atm.HackUnit = NULL
-			self:SetParent()
-			self:GetPhysicsObject():Wake()
-		return end
-		atm.Hacked = true
-		atm.InUse = true
-		if atm:WorldToLocal(self:GetPos()):__index("y") < 0 then
-			self.left = -1
-			----MsgN("LEFT")
-		end
-		self.init = true
-	end
+	self.GottaStop = true
 end
- ENT.OurHealth = 25; -- Amount of damage that the entity can handle - set to 0 to make it indestructible
-function ENT:StopHack()
-	if IsValid(self:GetParent()) && self.hacking then
-		self.baseenergy = self.energy - CurTime()
-		if self.baseenergy < 0 then self.baseenergy = 0 end
-		local atm = self:GetParent()
-		
-		if atm.CasinoVault then
-			atm.Vault.Screens[3]:SetScrType(3)
-		else
-			atm.HackRecover = CurTime() + math.Rand(5,60) + (self.bhacktime/23)
-		end
-		net.Start( "ARCATMHACK_BEGIN" )
-		net.WriteDouble(atm.HackRecover)
-		net.WriteDouble(atm.HackRecover)
-		net.WriteEntity(atm)
-		net.WriteEntity(self.Entity)
-		net.WriteBit(false)
-		net.WriteBit(true)
-		net.Broadcast()
-		--atm.CommInitDelay = CurTime() + 100
-		atm.InUse = false
-		atm.HackUnit = NULL
-		atm.Hacked = false
-		self.init = false
-		local pos = self:GetParent():WorldToLocal(self:GetPos()) - Vector(0,-self.left,0)
-		self:SetPos(pos)
-		self:SetParent()
-		self:EmitSound("ambient/energy/powerdown2.wav")
-		if self.HackSound then
-			self.HackSound:Stop()
-		end
-		self:GetPhysicsObject():Wake()
-		self.PickupTime = CurTime() + 30
-	end
-end
+
+ENT.OurHealth = 25; -- Amount of damage that the entity can handle - set to 0 to make it indestructible
 function ENT:OnTakeDamage(dmg)
 	self:TakePhysicsDamage(dmg); -- React physically when getting shot/blown
 	self.OurHealth = self.OurHealth - dmg:GetDamage(); -- Reduce the amount of damage took from our health-variable
 	if(self.OurHealth <= 0) then -- If our health-variable is zero or below it
-		if self:GetParent() != NULL && self:GetParent().UsePlayer then return end
-		if self:GetParent() != NULL && !self:GetParent().UsePlayer then
-		
+		if self.Hacking then
 			local attname
 			if dmg:GetAttacker():IsPlayer() then
 				attname = dmg:GetAttacker():Nick()
@@ -118,9 +140,10 @@ function ENT:OnTakeDamage(dmg)
 				ARCLib.NotifyBroadcast(string.Replace( string.Replace( ARCBank.Msgs.UserMsgs.HackHero, "%IDIOT%",tostring(self.Hacker:Nick())), "%HERO%", tostring(attname) ),NOTIFY_GENERIC,15,true)
 			end
 		end
-		self:StopHack()
+		self:HackStop()
 		
-		if self.spark && self.spark != NULL then
+		if self.spark && self.spark != NULL && !self.Broken then
+			self.Broken = true
 			self.spark:Fire( "SparkOnce","",0.01 )
 			self.spark:Fire( "SparkOnce","",0.02 )
 			for i=1,math.random(5,40) do
@@ -147,93 +170,121 @@ function ENT:OnTakeDamage(dmg)
 	end
 end
 function ENT:Think()
-	if !self.init || self.OurHealth <= 0 then return end
-	if self:GetParent() == NULL then
-		self.init = false
-		return
-	end
-	if self.whirang < 90 then
-		self.whirang = self.whirang + 2.5
-		local ang = self:GetAngles()
-		--ang:RotateAroundAxis( ang:Up(), -22.5*self.left )
-		ang:RotateAroundAxis( ang:Up(), -2.5*self.left )
-		self:SetAngles(ang)
-		local pos = self:GetParent():WorldToLocal(self:GetPos()) - Vector(0.02,0,0)
-		self:SetPos(pos)
-		self:NextThink( CurTime() )
-		return true
-	end
-	if self.hacking then
-		if self.energy < CurTime() && IsValid(self:GetParent()) && !self:GetParent().UsePlayer then
-			self:StopHack()
-			return
-		end
-		if self.CopRefresh < CurTime() then
+	if self.OurHealth <= 0 then return end
+	if self.Rotate then
+		if self.whirang < 90 then
+			self.whirang = self.whirang + 2.5
+			local ang = self:GetAngles()
+			--ang:RotateAroundAxis( ang:Up(), -22.5*self.left )
+			ang:RotateAroundAxis( ang:Up(), -2.5*self.left )
+			self:SetAngles(ang)
+			local pos = self:GetParent():WorldToLocal(self:GetPos()) - Vector(0.02,0,0)
+			self:SetPos(pos)
+			self:NextThink( CurTime() )
+			return true
+		else
+			self.spark:Fire( "SparkOnce","",0.01)
+			self.spark:Fire( "SparkOnce","",0.5)
+			self:EmitSound("buttons/button6.wav")
 			self.Cops = {}
-			for k,v in pairs(ARCBank.Settings["atm_hack_notify"]) do
-				for _,ply in pairs(player.GetAll()) do
-					if ply:Team() == _G[v] then
-						self.Cops[#self.Cops + 1] = ply
+			self.StartPos = self:GetParent():WorldToLocal(self:GetPos())
+			timer.Simple(0.5,function()
+				if !IsValid(self) || !IsValid(self.GetParent()) then return end
+				
+				for k,v in pairs(ARCBank.Settings["atm_hack_notify"]) do
+					for _,ply in pairs(player.GetAll()) do
+						if ply:Team() == _G[v] then
+							ARCLib.NotifyPlayer(ply,tostring(ARCBank.Msgs.UserMsgs.Hack),NOTIFY_ERROR,10,false)
+							ply:EmitSound("npc/attack_helicopter/aheli_damaged_alarm1.wav")
+							self.Cops[#self.Cops + 1] = ply
+						end
 					end
 				end
-			end
-			self.CopRefresh = CurTime() + 5
-		end
-		if #player.GetHumans() < ARCBank.Settings["atm_hack_min_player"] then
-			ARCLib.NotifyPlayer(self.Hacker,ARCBank.Msgs.UserMsgs.HackNoPlayers.." (< "..ARCBank.Settings["atm_hack_min_player"]..")",NOTIFY_ERROR,6,true)
-			self:StopHack()
-			return
-		end
-		
-		if #self.Cops < ARCBank.Settings["atm_hack_min_hackerstoppers"] then
-			ARCLib.NotifyPlayer(self.Hacker,ARCBank.Msgs.UserMsgs.HackNoCops.." (< "..ARCBank.Settings["atm_hack_min_hackerstoppers"]..")",NOTIFY_ERROR,6,true)
-			self:StopHack()
-			return
-		end
-		if self.hacktime > 0 then
-			if self.hacktime <= CurTime() then
-			self:EmitSound("weapons/stunstick/alyx_stunner1.wav",100,math.random(125,155))
-			self:EmitSound("ambient/levels/citadel/stalk_poweroff_on_17_10.wav")
-			self.HackSound:Stop()
-			self.hacktime = 0
-			net.Start("ARCATMHACK_BEACON")
-			net.WriteVector(self:GetPos())
-			net.WriteBit(true)
-			net.Send(self.Cops)
-			timer.Simple(math.random(),function()
-				if !self || self == NULL then return end
-				local atm = self:GetParent()
-				if !IsValid(atm) || !atm.Hacked then return end
-				if atm.CasinoVault then
-					atm.Vault:BeginHacked(self.HackMoneh)
-					return
-				elseif !atm.IsAFuckingATM then 
-					return
+				
+				self.spark:Fire( "SparkOnce","",0.01)
+				self.Hacking = true
+				self:EmitSound("weapons/stunstick/alyx_stunner2.wav",100,math.random(92,125))
+				self.HackSound = CreateSound(self, "ambient/energy/electric_loop.wav" )
+				self.HackSound:Play();
+				self.HackSound:ChangePitch( 85, 0.1 ) 
+				if self.HackRandom then
+					self.HackSound:ChangeVolume( 0.05, 0.05 ) 
+				end
+				
+				self.EnergyStart = CurTime()
+				self.EnergyEnd = CurTime() + self.EnergyLevel
+				
+				local hacktime = ARCBank.HackTimeCalculate(self.HackEnt,self.HackAmount,self.HackRandom)
+				local hackoffset = ARCBank.HackTimeOffset(self.HackEnt,hacktime)
+				
+				self.HackStart = CurTime()
+				self.HackEnd = CurTime() + math.Rand(hacktime-hackoffset,hacktime+hackoffset)
+				
+				net.Sart( "arcbank_hacker_status" )
+				net.WriteUInt(self:EntIndex(),16)
+				net.WriteUInt(3,4)
+				net.WriteDouble(self.EnergyEnd)
+				net.WriteDouble(self.HackEnd)
+				net.Broadcast()
+				self:GetParent():HackStart()
+				
+				if ARCBank.Settings.atm_hack_radar then
+					net.Start("arcbank_hacker_spark")
+					net.WriteVector(self:GetPos())
+					net.WriteBit(false)
+					net.Send(self.Cops)
 				end
 			end)
-			else
-			--[[
-				if !self.Hacker || self.Hacker == NULL || !self.Hacker:IsPlayer() then
-					self:StopHack()
-				end
-				]]
-				self.HackSound:ChangePitch( 85+((((self.hacktime-CurTime())/self.bhacktime)-1)*-100), 0.2 ) 
-				local pos = self.StartPos - Vector(0.0,((((self.hacktime-CurTime())/self.bhacktime)-1)*0.32)*-self.left,0)
-				self:SetPos(pos)
-				if !self.HackRandom || math.random(1,501) == 501 then
-					self.spark:Fire( "SparkOnce","",math.Rand(0,0.2) )
-					if ARCBank.Settings.atm_hack_radar then
-						net.Start("ARCATMHACK_BEACON")
-						net.WriteVector(self:GetPos())
-						net.WriteBit(false)
-						net.Send(self.Cops)
-					end
-				end
-			end
+			self.Rotate = false
 		end
-	else
-		self.StartPos = self:GetParent():WorldToLocal(self:GetPos())
-		self.spark:Fire( "SparkOnce","",0.01 )
+	end
+	if !self.Hacking then return end
+	if self.GottaStop then
+		if (!self:GetParent():HackStop()) then
+			self.Hacking = false
+			self.GottaStop = false
+			self.PickupTime = CurTime() + 13
+			net.WriteUInt(self:EntIndex(),16)
+			net.WriteUInt(3,4)
+			net.Broadcast()
+			self:EmitSound("ambient/energy/powerdown2.wav")
+			if self.HackSound then
+				self.HackSound:Stop()
+			end
+			self.EnergyLevel = self.EnergyEnd - CurTime()
+			if self.EnergyLevel < 0 then
+				self.EnergyLevel = 0
+			end
+			timer.Simple(3,function()
+				if !IsValid(self) || !IsValid(self.GetParent()) then return end
+				local pos = self:GetParent():WorldToLocal(self:GetPos()) - Vector(0,-self.left,0)
+				self:SetPos(pos)
+				self:SetParent()
+				self:GetPhysicsObject():Wake()
+				self:EmitSound("npc/roller/blade_in.wav")
+			end)
+		end
+		return
+	end
+	if self.EnergyEnd < CurTime() then
+		self:HackStop()
+		return
+	end
+	
+	
+	if #player.GetHumans() < ARCBank.Settings["atm_hack_min_player"] then
+		ARCLib.NotifyPlayer(self.Hacker,ARCBank.Msgs.UserMsgs.HackNoPlayers.." (< "..ARCBank.Settings["atm_hack_min_player"]..")",NOTIFY_ERROR,6,true)
+		self:StopHack()
+		return
+	end
+	
+	if #self.Cops < ARCBank.Settings["atm_hack_min_hackerstoppers"] then
+		ARCLib.NotifyPlayer(self.Hacker,ARCBank.Msgs.UserMsgs.HackNoCops.." (< "..ARCBank.Settings["atm_hack_min_hackerstoppers"]..")",NOTIFY_ERROR,6,true)
+		self:StopHack()
+		return
+	end
+
+	if self.CopRefresh < CurTime() then
 		self.Cops = {}
 		for k,v in pairs(ARCBank.Settings["atm_hack_notify"]) do
 			for _,ply in pairs(player.GetAll()) do
@@ -242,58 +293,36 @@ function ENT:Think()
 				end
 			end
 		end
-		net.Start("ARCATMHACK_BEACON")
+		self.CopRefresh = CurTime() + 5
+	end
+	
+	if self.HackEnd < CurTime() then
+		self:GetParent():HackComplete(self.HackAmount,self.HackRandom)
+		net.Start("arcbank_hacker_spark")
 		net.WriteVector(self:GetPos())
-		net.WriteBit(false)
-		net.Send(self.Cops)
-		--self.spark:Fire( "Kill","",0.01 )
-		--self.spark:Fire("kill","",0.2)
-		self.hacking = true
-		self:EmitSound("buttons/button6.wav")
-		self:EmitSound("weapons/stunstick/alyx_stunner2.wav",100,math.random(92,125))
-		self.HackSound = CreateSound(self, "ambient/energy/electric_loop.wav" )
-		self.HackSound:Play();
-		self.HackSound:ChangePitch( 85, 0.1 ) 
-		if self.HackRandom then
-			self.HackSound:ChangeVolume( 0.05, 0.05 ) 
-		
-		end
-		for k,v in pairs(ARCBank.Settings["atm_hack_notify"]) do
-			for _,ply in pairs(player.GetAll()) do
-				if ply:Team() == _G[v] then
-					ARCLib.NotifyPlayer(ply,tostring(ARCBank.Msgs.UserMsgs.Hack),NOTIFY_ERROR,10,false)
-					ply:EmitSound("npc/attack_helicopter/aheli_damaged_alarm1.wav")
-				end
-			end
-		end
-		self:NextThink( CurTime() + 0.5 )
-		--
-		--
-		
-		local relTimeMax = ARCBank.Settings["atm_hack_time_max"] - ARCBank.Settings["atm_hack_time_min"]
-		local basetime = (ARCBank.Settings["atm_hack_time_min"] + ARCLib.BetweenNumberScale(ARCBank.Settings["atm_hack_time_min"],self.HackMoneh,ARCBank.Settings["atm_hack_time_max"]) ^ ARCBank.Settings["atm_hack_time_curve"] * relTimeMax)*(1+ARCLib.BoolToNumber(self.HackRandom)*ARCBank.Settings["atm_hack_time_stealth_rate"])
-		if self:GetParent().CasinoVault then
-			if self.HackRandom then
-				self.bhacktime = basetime
-			else
-				self.bhacktime = basetime/4
-			end
-			self:GetParent().Vault.Screens[3]:SetScrType(9)
-		else
-			self.bhacktime = math.Rand(basetime-math.Round(basetime^0.725),basetime+math.Round(basetime^0.725))
-		end
-		self.hacktime = self.bhacktime + CurTime()
-		self.energy = self.baseenergy + CurTime()
-		net.Start( "ARCATMHACK_BEGIN" )
-		net.WriteDouble(self.baseenergy)
-		net.WriteDouble(self.bhacktime)
-		net.WriteEntity(self:GetParent())
-		net.WriteEntity(self.Entity)
 		net.WriteBit(true)
-		net.WriteBit(self.left == 1)
+		net.Send(self.Cops)
+		net.Start( "arcbank_hacker_status" )
+		net.WriteUInt(self:EntIndex(),16)
+		net.WriteUInt(5,4)
 		net.Broadcast()
-		self:GetParent().HackUnit = self.Entity
+		self:NextThink( CurTime() + 2 )
+		self:HackStop()
+		self:EmitSound("weapons/stunstick/alyx_stunner1.wav",100,math.random(125,155))
 		return true
+	end
+	
+	self.HackSound:ChangePitch( 85+ARCLib.BetweenNumberScale(self.HackBegin,CurTime(),self.HackEnd())*100,0.2)
+	local pos = self.StartPos - Vector(0.0,ARCLib.BetweenNumberScale(self.HackBegin,CurTime(),self.HackEnd())*0.32*-self.left,0)
+	self:SetPos(pos)
+	if !self.HackRandom || math.random(1,501) == 501 then
+		self.spark:Fire( "SparkOnce","",math.Rand(0,0.2) )
+		if ARCBank.Settings.atm_hack_radar then
+			net.Start("ARCATMHACK_BEACON")
+			net.WriteVector(self:GetPos())
+			net.WriteBit(false)
+			net.Send(self.Cops)
+		end
 	end
 end
 
@@ -301,37 +330,29 @@ function ENT:OnRemove()
 	if self.spark && self.spark != NULL then
 		self.spark:Fire( "Kill","",0.01 )
 	end
-	if self.OweMoney then
-	
-	
-	end
+	net.Start( "arcbank_hacker_status" )
+	net.WriteUInt(self:EntIndex(),16)
+	net.WriteUInt(3,4)
+	net.Broadcast()
 end
 
 function ENT:Use( ply, caller )--self:StopHack()
 	if (IsValid(self.Hacker) && self.Hacker:IsPlayer() && (ply != self.Hacker && self.PickupTime > CurTime())) || self.OurHealth <= 0 then return end
-	if self.init then
-		if self:GetParent() != NULL && self:GetParent().UsePlayer then return end
+	if IsValid(self:GetParent()) then
 		self:StopHack()
 	else
 		ply:Give("weapon_arc_atmhack")
 		ply:SelectWeapon("weapon_arc_atmhack")
 		self.OurHealth = 0
+		local StartEnergyTime = CurTime() - (self.EnergyLevel / ARCBank.Settings["atm_hack_charge_rate"])
 		timer.Simple(0,function()
-			ply:GetActiveWeapon().energystart = CurTime() - (self.baseenergy / ARCBank.Settings["atm_hack_charge_rate"])
-			ply:SendLua("LocalPlayer():GetActiveWeapon().energystart = "..tostring(CurTime() - (self.baseenergy /ARCBank.Settings["atm_hack_charge_rate"])))
+			ply:GetActiveWeapon().StartEnergyTime = StartEnergyTime
+			ply:SendLua("LocalPlayer():GetActiveWeapon().StartEnergyTime = "..StartEnergyTime)
 		end)
-		timer.Simple(0.1,function()
-			self.Entity:Remove()
-		end)
+		self:Remove()
 	end
 end
---[[
-function ENT:Touch(activator, caller) --Based on easy engine wrench
-	if self.OurHealth <= 0 then return end
-	if activator == self.Hacker && !self.init then
-	end
-end
-]]
+
 function ENT:CPPICanTool(ply,tool)
 	if !ply:IsPlayer() || self.ARCBank_MapEntity then
 		return false

@@ -26,7 +26,11 @@ net.Receive( "arcatmhack_gui", function(length)
 	
 	local HackLabel = vgui.Create( "DLabel", DermaPanel )
 	HackLabel:SetPos( 10, 34 )
-	HackLabel:SetText( ARCBank.Msgs.Hack.EntSelect )
+	if istable(weapon.HackEnt) then
+		HackLabel:SetText( weapon.HackEnt.Name )
+	else
+		HackLabel:SetText( ARCBank.Msgs.Hack.EntSelect )
+	end
 	HackLabel:SizeToContents()
 	
 	local HackSelector = vgui.Create( "DComboBox", DermaPanel)
@@ -70,6 +74,7 @@ net.Receive( "arcatmhack_gui", function(length)
 	
 	local UpdateValues = function()
 		if !IsValid(weapon) then return end
+		if !weapon.HackEnt then return end
 		weapon.HackTime = ARCBank.HackTimeCalculate(weapon.HackEnt,NumSlider2:GetValue(),StealthCheckbox:GetChecked())
 		weapon.HackTimeOff = ARCBank.HackTimeOffset(weapon.HackEnt,weapon.HackTime)
 		weapon.ScreenScroll = 1
@@ -78,11 +83,13 @@ net.Receive( "arcatmhack_gui", function(length)
 		weapon.SScreenScrollDelay = CurTime() + 0.1
 		weapon.SSScreenScroll = 1
 		weapon.SSScreenScrollDelay = CurTime() + 0.1
+		weapon.HackRandom = StealthCheckbox:GetChecked()
 		HackTimeL:SetText( ARCBank.Msgs.Hack.ETA..ARCLib.TimeString(weapon.HackTime,ARCBank.Msgs.Time).."\n"..ARCBank.Msgs.Hack.GiveOrTake..ARCLib.TimeString(weapon.HackTimeOff,ARCBank.Msgs.Time) )
 		HackTimeL:SizeToContents()
 	end
 	
 	NumSlider2.OnValueChanged = function( panel, value )
+		if !weapon.HackEnt then return end
 		if value%25 != 0 then
 			NumSlider2:SetValue( math.Clamp(math.Round(value/25)*25,ARCBank.HackTimeGetSetting(weapon.HackEnt,"MoneyMin"),ARCBank.HackTimeGetSetting(weapon.HackEnt,"MoneyMax")) )
 			return
