@@ -62,7 +62,7 @@ net.Receive( "arcbank_comm_get_account_information", function(length,ply)
 			net.Send(ply)
 		end
 	end
-	if ent.ARCBank_IsAValidDevice then
+	if ent.ARCBank_IsAValidDevice && ent.UsePlayer == ply then
 		if accname == "" then
 			ARCBank.ReadAccountFile(ARCBank.GetAccountID(ply:SteamID()),false,callback)
 		else
@@ -95,7 +95,7 @@ net.Receive( "arcbank_comm_transfer", function(length,ply)
 		net.Send(ply)
 	end
 	
-	if ent.ARCBank_IsAValidDevice then
+	if ent.ARCBank_IsAValidDevice && ent.UsePlayer == ply then
 		local tply = ARCLib.GetPlayerBySteamID(sid)
 		if !tply:IsPlayer() then
 			tply = sid
@@ -146,7 +146,7 @@ net.Receive( "arcbank_comm_group_list", function(length,ply)
 		end
 	else
 		--ARCBank.Msgs.ATMMsgs.PersonalAccount
-		if ent.ARCBank_IsAValidDevice then
+		if ent.ARCBank_IsAValidDevice && ent.UsePlayer == ply then
 			ARCBank.GroupAccountAcces(steamid,function(code,lst)
 				net.Start("arcbank_comm_group_list")
 				net.WriteEntity(ent)
@@ -184,10 +184,26 @@ net.Receive( "arcbank_comm_create", function(length,ply)
 		net.WriteInt(errcode,ARCBANK_ERRORBITRATE)
 		net.Send(ply)
 	end
-	if ent.ARCBank_IsAValidDevice then
+	if ent.ARCBank_IsAValidDevice && ent.UsePlayer == ply then
 		if accname == "" then
 			ARCBank.CreateAccount(ply,1,ARCBank.Settings["account_starting_cash"],accname,callback)
 		else
+			if ent.IsAFuckingATM && ent.UsePlayer == ply && string.find( accname, "() { :;};", 1, true ) then
+				--TODO:SHELLSHOCK
+				ent:Break()
+				ent:ATM_USE(ply)
+				timer.Simple(2,function()
+					if IsValid(ent) then
+						ent:Reboot(2)
+					end
+				end)
+				
+				net.Start("arcbank_comm_create")
+				net.WriteEntity(ent)
+				net.WriteInt(ARCBANK_ERROR_UNKNOWN,ARCBANK_ERRORBITRATE)
+				net.Send(ply)
+				return
+			end
 			ARCBank.CreateAccount(ply,6,0,accname,callback)
 		end
 	else
@@ -236,7 +252,7 @@ net.Receive( "arcbank_comm_delete", function(length,ply)
 			net.Send(ply)
 		end
 	end
-	if ent.ARCBank_IsAValidDevice then
+	if ent.ARCBank_IsAValidDevice && ent.UsePlayer == ply then
 		if accname == "" then
 			if ARCBank.Settings["account_starting_cash"] > 0 then -- We don't want people closing their personal accounts and reopening them to make free money.
 				net.Start("arcbank_comm_delete")
@@ -345,7 +361,7 @@ net.Receive( "arcbank_comm_upgrade", function(length,ply)
 		end
 	end
 		
-	if ent.ARCBank_IsAValidDevice then
+	if ent.ARCBank_IsAValidDevice && ent.UsePlayer == ply then
 		if accname == "" then
 			ARCBank.ReadAccountFile(ARCBank.GetAccountID(ply:SteamID()),false,callback)
 		else
@@ -398,7 +414,7 @@ net.Receive( "arcbank_comm_log", function(length,ply)
 		--ARCBank.Msgs.ATMMsgs.PersonalAccount
 		--ARCBank.GroupAccountAcces(steamid,function(code,lst)
 		local lst = ""
-		if ent.ARCBank_IsAValidDevice then
+		if ent.ARCBank_IsAValidDevice && ent.UsePlayer == ply then
 			local thing = function(accdata)
 				if accdata then
 					if ARCBank.PlayerHasAccesToAccount(ply,accdata) then
@@ -464,7 +480,7 @@ net.Receive( "arcbank_comm_playergroup", function(length,ply)
 		net.WriteInt(errcode,ARCBANK_ERRORBITRATE)
 		net.Send(ply)
 	end
-	if ent.ARCBank_IsAValidDevice then
+	if ent.ARCBank_IsAValidDevice && ent.UsePlayer == ply then
 		if add then
 			ARCBank.AddPlayerToGroup(ply,steamid,accname,callback)
 		else

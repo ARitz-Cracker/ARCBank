@@ -757,6 +757,7 @@ function ARCBank.PlayerHasAccesToAccount(ply,accounttable)
 	end
 end
 function ARCBank.GetAllAccounts(amount,callback)
+	assert(isnumber(amount))
 	if !ARCBank.Loaded then callback(ARCBANK_ERROR_NOT_LOADED,{}) return end
 	if ARCBank.Busy then callback(ARCBANK_ERROR_BUSY,{}) return end
 	local pers = {}
@@ -1051,6 +1052,7 @@ function ARCBank.AddMoney(ply,amount,groupaccount,reason,callback)
 	end)
 end
 function ARCBank.StealMoney(ply,amount,accounttable,hidden,callback)
+	assert(isnumber(amount))
 	if !ARCBank.Loaded then callback(ARCBANK_ERROR_NOT_LOADED,0) return end
 	if ARCBank.Busy then callback(ARCBANK_ERROR_BUSY,0) return end
 	if accounttable == "*STEAL FROM MULTIPLE ACCOUNTS!!*" then

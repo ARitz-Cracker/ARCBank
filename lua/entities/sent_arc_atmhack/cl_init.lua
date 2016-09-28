@@ -78,7 +78,7 @@ function ENT:Initialize()
 	self.Hacking = false
 	self.HackStart = 0
 	self.HackEnd = 1
-	
+	self.EnergyLevel = self.EnergyLevel || 0
 	local enti = self:EntIndex()
 	if initEnts[enti] then
 		table.Merge( self, initEnts[enti] )
@@ -92,18 +92,18 @@ function ENT:Initialize()
 end
 
 function ENT:Spark()
-	if self.Hacking then
+	if self.Hacking && IsValid(self:GetParent()) then
 		self:GetParent():HackSpark()
 	end
 end
 function ENT:HackComplete()
-	if self.Hacking then
-		self:GetParent():HackComplete(self.HackAmount,self.HackRandom,self.Hacker)
+	if self.Hacking && IsValid(self:GetParent()) then
+		self:GetParent():HackComplete(self.Hacker,self.HackAmount,self.HackRandom)
 	end
 end
 
 function ENT:Think()
-	if self.Hacking then
+	if self.Hacking && IsValid(self:GetParent()) then
 		self.HackPercent = ARCLib.BetweenNumberScale(self.HackStart,CurTime(),self.HackEnd)
 		self:GetParent():HackProgress(self.HackPercent)
 	end
@@ -140,11 +140,11 @@ function ENT:Draw()
 		local atm = self:GetParent()
 		
 		if self.Hacking then
-			ARCLib.BetweenNumberScale(self.HackStart,CurTime(),self.HackDelay)
+			ARCLib.BetweenNumberScale(self.HackStart,CurTime(),self.HackEnd)
 			if self.energy < CurTime() then
 				draw.SimpleText( "Power: 0", "ARCBankATM", -49, -66, Color(0,0,0,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_CENTER )
 			else
-				draw.SimpleText( "Power: "..tostring(math.Round(self.EnergyEnd-CurTime())), "ARCBankATM", -49, -66, Color(0,0,0,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_CENTER )
+				draw.SimpleText( "Power: "..math.Clamp(math.Round(self.EnergyEnd-CurTime()),0,math.huge), "ARCBankATM", -49, -66, Color(0,0,0,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_CENTER )
 			end
 			draw.SimpleText( "Hack: ON", "ARCBankATM", -49, -54, Color(0,0,0,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_CENTER )
 			if self.HackPercent == 0 then
@@ -157,14 +157,18 @@ function ENT:Draw()
 				draw.SimpleText( self.code1, "ARCBankATM", -49, -18, Color(0,0,0,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_CENTER )
 				draw.SimpleText( self.code2, "ARCBankATM", -49, -6, Color(0,0,0,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_CENTER )
 			end
-			draw.SimpleText( "Progress: "..tostring(math.Clamp(math.Round(self.HackPercent*100),0,100)).."%", "ARCBankATM", -49, 18, Color(0,0,0,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_CENTER )
-			surface.DrawRect(-48, 24, math.Clamp(self.HackPercent*96,0,96), 10 ) 
-			surface.DrawRect(-48, 12, math.Clamp((self.HackPercent^2)*96,0,96), 10 )
-			surface.DrawRect(-48, 36, 75 + math.sin(CurTime())*math.random(18,21), 10 ) 
-			surface.DrawRect(-48, 48, 75 + math.sin(CurTime())*math.random(18,21), 10 )
-			surface.DrawRect(-48, 60, 82 + math.sin(CurTime()*10)*math.random(1,15), 10 ) 			
+			draw.SimpleText( "Progress: "..math.Clamp(math.Round(self.HackPercent*100),0,100).."%", "ARCBankATM", -49, 18, Color(0,0,0,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_CENTER )
+			surface.DrawRect(-48, 24, math.Clamp((self.HackPercent^2)*96,0,96), 10 )
+			surface.DrawRect(-48, 36, math.Clamp(self.HackPercent*96,0,96), 10 ) 
+			surface.DrawRect(-48, 48, 75 + math.sin(CurTime())*math.random(18,21), 10 ) 
+			surface.DrawRect(-48, 60, 75 + math.sin(CurTime())*math.random(18,21), 10 )
+			if self.HackRandom then
+				surface.DrawRect(-48, 72, 22 + math.sin(CurTime()*10)*math.random(1,15), 10 ) 
+			else
+				surface.DrawRect(-48, 72, 82 + math.sin(CurTime()*10)*math.random(1,15), 10 ) 
+			end			
 		else
-			draw.SimpleText( "Power: "..tostring(self.EnergyLevel), "ARCBankATM", -49, -66, Color(0,0,0,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_CENTER )
+			draw.SimpleText( "Power: "..math.Round(self.EnergyLevel), "ARCBankATM", -49, -66, Color(0,0,0,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_CENTER )
 			draw.SimpleText( "Hack: OFF", "ARCBankATM", -49, -54, Color(0,0,0,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_CENTER )
 			draw.SimpleText( "00000000000000", "ARCBankATM", -49, -18, Color(0,0,0,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_CENTER )
 			draw.SimpleText( "00000000000000", "ARCBankATM", -49, -6, Color(0,0,0,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_CENTER )

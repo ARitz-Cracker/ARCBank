@@ -974,7 +974,13 @@ function ENT:Screen_HAX()
 		draw.SimpleText( "Login Successful!", "ARCBankATM",self.Resolutionx/-2, -108, Color(255,255,255,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_BOTTOM  )
 		draw.SimpleText( "**ARCBank ATM**", "ARCBankATM",self.Resolutionx/-2, -92, Color(255,255,255,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_BOTTOM  )
 		if self.HackComplete then
-		
+			draw.SimpleText( "root@atm_"..self:EntIndex()..":~# mount /dev/sdb1 /mnt", "ARCBankATM",self.Resolutionx/-2, -76, Color(255,255,255,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_BOTTOM  )
+			draw.SimpleText( "root@atm_"..self:EntIndex()..":~# /mnt/atm_money_stealer", "ARCBankATM",self.Resolutionx/-2, -60, Color(255,255,255,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_BOTTOM  )
+			if self.HackRandom then
+				draw.SimpleText( "Targetting ARCBank system...", "ARCBankATM",self.Resolutionx/-2, -44, Color(255,255,255,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_BOTTOM  )
+			else
+				draw.SimpleText( "Withdrawing cash from random account...", "ARCBankATM",self.Resolutionx/-2, -44, Color(255,255,255,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_BOTTOM  )
+			end
 		else
 			draw.SimpleText( "root@atm_"..tostring(self:EntIndex())..":~#", "ARCBankATM",self.Resolutionx/-2, -76, Color(255,255,255,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_BOTTOM  )
 		end
@@ -990,15 +996,30 @@ net.Receive( "arcbank_atm_reboot", function(length,ply)
 	local stuff = {}
 	stuff.Broken = net.ReadBool()
 	stuff.RebootTime = net.ReadDouble()
+	MsgN(ent)
+	PrintTable(stuff)
 	if IsValid(ent) then
 		table.Merge( ent, stuff )
+		ent.MsgBox = {}
+		ent.MsgBox.Title = ""
+		ent.MsgBox.Text = ""
+		ent.MsgBox.TitleIcon = ""
+		ent.MsgBox.TextIcon = ""
+		ent.MsgBox.Type = 0
+		ent.MsgBox.GreenFunc = function() self.MsgBox.Type = 0 end
+		ent.MsgBox.RedFunc = function() self.MsgBox.Type = 0 end
+		ent.MsgBox.YellowFunc = function() self.MsgBox.Type = 0 end
 	else
 		brokenATMs[enti] = stuff
 	end
 end)
+function ENT:Hackable()
+	return !self.Broken && self.RebootTime < CurTime()
+end
 function ENT:HackStop()
 	self.Percent = 0
 	self.Hacked = false
+
 end
 function ENT:HackStart()
 	self.Hacked = true
@@ -1025,7 +1046,7 @@ function ENT:Screen_Main()
 		local minx = self.Resolutionx/-2
 		local miny = self.Resolutiony/-2
 		
-		if (self.Hacked && self.Percent == 1) || (self.RebootTime - 11 < CurTime() && self.RebootTime - 3 > CurTime())then
+		if (self.Hacked && self.Percent == 1) || (self.RebootTime - 3 > CurTime())then
 			surface.SetDrawColor( 10, 10, 10, 255 )
 			surface.DrawOutlinedRect( (self.Resolutionx+2)/-2, (self.Resolutiony+2)/-2, self.Resolutionx+2, self.Resolutiony+2 ) 
 			surface.SetDrawColor( 0, 0, 0, 255 )
@@ -1060,7 +1081,7 @@ function ENT:Screen_Main()
 		if self.MsgBox && self.MsgBox.Type > 0 then
 			ARCBank_Draw:Window_MsgBox(-130,-90,240,self.MsgBox.Title,self.MsgBox.Text,ARCBank.ATM_DarkTheme,self.MsgBox.Type,ARCLib.Icons32t[self.MsgBox.TextIcon],ARCLib.Icons16[self.MsgBox.TitleIco],self.ATMType.ForegroundColour)
 		end
-		if self.RebootTime - 7 < CurTime() then
+		if self.RebootTime -7 < CurTime() && self.RebootTime > CurTime() then
 			ARCBank_Draw:Window_MsgBox(-125,-40,230,ARCBank.Settings.name,"System is starting up!",ARCBank.ATM_DarkTheme,0,ARCLib.Icons32t["information"],nil,self.ATMType.ForegroundColour)
 		end
 		if self.Broken then
@@ -1102,13 +1123,15 @@ function ENT:Screen_Main()
 			if self.Percent < 0.999 then
 				local xpos
 				local ypos
-				local maxw = self.Resolutionx - xpos
-				local maxh = self.Resolutiony - ypos
+				local maxw
+				local maxh
 				for i=1,math.random(self.Percent*100,self.Percent*200) do
 					surface.SetDrawColor( 0, 0, 0, 255 )
 					xpos = math.random((self.Resolutionx/-2)-20,10)
 					ypos = math.random(self.Resolutiony/-2,self.Resolutiony/2)
-					surface.DrawRect( xpos, ypos, math.Clamp(math.random(0,self.Resolutionx)0,maxw), math.Clamp(math.random(0,40)*self.Percent,0,maxh) )
+					maxw = self.Resolutionx - xpos
+					maxh = self.Resolutiony - ypos
+					surface.DrawRect( xpos, ypos, math.Clamp(math.random(0,self.Resolutionx),0,maxw), math.Clamp(math.random(0,40)*self.Percent,0,maxh) )
 				end
 			end
 		end
@@ -1155,7 +1178,7 @@ function ENT:Draw()--Good
 	if LocalPlayer():GetPos():DistToSqr(self:GetPos()) > 1000000 then return end
 	local Rand2 = 0
 	local vecram = vector_origin
-	if self.Hacked && self.HackDelay > CurTime() && self.Percent > math.Rand(0.111,0.325) then
+	if self.Hacked && self.Percent > math.Rand(0.111,0.325) && self.Percent < 1 then
 		vecram = VectorRand()*0.2
 		Rand2 = math.Rand(-0.00001,0.0005)
 	end
@@ -1170,7 +1193,7 @@ function ENT:Draw()--Good
 			lbright = 64
 		end
 	end
-	if (self.RebootTime - 11 < CurTime() && self.RebootTime - 3 > CurTime()) then
+	if (self.Hacked && self.Percent == 1) || (self.RebootTime - 3 > CurTime())then
 		lbright = 0
 	end
 	if ( dlight ) then

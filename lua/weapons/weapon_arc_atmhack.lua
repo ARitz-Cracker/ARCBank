@@ -22,7 +22,7 @@ SWEP.Primary.Ammo = "none"
 
 SWEP.Secondary.ClipSize = -1
 SWEP.Secondary.DefaultClip = -1
-SWEP.Secondary.Automatic = true
+SWEP.Secondary.Automatic = false
 SWEP.Secondary.Ammo = "none"
 
 SWEP.PrintName = "ATM Hacking Unit"
@@ -55,6 +55,8 @@ function SWEP:ValidAim()
 	local trace = self.Owner:GetEyeTrace()
 	if (!IsValid(trace.Entity)) then return false end
 	if (trace.Entity:GetClass() != self.HackEnt.Class) then return false end
+	if (!trace.Entity:Hackable()) then return false end
+	if (trace.Entity._HackAttached) then return false end
 	local side = false
 	if (self.HackEnt.Side) then
 		local corner = trace.Entity:OBBMaxs() - trace.Entity:OBBCenter()
@@ -80,7 +82,7 @@ function SWEP:ValidAim()
 				return false
 			end
 		end
-		side = hitpos[axis] < 0
+		side = hitpos[axis] > 0
 	end
 	local dist = trace.HitPos:Distance(self.Owner:GetShootPos())
 	self.Distance = ARCLib.BetweenNumberScaleReverse(25,dist,100)
@@ -126,15 +128,16 @@ function SWEP:PrimaryAttack()
 	end
 end
 function SWEP:SecondaryAttack()
-	if self.SettingMenu then return end
+	--if self.SettingMenu then return end
     self:SetNextPrimaryFire( CurTime() + 1.5 )
     self:SetNextSecondaryFire( CurTime() + 1.5 )
 	if SERVER then
 		net.Start("arcatmhack_gui")
 		net.WriteTable( self.Settings )
 		net.Send(self.Owner)
+		MsgN("aaa")
 	end
-	self.SettingMenu = true
+	--self.SettingMenu = true
 end
 function SWEP:Think()
 	if self:GetNextPrimaryFire() < CurTime() && self:GetNextSecondaryFire() < CurTime() then
@@ -310,14 +313,14 @@ function SWEP:DrawHUD()
 	end
 	bartab[1] = succhance
 	bartab[2] = totalpower
+
+	bartab[3] = self.Distance || 0
+	bartab[4] = (self.Distance || 0)^10
 	if self.HackRandom then
-		bartab[3] = 0.2
-		bartab[4] = 0.1
+		bartab[5] = 0.1
 	else
-		bartab[3] = 0.8
-		bartab[4] = 0.9
+		bartab[5] = 0.9
 	end
-	bartab[5] = self.Distance || 0
 	if #self.BottomScreenText > 0 then
 		if self.ScreenScrollDelay < CurTime() && utf8.len(self.BottomScreenText) > 14 then
 			self.ScreenScrollDelay = self.ScreenScrollDelay + 0.1
@@ -796,7 +799,7 @@ else
 		end
 		if (!weapon.ARCBank_IsHacker) then return end
 		weapon.Settings = settings
-		weapon.SettingMenu = false
+		--weapon.SettingMenu = false
 	end)
 end
 

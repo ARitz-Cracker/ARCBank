@@ -70,19 +70,34 @@ function ENT:GetATMType()
 	return self.ATMType.Name
 end
 
-function ENT:HackStop()
-	if self.DoingSomething then
-		return true
-	end
+function ENT:Hackable()
+	return !self.Broken && self.RebootTime < CurTime()
+end
+
+function ENT:Break()
 	self.Broken = true
 	net.Start("arcbank_atm_reboot")
-	net.WriteUInt(CurTime(),16)
+	net.WriteUInt(self:EntIndex(),16)
 	net.WriteBool(true)
 	net.WriteDouble(self.RebootTime)
 	net.Broadcast()
 end
-function ENT:HackStart()
 
+function ENT:HackStop()
+	if self.DoingSomething then
+		return true
+	end
+	self.Hacked = false
+	self:Break()
+	self.InUse = false
+	timer.Simple((CurTime()-self.StartHackTime)*0.5,function()
+		if !IsValid(self) then return end
+		self:Reboot(3)
+	end)
+end
+function ENT:HackStart()
+	self.Hacked = true
+	self.StartHackTime = CurTime()
 end
 function ENT:HackSpark()
 
@@ -94,7 +109,7 @@ end
 
 function ENT:HackComplete(ply,amount,rand)
 	self.DoingSomething = true
-
+	self.InUse = true
 	self.TakingMoney = true
 	if ply.ARCBank_Secrets then --TODO: Have this work with multiple ATM Types instead of only the default one
 		self:EmitSound("^arcbank/atm/spit-out.wav")
@@ -140,7 +155,8 @@ function ENT:HackComplete(ply,amount,rand)
 	
 		----MsgN("HACK ERORR:"..tostring(accounts))
 		--self:StopHack()
-		
+		self.args = {}
+		self.args.money = amount
 		self.UsePlayer = ply
 		ARCBank.GetAllAccounts(amount,function(ercode,accounts)
 			if ercode == 0 then
@@ -151,10 +167,10 @@ function ENT:HackComplete(ply,amount,rand)
 					accounttable = accounts[ARCLib.RandomExp(1,#accounts)]
 				end
 				local nextper = 0.1
-				ARCBank.StealMoney(self.Hacker,self.HackMoneh,accounttable,false,function(errcode,per)
+				ARCBank.StealMoney(ply,amount,accounttable,false,function(errcode,per)
 					if errcode == ARCBANK_ERROR_DOWNLOADING then
 						if per > nextper then
-							ARCBank.MsgCL(self.Hacker,ARCBank.Msgs.Items.Hacker..": (%"..math.floor(per)..")")
+							ARCBank.MsgCL(ply,ARCBank.Msgs.Items.Hacker..": (%"..math.floor(per)..")")
 							nextper = nextper + 0.1
 						end
 					elseif errcode == 0 then
