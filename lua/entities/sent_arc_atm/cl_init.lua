@@ -24,15 +24,20 @@ net.Receive( "ARCBank CustomATM", function(length)
 		atm.hackedscrs[#atm.hackedscrs+1] = surface.GetTextureID(atm.ATMType.WelcomeScreen)
 	end
 end)
+
+local brokenATMs = {}
+
 function ENT:Initialize()
 	net.Start("ARCBank CustomATM")
 	net.WriteEntity(self.Entity)
 	net.SendToServer()
 	self.hackedscrs = {surface.GetTextureID("arc/atm_base/screen/welcome_new")}
 	self.LastCheck = CurTime()
-	self.HackRecover = CurTime() + 6
-	
-
+	self.RebootTime = CurTime() + 6
+	if brokenATMs[enti] then
+		table.Merge( self, brokenATMs[enti] )
+		table.remove( brokenATMs, enti )
+	end
 	self.LogTable = {}
 	self.LogPage = 1
 	self.LogPageMax = 1
@@ -816,7 +821,7 @@ function ENT:Screen_Welcome()
 	if ARCBank.Outdated then
 		self.hackdtx = outofdate
 	else
-		if self.HackRecover - 5 > CurTime() then
+		if self.Broken then
 			if !tobool(math.random(0,16)) then
 				self.hackdtx = self.hackedscrs[math.random(1,#self.hackedscrs)]
 			end
@@ -961,24 +966,66 @@ function ENT:Screen_HAX()
 			end
 		end
 	else
-		--[[
-		hackmsg = "Accesing Network..."
+		
+		--hackmsg = "Accesing Network..."
+		
 		draw.SimpleText( "Using username \"root\"", "ARCBankATM",self.Resolutionx/-2, -140, Color(255,255,255,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_BOTTOM  )
 		draw.SimpleText( "Authenticating...", "ARCBankATM",self.Resolutionx/-2, -124, Color(255,255,255,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_BOTTOM  )
 		draw.SimpleText( "Login Successful!", "ARCBankATM",self.Resolutionx/-2, -108, Color(255,255,255,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_BOTTOM  )
 		draw.SimpleText( "**ARCBank ATM**", "ARCBankATM",self.Resolutionx/-2, -92, Color(255,255,255,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_BOTTOM  )
-		draw.SimpleText( "root@atm_"..tostring(self:EntIndex()).."~$", "ARCBankATM",self.Resolutionx/-2, -76, Color(255,255,255,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_BOTTOM  )
-		]]
+		if self.HackComplete then
+		
+		else
+			draw.SimpleText( "root@atm_"..tostring(self:EntIndex())..":~#", "ARCBankATM",self.Resolutionx/-2, -76, Color(255,255,255,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_BOTTOM  )
+		end
 	end
 	--[[
 	ARCBank_Draw:Window(-136, -150, 252, 20,ARCLib16["application"],"ATM_CRACKER")
 	draw.SimpleText( hackmsg, "ARCBankATMBigger",0, -120, Color(0,0,0,255), TEXT_ALIGN_CENTER , TEXT_ALIGN_CENTER  )
 	]]
 end
+net.Receive( "arcbank_atm_reboot", function(length,ply)
+	local enti = net.ReadUInt(16)
+	local ent = Entity(enti)
+	local stuff = {}
+	stuff.Broken = net.ReadBool()
+	stuff.RebootTime = net.ReadDouble()
+	if IsValid(ent) then
+		table.Merge( ent, stuff )
+	else
+		brokenATMs[enti] = stuff
+	end
+end)
+function ENT:HackStop()
+	self.Percent = 0
+	self.Hacked = false
+end
+function ENT:HackStart()
+	self.Hacked = true
+	self.HackAmount = false
+end
+function ENT:HackSpark()
+
+end
+function ENT:HackProgress(per)
+	self.Percent = per
+end
+function ENT:HackComplete(ply,amount,rand)
+	self.Percent = 1
+	self.HackAmount = amount
+	self.HackRandom = rand
+end
+
+
 function ENT:Screen_Main()
 	--if LocalPlayer():GetEyeTrace().Entity == self then
 		--end
-		if (self.Hacked && self.HackDelay < CurTime()) || (self.HackRecover - 11 < CurTime() && self.HackRecover - 3 > CurTime())then
+		local maxx = self.Resolutionx/2
+		local maxy = self.Resolutiony/2
+		local minx = self.Resolutionx/-2
+		local miny = self.Resolutiony/-2
+		
+		if (self.Hacked && self.Percent == 1) || (self.RebootTime - 11 < CurTime() && self.RebootTime - 3 > CurTime())then
 			surface.SetDrawColor( 10, 10, 10, 255 )
 			surface.DrawOutlinedRect( (self.Resolutionx+2)/-2, (self.Resolutiony+2)/-2, self.Resolutionx+2, self.Resolutiony+2 ) 
 			surface.SetDrawColor( 0, 0, 0, 255 )
@@ -991,7 +1038,6 @@ function ENT:Screen_Main()
 		surface.DrawRect( self.Resolutionx/-2, self.Resolutiony/-2, self.Resolutionx, self.Resolutiony ) 
 		
 		if self.Hacked then
-			self.Percent = (((self.HackDelay-CurTime())/self.HackTime)*-1)+1
 			self:Screen_HAX()
 		end
 		
@@ -1002,7 +1048,7 @@ function ENT:Screen_Main()
 				self:Screen_Options()
 			end
 		else
-			if self.HackRecover - 11 > CurTime() || self.HackRecover - 0.3214 < CurTime() then
+			if self.RebootTime - 0.3214 < CurTime() then
 				if self.Percent < math.Rand(0.25,0.5) then
 					self:Screen_Welcome()
 				end
@@ -1014,19 +1060,17 @@ function ENT:Screen_Main()
 		if self.MsgBox && self.MsgBox.Type > 0 then
 			ARCBank_Draw:Window_MsgBox(-130,-90,240,self.MsgBox.Title,self.MsgBox.Text,ARCBank.ATM_DarkTheme,self.MsgBox.Type,ARCLib.Icons32t[self.MsgBox.TextIcon],ARCLib.Icons16[self.MsgBox.TitleIco],self.ATMType.ForegroundColour)
 		end
-		if self.HackRecover > CurTime() then
-			if self.HackRecover - 7 < CurTime() then
-				ARCBank_Draw:Window_MsgBox(-125,-40,230,ARCBank.Settings.name,"System is starting up!",ARCBank.ATM_DarkTheme,0,ARCLib.Icons32t["information"],nil,self.ATMType.ForegroundColour)
-			elseif self.HackRecover - 11 > CurTime() then
-				ARCBank_Draw:Window_MsgBox(-125,-40,230,"Criticao EräÞr",ARCBank.Msgs.ATMMsgs.HackingError,ARCBank.ATM_DarkTheme,0,ARCLib.Icons32t["emotion_dead"],nil,self.ATMType.ForegroundColour)
-			end
+		if self.RebootTime - 7 < CurTime() then
+			ARCBank_Draw:Window_MsgBox(-125,-40,230,ARCBank.Settings.name,"System is starting up!",ARCBank.ATM_DarkTheme,0,ARCLib.Icons32t["information"],nil,self.ATMType.ForegroundColour)
+		end
+		if self.Broken then
+			ARCBank_Draw:Window_MsgBox(-125,-40,230,"Criticao EräÞr",ARCBank.Msgs.ATMMsgs.HackingError,ARCBank.ATM_DarkTheme,0,ARCLib.Icons32t["emotion_dead"],nil,self.ATMType.ForegroundColour)
 		end
 		if self.Loading then
 			self:Screen_Loading()
 		end
 		
 		if !self.ARCBankLoaded then
-			
 			ARCBank_Draw:Window_MsgBox(-120,-50,220,ARCBank.Msgs.ATMMsgs.NetworkErrorTitle,ARCBank.Msgs.ATMMsgs.NetworkError,ARCBank.ATM_DarkTheme,0,ARCLib.Icons32t["server_error"],nil,self.ATMType.ForegroundColour)
 		end
 		--ARCBank_Draw:Window_MsgBox(-120,-50,220,"","Hello\nBob!\n!!!! Wow this is cool! It supports \n and everything!",false,0,ARCLib.Icons32t["cancel"],nil)
@@ -1054,10 +1098,17 @@ function ENT:Screen_Main()
 				end
 			end
 			--self:Screen_Loading()
+			
 			if self.Percent < 0.999 then
+				local xpos
+				local ypos
+				local maxw = self.Resolutionx - xpos
+				local maxh = self.Resolutiony - ypos
 				for i=1,math.random(self.Percent*100,self.Percent*200) do
 					surface.SetDrawColor( 0, 0, 0, 255 )
-					surface.DrawRect( math.random((self.Resolutionx/-2)-20,10), math.random(self.Resolutiony/-2,self.Resolutiony/2), math.random(0,self.Resolutionx), math.random(0,40)*self.Percent ) 
+					xpos = math.random((self.Resolutionx/-2)-20,10)
+					ypos = math.random(self.Resolutiony/-2,self.Resolutiony/2)
+					surface.DrawRect( xpos, ypos, math.Clamp(math.random(0,self.Resolutionx)0,maxw), math.Clamp(math.random(0,40)*self.Percent,0,maxh) )
 				end
 			end
 		end
@@ -1119,7 +1170,7 @@ function ENT:Draw()--Good
 			lbright = 64
 		end
 	end
-	if (self.HackRecover - 11 < CurTime() && self.HackRecover - 3 > CurTime()) then
+	if (self.RebootTime - 11 < CurTime() && self.RebootTime - 3 > CurTime()) then
 		lbright = 0
 	end
 	if ( dlight ) then
@@ -1162,7 +1213,7 @@ function ENT:Draw()--Good
 	--18  17--
 	--20  19--
 	if !self.InUse then 
-		if math.sin((CurTime()+(self:EntIndex()/50))*math.pi*2) > 0 && self.ARCBankLoaded && self.HackRecover < CurTime() then
+		if math.sin((CurTime()+(self:EntIndex()/50))*math.pi*2) > 0 && self.ARCBankLoaded && self.RebootTime < CurTime() then
 			cam.Start3D2D(self:LocalToWorld(self.ATMType.Cardlight), self:LocalToWorldAngles(self.ATMType.CardlightAng), self.ATMType.CardlightSize)
 				surface.SetDrawColor(ARCLib.ConvertColor(self.ATMType.CardlightColour))
 

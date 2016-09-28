@@ -297,7 +297,7 @@ function ENT:Think()
 	end
 	
 	if self.HackEnd < CurTime() then
-		self:GetParent():HackComplete(self.HackAmount,self.HackRandom)
+		self:GetParent():HackComplete(self.Hacker,self.HackAmount,self.HackRandom)
 		net.Start("arcbank_hacker_spark")
 		net.WriteVector(self:GetPos())
 		net.WriteBit(true)
@@ -323,6 +323,7 @@ function ENT:Think()
 			net.WriteBit(false)
 			net.Send(self.Cops)
 		end
+		self:GetParent():HackSpark()
 	end
 end
 

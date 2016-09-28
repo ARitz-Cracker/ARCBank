@@ -93,12 +93,12 @@ end
 
 function ENT:Spark()
 	if self.Hacking then
-		self:GetParent():HackSpark(self.HackPercent)
+		self:GetParent():HackSpark()
 	end
 end
 function ENT:HackComplete()
 	if self.Hacking then
-		self:GetParent():HackComplete(self.HackAmount,self.HackRandom)
+		self:GetParent():HackComplete(self.HackAmount,self.HackRandom,self.Hacker)
 	end
 end
 

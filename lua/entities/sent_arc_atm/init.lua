@@ -7,7 +7,6 @@ include('shared.lua')
 --Stuff
 util.AddNetworkString( "ARCBank CustomATM" )
 net.Receive( "ARCBank CustomATM", function(length,ply)
-	if !ply.ARCLoad_Loaded then return end -- This data will be sent to the player when s/he loads anyway.
 	local atm = net.ReadEntity()
 	if atm:GetClass() == "sent_arc_atm" then
 		net.Start("ARCBank CustomATM")
@@ -18,6 +17,7 @@ net.Receive( "ARCBank CustomATM", function(length,ply)
 end)
 
 util.AddNetworkString( "ARCATM_USE" )
+util.AddNetworkString( "arcbank_atm_reboot" )
 util.AddNetworkString( "ARCATM_COMM_WAITMSG" )
 util.AddNetworkString("ARCATM_COMM_BEEP")
 ARCBank.Loaded = false
@@ -69,11 +69,134 @@ end
 function ENT:GetATMType()
 	return self.ATMType.Name
 end
+
+function ENT:HackStop()
+	if self.DoingSomething then
+		return true
+	end
+	self.Broken = true
+	net.Start("arcbank_atm_reboot")
+	net.WriteUInt(CurTime(),16)
+	net.WriteBool(true)
+	net.WriteDouble(self.RebootTime)
+	net.Broadcast()
+end
+function ENT:HackStart()
+
+end
+function ENT:HackSpark()
+
+end
+function ENT:HackProgress()
+
+end
+
+
+function ENT:HackComplete(ply,amount,rand)
+	self.DoingSomething = true
+
+	self.TakingMoney = true
+	if ply.ARCBank_Secrets then --TODO: Have this work with multiple ATM Types instead of only the default one
+		self:EmitSound("^arcbank/atm/spit-out.wav")
+		timer.Simple(6.5,function() self:SetModel( "models/thedoctor/crackmachine_off.mdl" ) end)
+		timer.Simple(6.8,function() 
+			net.Start("ARCATM_COMM_BEEP")
+			net.WriteEntity(atm)
+			net.WriteBit(true)
+			net.Broadcast()
+			self:EmitSound("arcbank/atm/lolhack.wav")
+			local moneyproppos = self:GetPos() + ((self:GetAngles():Up() * 0.2) + (self:GetAngles():Forward() * -4.0) + (self:GetAngles():Right() * -0.4))
+			self.UsePlayer = nil
+			timer.Destroy( "ATM_WIN" ) 
+			timer.Create( "ATM_WIN", 0.2, math.Rand(10,20), function()
+				local moneyprop = ents.Create( "base_anim" ) --I don't want to create another entity. 
+				moneyprop:SetModel( "models/props/cs_assault/money.mdl" )
+				moneyprop:SetPos( moneyproppos)
+				local moneyang = self:GetAngles()
+				moneyang:RotateAroundAxis( moneyang:Up(), -90 )
+				moneyprop:SetAngles( moneyang )
+				moneyprop:PhysicsInit( SOLID_VPHYSICS )
+				moneyprop:SetMoveType( MOVETYPE_VPHYSICS )
+				moneyprop:SetSolid( SOLID_VPHYSICS )
+				moneyprop:GetPhysicsObject():SetVelocity(moneyprop:GetRight()) 
+				function moneyprop:Use( ply, caller )
+					ARCBank.PlayerAddMoney(ply,1000)
+					moneyprop:Remove()
+				end
+				moneyprop:Spawn()
+				
+			end)
+		end)
+		timer.Simple(11,function() 
+			self:SetModel( "models/thedoctor/crackmachine_on.mdl" ) 
+			self:EmitSound("arcbank/atm/close.wav")
+			net.Start("ARCATM_COMM_BEEP")
+			net.WriteEntity(self)
+			net.WriteBit(false)
+			net.Broadcast()
+			self.DoingSomething = false
+		end)
+	else
+	
+		----MsgN("HACK ERORR:"..tostring(accounts))
+		--self:StopHack()
+		
+		self.UsePlayer = ply
+		ARCBank.GetAllAccounts(amount,function(ercode,accounts)
+			if ercode == 0 then
+				local accounttable
+				if rand then
+					accounttable = "*STEAL FROM MULTIPLE ACCOUNTS!!*"
+				else
+					accounttable = accounts[ARCLib.RandomExp(1,#accounts)]
+				end
+				local nextper = 0.1
+				ARCBank.StealMoney(self.Hacker,self.HackMoneh,accounttable,false,function(errcode,per)
+					if errcode == ARCBANK_ERROR_DOWNLOADING then
+						if per > nextper then
+							ARCBank.MsgCL(self.Hacker,ARCBank.Msgs.Items.Hacker..": (%"..math.floor(per)..")")
+							nextper = nextper + 0.1
+						end
+					elseif errcode == 0 then
+						ARCBank.MsgCL(ply,ARCBank.Msgs.Items.Hacker..": (%100)")
+						self:WithdrawAnimation()
+						timer.Simple(self.ATMType.PauseBeforeWithdrawAnimation + self.ATMType.PauseAfterWithdrawAnimation + self.ATMType.WithdrawAnimationLength,function()
+							if !IsValid(self) then return end
+							self.PlayerNeedsToDoSomething = true
+						end)
+					else
+						ARCLib.NotifyPlayer(ply,ARCBank.Msgs.Items.Hacker..": "..ARCBANK_ERRORSTRINGS[errcode],NOTIFY_ERROR,6,true)
+						self.DoingSomething = false
+						-- SHIT HAPPENED, BRAH
+					end
+				end)
+			else
+				ARCLib.NotifyPlayer(ply,ARCBank.Msgs.Items.Hacker..": "..ARCBANK_ERRORSTRINGS[ercode],NOTIFY_ERROR,6,true)
+				self.DoingSomething = false
+				-- SHIT HAPPENED, BRAH
+			end
+		end)
+	end
+	
+
+end
+
+function ENT:Reboot(t)
+	self.RebootTime = CurTime() + 8 + (t||0)
+	self.Broken = false
+	net.Start("arcbank_atm_reboot")
+	net.WriteUInt(self:EntIndex(),16)
+	net.WriteBool(false)
+	net.WriteDouble(self.RebootTime)
+	net.Broadcast()
+	self:EmitSound("ambient/levels/citadel/stalk_poweroff_on_17_10.wav")
+end
+
 function ENT:Initialize()
 	self.MonehDelay = CurTime()
 	self.DoingSomething = false
 	if (self:SetATMType(self.ARCBank_InitSpawnType)) then
-		self.HackRecover = CurTime() + 6
+		self.RebootTime = CurTime() + 6
 	else
 		ARCLib.NotifyBroadcast("Failed to spawn ATM because the custom ATM type is invalid!\n(Note: I didn't translate this because this should never happen)",NOTIFY_ERROR,10,true)
 		timer.Simple(0.01,function() 
@@ -86,7 +209,7 @@ function ENT:SpawnFunction( ply, tr )
 end
 function ENT:Think()
 	if self.PermaProps then
-		ARCLib.NotifyBroadcast("Do not use PermaProps with the ATMs! Please go to aritzcracker.ca/arcbank_faq.php",NOTIFY_ERROR,10,true)
+		ARCLib.NotifyBroadcast("Do not use PermaProps with the ATMs! Please go to aritzcracker.ca/faq/arcbank",NOTIFY_ERROR,10,true)
 		if self.ID then
 			sql.Query("DELETE FROM permaprops WHERE id = ".. self.ID ..";")
 		end
@@ -213,20 +336,15 @@ function ENT:Use( ply, caller )
 	if self.InUse && ply == self.UsePlayer && self.PlayerNeedsToDoSomething then
 		local hit,dir,frac = util.IntersectRayWithOBB(ply:GetShootPos(),ply:GetAimVector()*100, self:LocalToWorld(self.ATMType.MoneyHitBoxPos), self:LocalToWorldAngles(self.ATMType.MoneyHitBoxAng), vector_origin, self.ATMType.MoneyHitBoxSize)  
 		if hit && self.MonehDelay <= CurTime() then
-			self.MonehDelay = CurTime() + 1
+			self.MonehDelay = CurTime() + 5
 			if self.TakingMoney then
 				if self.Hacked then
 					ARCBank.PlayerAddMoney(self.UsePlayer,self.args.money)
 					self.errorc = 0
 					self.UsePlayer = nil
-					timer.Simple(math.Rand(2,10),function()
-						if IsValid(self.HackUnit) then
-							self.HackUnit:StopHack()
-						end
-					end)
-						if self.ATMType.UseMoneyModel then
-							self.moneyprop:Remove()
-						end
+					if self.ATMType.UseMoneyModel then
+						self.moneyprop:Remove()
+					end
 					self:EmitSound("foley/alyx_hug_eli.wav",65,math.random(225,255))
 					self.PlayerNeedsToDoSomething = false
 				else
@@ -343,7 +461,7 @@ function ENT:ATM_USE(activator)
 				
 				ARCLib.NotifyPlayer(activator,string.Replace(ARCBank.Msgs.UserMsgs.ATMUsed, "%PLAYER%", self.UsePlayer:Nick()) ,NOTIFY_GENERIC,5,true)
 			end
-		elseif ARCBank.Loaded && self.HackRecover < CurTime() then
+		elseif ARCBank.Loaded && self.RebootTime < CurTime() && !self.Broken then
 
 			if self.ATMType.CardInsertAnimation != "" then
 				self:ARCLib_SetAnimationTime(self.ATMType.CardInsertAnimation,self.ATMType.CardInsertAnimationLength)
@@ -414,95 +532,7 @@ function ENT:WithdrawAnimation()
 		end
 	end)
 	atm:EmitSoundTable(atm.ATMType.WithdrawSound,65,100)
-	atm.MonehDelay = CurTime() + 8.5
-end
-
-function ENT:ARCBankHack(amount)
-
-	atm.TakingMoney = true
-	if self.Hacker.ARCBank_Secrets then
-		atm:EmitSound("^arcbank/atm/spit-out.wav")
-		timer.Simple(6.5,function() atm:SetModel( "models/thedoctor/crackmachine_off.mdl" ) end)
-		timer.Simple(6.8,function() 
-			net.Start("ARCATM_COMM_BEEP")
-			net.WriteEntity(atm)
-			net.WriteBit(true)
-			net.Broadcast()
-			atm:EmitSound("arcbank/atm/lolhack.wav")
-			local moneyproppos = atm:GetPos() + ((atm:GetAngles():Up() * 0.2) + (atm:GetAngles():Forward() * -4.0) + (atm:GetAngles():Right() * -0.4))
-			atm.UsePlayer = nil
-			timer.Destroy( "ATM_WIN" ) 
-			timer.Create( "ATM_WIN", 0.2, math.Rand(10,20), function()
-				local moneyprop = ents.Create( "base_anim" ) --I don't want to create another entity. 
-				moneyprop:SetModel( "models/props/cs_assault/money.mdl" )
-				moneyprop:SetPos( moneyproppos)
-				local moneyang = atm:GetAngles()
-				moneyang:RotateAroundAxis( moneyang:Up(), -90 )
-				moneyprop:SetAngles( moneyang )
-				moneyprop:PhysicsInit( SOLID_VPHYSICS )
-				moneyprop:SetMoveType( MOVETYPE_VPHYSICS )
-				moneyprop:SetSolid( SOLID_VPHYSICS )
-				moneyprop:GetPhysicsObject():SetVelocity(moneyprop:GetRight()) 
-				function moneyprop:Use( ply, caller )
-					ARCBank.PlayerAddMoney(ply,1000)
-					moneyprop:Remove()
-				end
-				moneyprop:Spawn()
-				
-			end)
-		end)
-		timer.Simple(11,function() 
-			atm:SetModel( "models/thedoctor/crackmachine_on.mdl" ) 
-			atm:EmitSound("arcbank/atm/close.wav")
-			net.Start("ARCATM_COMM_BEEP")
-			net.WriteEntity(atm)
-			net.WriteBit(false)
-			net.Broadcast()
-		end)
-	else
-	
-		----MsgN("HACK ERORR:"..tostring(accounts))
-		--self:StopHack()
-		atm.args = {} 
-		atm.args.money = self.HackMoneh
-		atm.UsePlayer = self.Hacker
-		ARCBank.GetAllAccounts(self.HackMoneh,function(ercode,accounts)
-			if ercode == 0 then
-				local accounttable
-				if self.HackRandom then
-					accounttable = "*STEAL FROM MULTIPLE ACCOUNTS!!*"
-				else
-					accounttable = accounts[ARCLib.RandomExp(1,#accounts)]
-				end
-				local nextper = 0.1
-				ARCBank.StealMoney(self.Hacker,self.HackMoneh,accounttable,false,function(errcode,per)
-					if errcode == ARCBANK_ERROR_DOWNLOADING then
-						if per > nextper then
-							ARCBank.MsgCL(self.Hacker,ARCBank.Msgs.Items.Hacker..": (%"..math.floor(per)..")")
-							nextper = nextper + 0.1
-						end
-						
-					elseif errcode == 0 then
-						ARCBank.MsgCL(self.Hacker,ARCBank.Msgs.Items.Hacker..": (%100)")
-						atm:WithdrawAnimation()
-						
-						timer.Simple(atm.ATMType.PauseBeforeWithdrawAnimation + atm.ATMType.WithdrawAnimationLength + 0.5,function()
-							atm.PlayerNeedsToDoSomething = true
-						end)
-					else
-						ARCLib.NotifyPlayer(self.Hacker,ARCBank.Msgs.Items.Hacker..": "..ARCBANK_ERRORSTRINGS[errcode],NOTIFY_ERROR,6,true)
-						self:StopHack()
-						-- SHIT HAPPENED, BRAH
-					end
-				end)
-			else
-				ARCLib.NotifyPlayer(self.Hacker,ARCBank.Msgs.Items.Hacker..": "..ARCBANK_ERRORSTRINGS[ercode],NOTIFY_ERROR,6,true)
-				self:StopHack()
-				-- SHIT HAPPENED, BRAH
-			end
-		end)
-	end
-
+	atm.MonehDelay = CurTime() + atm.ATMType.PauseBeforeWithdrawAnimation + atm.ATMType.PauseAfterWithdrawAnimation + atm.ATMType.WithdrawAnimationLength
 end
 
 util.AddNetworkString( "ARCATM_COMM_CASH" )
@@ -556,7 +586,7 @@ net.Receive( "ARCATM_COMM_CASH", function(length,ply)
 				atm:WithdrawAnimation()
 				
 				
-				timer.Simple(atm.ATMType.PauseBeforeWithdrawAnimation + atm.ATMType.WithdrawAnimationLength + 0.5,function()
+				timer.Simple(atm.ATMType.PauseBeforeWithdrawAnimation + atm.ATMType.PauseAfterWithdrawAnimation + atm.ATMType.WithdrawAnimationLength,function()
 					if IsValid(atm.UsePlayer) then
 						net.Start( "ARCATM_COMM_WAITMSG" )
 						net.WriteEntity( atm )
