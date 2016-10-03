@@ -41,9 +41,9 @@ if CLIENT then
 			surface.SetDrawColor( 255, 255, 255, 255 )
 			surface.SetTexture( self.WepSelectIcon ) 
 			--surface.DrawOutlinedRect( surface.ScreenWidth() - 512, surface.ScreenHeight() - 256, 512, 256 )
-			surface.DrawTexturedRect( surface.ScreenWidth() - 512, surface.ScreenHeight() - 256, 512, 256 )
-			draw.SimpleText(self.Owner:SteamID(), "ARCBankCard", surface.ScreenWidth() - 430, surface.ScreenHeight() - 94, Color(255,255,255,200), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
-			draw.SimpleText(self.Owner:Nick(), "ARCBankCard", surface.ScreenWidth() - 430, surface.ScreenHeight() - 55, Color(255,255,255,200), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
+			surface.DrawTexturedRect( surface.ScreenWidth() - 512 - ARCBank.Settings["card_weapon_position_left"], surface.ScreenHeight() - 256 - ARCBank.Settings["card_weapon_position_up"], 512, 256 )
+			draw.SimpleText(self.Owner:SteamID(), "ARCBankCard", surface.ScreenWidth() - 430 - ARCBank.Settings["card_weapon_position_left"], surface.ScreenHeight() - 94 - ARCBank.Settings["card_weapon_position_up"], Color(255,255,255,200), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
+			draw.SimpleText(self.Owner:Nick(), "ARCBankCard", surface.ScreenWidth() - 430 - ARCBank.Settings["card_weapon_position_left"], surface.ScreenHeight() - 55 - ARCBank.Settings["card_weapon_position_up"], Color(255,255,255,200), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
 		--end
 	end
 		
@@ -71,7 +71,7 @@ if CLIENT then
 		if (IsValid(self.Owner)) then
 			bone_ent = self.Owner
 		else
-			// when the weapon is dropped
+			-- when the weapon is dropped
 			bone_ent = self
 		end
 		
@@ -102,7 +102,7 @@ if CLIENT then
 				ang:RotateAroundAxis(ang:Forward(), v.angle.r)
 
 				model:SetAngles(ang)
-				//model:SetModelScale(v.size)
+				--model:SetModelScale(v.size)
 				local matrix = Matrix()
 				matrix:Scale(v.size)
 				model:EnableMatrix( "RenderMultiply", matrix )
@@ -148,7 +148,7 @@ if CLIENT then
 
 		if (!tab) then return end
 
-		// Create the clientside models here because Garry says we can't do it in the render hook
+		-- Create the clientside models here because Garry says we can't do it in the render hook
 		for k, v in pairs( tab ) do
 			if (v.type == "Model" and v.model and v.model != "" and (!IsValid(v.modelEnt) or v.createdModel != v.model) and 
 					string.find(v.model, ".mdl") and file.Exists (v.model, "GAME") ) then
@@ -174,8 +174,8 @@ if CLIENT then
 			
 			if (!v) then return end
 			
-			// Technically, if there exists an element with the same name as a bone
-			// you can get in an infinite loop. Let's just hope nobody's that stupid.
+			-- Technically, if there exists an element with the same name as a bone
+			-- you can get in an infinite loop. Let's just hope nobody's that stupid.
 			pos, ang = self:GetBoneOrientation( basetab, v, ent )
 			
 			if (!pos) then return end
@@ -199,7 +199,7 @@ if CLIENT then
 			
 			if (IsValid(self.Owner) and self.Owner:IsPlayer() and 
 				ent == self.Owner:GetViewModel() and self.ViewModelFlip) then
-				ang.r = -ang.r // Fixes mirrored models
+				ang.r = -ang.r -- Fixes mirrored models
 			end
 		
 		end
@@ -226,7 +226,7 @@ function SWEP:Initialize()
 	self:SetHoldType( "normal" )
 	if CLIENT then
 		self.WElements = table.FullCopy( self.WElements )
-		self:CreateModels(self.WElements) // create worldmodels
+		self:CreateModels(self.WElements) -- create worldmodels
 	end
 end
 function SWEP:Deploy()

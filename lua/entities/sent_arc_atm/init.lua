@@ -332,8 +332,6 @@ function ENT:Think()
 		ARCLib.NotifyPlayer(self.UsePlayer,ARCBank.Msgs.ATMMsgs.PlayerTooFar,NOTIFY_ERROR,2,false)
 		self:ATM_USE(self.UsePlayer)
 	end
-	
-	
 end
 net.Receive( "ARCATM_USE", function(length,ply)
 	local atm = net.ReadEntity() 

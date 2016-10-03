@@ -19,12 +19,12 @@ ARCBank.Msg(table.Random({"Product of BlueStone Technological Enterprises Inc. (
 ARCBank.Msg("© Copyright 2014-2016 Aritz Beobide-Cardinal (ARitz Cracker) All rights reserved.")
 
 
-
-ARCBank.Update = "%%UPDATE%%"
-ARCBank.Version = "%%VERSION%%"
-
 ARCBank.Features = {}
-ARCBank.Features.
+ARCBank.Features["hackapi"] = true
+
+ARCBank.Update = "October 2nd 2016"
+ARCBank.Version = "1.3.6"
+
 
 ARCBank.About = [[      
              *** ARitz Cracker Bank ***
@@ -161,4 +161,4 @@ if SERVER then
 	--hook.Add( "ARCLoad_OnLoaded", "ARCBank Load", function(loaded) ARCBank.Load() end )
 
 end
-ARCBank.Msg("Loading virtual Lua files...")
+return "ARCBank","ARCBank",{"arclib"}

@@ -19,6 +19,7 @@ function ENT:Initialize()
 	--self:SetSkin( 2 )
 	self.MonehDelay = CurTime()
 	self.UseDelay = CurTime() + 1
+	self.RemoveTime = CurTime() + 5
 end
 function ENT:SpawnFunction( ply, tr )
 	ARCLib.NotifyPlayer(ply,"Plz no spawn plz thx plz",NOTIFY_ERROR,5,true)
@@ -58,6 +59,23 @@ function ENT:Think()
 			self:SetSkin(self.ATMType.OpenSkin)
 		end)
 		return true
+	end
+	--ATMCreatorProp.CreatorPerson
+	if !IsValid(self.CreatorPerson) then
+		self:Remove()
+	end
+	if self:GetPos():DistToSqr( self.CreatorPerson:GetPos() ) > 50000 then
+		if self.RemoveTime <= CurTime() then
+			ARCLib.NotifyPlayer(self.CreatorPerson,ARCBank.Msgs.ATMCreator.Removed,NOTIFY_UNDO,5,false)
+			self:Remove()
+		else
+			ARCLib.NotifyPlayer(self.CreatorPerson,ARCBank.Msgs.ATMMsgs.PlayerTooFar,NOTIFY_HINT,2,false)
+			self:NextThink( CurTime() + 1 )
+			self:EmitSound("buttons/blip1.wav")
+			return true
+		end
+	else
+		self.RemoveTime = CurTime() + 5
 	end
 end
 

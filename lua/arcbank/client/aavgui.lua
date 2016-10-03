@@ -199,7 +199,7 @@ function ARCBank_Draw:Window_MsgBox(x,y,l,title,text,dark,typ,icon,mat,col)
 	end
 	if icon then
 		surface.SetDrawColor( 255, 255, 255, 255 )
-		surface.SetTexture( icon )
+		surface.SetMaterial( icon )
 		surface.DrawTexturedRect( x+4, y+22, 32, 32 )
 		for i = 1,#fitstr do
 			draw.SimpleText( fitstr[i], "ARCBankATMBigger",x+38, y+(i*16)+10, Color(light,light,light,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_TOP  )
@@ -209,85 +209,112 @@ function ARCBank_Draw:Window_MsgBox(x,y,l,title,text,dark,typ,icon,mat,col)
 			draw.SimpleText( fitstr[i], "ARCBankATMBigger",x+(l*.5)+10, y+(i*16)+10, Color(light,light,light,255), TEXT_ALIGN_CENTER , TEXT_ALIGN_TOP  )
 		end
 	end
+	local ypos,greenpos,redpos,yellowpos
 	if typ == 1 then
+		ypos = y+dwn+38
+		greenpos = x+l-54
+		
 		draw.SimpleText(ARCBank.Msgs.ATMMsgs.OK, "ARCBankATMBiggerThick", x+l-19, y+dwn+47, Color(light,light,light,255), TEXT_ALIGN_CENTER , TEXT_ALIGN_CENTER  ) 
 		surface.SetDrawColor( light, light, light, 255 )
-		surface.DrawOutlinedRect( x+l-54, y+dwn+38, 70, 20)
+		surface.DrawOutlinedRect( greenpos, ypos, 70, 20)
 		surface.SetDrawColor( 0, 255, 0, 255 )
 		surface.DrawRect( x+l-52, y+dwn+54,66, 2) 
 	elseif typ == 2 then
+		ypos = y+dwn+38
+		redpos = x+l-54
+		greenpos = x+l-130
+		
 		draw.SimpleText( ARCBank.Msgs.ATMMsgs.No, "ARCBankATMBiggerThick", x+l-19, y+dwn+47, Color(light,light,light,255), TEXT_ALIGN_CENTER , TEXT_ALIGN_CENTER  ) 
 		surface.SetDrawColor( light, light, light, 255 )
-		surface.DrawOutlinedRect( x+l-54, y+dwn+38, 70, 20)
+		surface.DrawOutlinedRect( redpos, ypos, 70, 20)
 		surface.SetDrawColor( 255, 0, 0, 255 )
 		surface.DrawRect( x+l-52, y+dwn+54,66, 2) 
 		
 		draw.SimpleText( ARCBank.Msgs.ATMMsgs.Yes, "ARCBankATMBiggerThick", x+l-95, y+dwn+47, Color(light,light,light,255), TEXT_ALIGN_CENTER , TEXT_ALIGN_CENTER  ) 
 		surface.SetDrawColor( light, light, light, 255 )
-		surface.DrawOutlinedRect( x+l-130, y+dwn+38, 70, 20)
+		surface.DrawOutlinedRect( greenpos, ypos, 70, 20)
 		surface.SetDrawColor( 0, 255, 0, 255 )
 		surface.DrawRect( x+l-128, y+dwn+54,66, 2) 
 	elseif typ == 3 then
+		ypos = y+dwn+38
+		redpos = x+l-54
+		greenpos = x+l-130
+		
 		draw.SimpleText( ARCBank.Msgs.ATMMsgs.Cancel, "ARCBankATMBiggerThick", x+l-19, y+dwn+47, Color(light,light,light,255), TEXT_ALIGN_CENTER , TEXT_ALIGN_CENTER  ) 
 		surface.SetDrawColor( light, light, light, 255 )
-		surface.DrawOutlinedRect( x+l-54, y+dwn+38, 70, 20)
+		surface.DrawOutlinedRect( redpos, ypos, 70, 20)
 		surface.SetDrawColor( 255, 0, 0, 255 )
 		surface.DrawRect( x+l-52, y+dwn+54,66, 2) 
 		
 		draw.SimpleText( ARCBank.Msgs.ATMMsgs.OK, "ARCBankATMBiggerThick", x+l-95, y+dwn+47, Color(light,light,light,255), TEXT_ALIGN_CENTER , TEXT_ALIGN_CENTER  ) 
 		surface.SetDrawColor( light, light, light, 255 )
-		surface.DrawOutlinedRect( x+l-130, y+dwn+38, 70, 20)
+		surface.DrawOutlinedRect( greenpos, ypos, 70, 20)
 		surface.SetDrawColor( 0, 255, 0, 255 )
 		surface.DrawRect( x+l-128, y+dwn+54,66, 2) 
 	elseif typ == 4 then
-		draw.SimpleText( ARCBank.Msgs.ATMMsgs.Close, "ARCBankATMBiggerThick", x+l-19, y+dwn+47, Color(light,light,light,255), TEXT_ALIGN_CENTER , TEXT_ALIGN_CENTER  ) 
+		ypos = y+dwn+38
+		redpos = x+l-54
+		greenpos = x+l-130
+	
+		draw.SimpleText( ARCBank.Msgs.ATMMsgs.Cancel, "ARCBankATMBiggerThick", x+l-19, y+dwn+47, Color(light,light,light,255), TEXT_ALIGN_CENTER , TEXT_ALIGN_CENTER  ) 
 		surface.SetDrawColor( light, light, light, 255 )
-		surface.DrawOutlinedRect( x+l-54, y+dwn+38, 70, 20)
+		surface.DrawOutlinedRect( redpos, ypos, 70, 20)
 		surface.SetDrawColor( 255, 0, 0, 255 )
 		surface.DrawRect( x+l-52, y+dwn+54,66, 2) 
 		
 		draw.SimpleText( ARCBank.Msgs.ATMMsgs.Retry, "ARCBankATMBiggerThick", x+l-95, y+dwn+47, Color(light,light,light,255), TEXT_ALIGN_CENTER , TEXT_ALIGN_CENTER  ) 
 		surface.SetDrawColor( light, light, light, 255 )
-		surface.DrawOutlinedRect( x+l-130, y+dwn+38, 70, 20)
+		surface.DrawOutlinedRect( greenpos, ypos, 70, 20)
 		surface.SetDrawColor( 0, 255, 0, 255 )
 		surface.DrawRect( x+l-128, y+dwn+54,66, 2) 
 	elseif typ == 5 then
+		ypos = y+dwn+38
+		yellowpos = x+l-54
+		redpos = x+l-130
+		greenpos = x+l-130-76
+		
 		draw.SimpleText( ARCBank.Msgs.ATMMsgs.Cancel, "ARCBankATMBiggerThick", x+l-19, y+dwn+47, Color(light,light,light,255), TEXT_ALIGN_CENTER , TEXT_ALIGN_CENTER  ) 
 		surface.SetDrawColor( light, light, light, 255 )
-		surface.DrawOutlinedRect( x+l-54, y+dwn+38, 70, 20)
+		surface.DrawOutlinedRect( yellowpos, ypos, 70, 20)
 		surface.SetDrawColor( 255, 255, 0, 255 )
 		surface.DrawRect( x+l-52, y+dwn+54,66, 2) 
 		
 		draw.SimpleText( ARCBank.Msgs.ATMMsgs.No, "ARCBankATMBiggerThick", x+l-95, y+dwn+47, Color(light,light,light,255), TEXT_ALIGN_CENTER , TEXT_ALIGN_CENTER  ) 
 		surface.SetDrawColor( light, light, light, 255 )
-		surface.DrawOutlinedRect( x+l-130, y+dwn+38, 70, 20)
+		surface.DrawOutlinedRect(redpos, ypos, 70, 20)
 		surface.SetDrawColor( 255, 0, 0, 255 )
 		surface.DrawRect( x+l-128, y+dwn+54,66, 2) 
 
 		draw.SimpleText( ARCBank.Msgs.ATMMsgs.Yes, "ARCBankATMBiggerThick", x+l-95-76, y+dwn+47, Color(light,light,light,255), TEXT_ALIGN_CENTER , TEXT_ALIGN_CENTER  ) 
 		surface.SetDrawColor( light, light, light, 255 )
-		surface.DrawOutlinedRect( x+l-130-76, y+dwn+38, 70, 20)
+		surface.DrawOutlinedRect( greenpos, ypos, 70, 20)
 		surface.SetDrawColor( 0, 255, 0, 255 )
 		surface.DrawRect( x+l-128-76, y+dwn+54,66, 2) 
 	elseif typ != 0 then
+		ypos = y+dwn+38
+		yellowpos = x+l-54
+		greenpos = x+l-130
+		redpos = x+l-130-76
+		
 		draw.SimpleText( ARCBank.Msgs.ATMMsgs.Ignore, "ARCBankATMBiggerThick", x+l-19, y+dwn+47, Color(light,light,light,255), TEXT_ALIGN_CENTER , TEXT_ALIGN_CENTER  ) 
 		surface.SetDrawColor( light, light, light, 255 )
-		surface.DrawOutlinedRect( x+l-54, y+dwn+38, 70, 20)
+		surface.DrawOutlinedRect( yellowpos, ypos, 70, 20)
 		surface.SetDrawColor( 255, 255, 0, 255 )
 		surface.DrawRect( x+l-52, y+dwn+54,66, 2) 
 		
 		draw.SimpleText( ARCBank.Msgs.ATMMsgs.Retry, "ARCBankATMBiggerThick", x+l-95, y+dwn+47, Color(light,light,light,255), TEXT_ALIGN_CENTER , TEXT_ALIGN_CENTER  ) 
 		surface.SetDrawColor( light, light, light, 255 )
-		surface.DrawOutlinedRect( x+l-130, y+dwn+38, 70, 20)
+		surface.DrawOutlinedRect( greenpos, ypos, 70, 20)
 		surface.SetDrawColor( 0, 255, 0, 255 )
 		surface.DrawRect( x+l-128, y+dwn+54,66, 2) 
 
 		draw.SimpleText( ARCBank.Msgs.ATMMsgs.Abort, "ARCBankATMBiggerThick", x+l-95-76, y+dwn+47, Color(light,light,light,255), TEXT_ALIGN_CENTER , TEXT_ALIGN_CENTER  ) 
 		surface.SetDrawColor( light, light, light, 255 )
-		surface.DrawOutlinedRect( x+l-130-76, y+dwn+38, 70, 20)
+		surface.DrawOutlinedRect( redpos, ypos, 70, 20)
 		surface.SetDrawColor( 255, 0, 0, 255 )
 		surface.DrawRect( x+l-128-76, y+dwn+54,66, 2) 
 	end-- -%%CONFIRMATION_HASH%%
+	return ypos,greenpos,redpos,yellowpos
 end
 
 

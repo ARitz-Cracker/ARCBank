@@ -1193,7 +1193,6 @@ if ARCBank then
 			TestWithdraw:SetSize( 340, 20 )
 			TestWithdraw.DoClick = function()
 				net.Start("ARCBank ATMCreate Test")
-				net.WriteEntity(ATMThing)
 				net.WriteBit(true)
 				net.WriteBit(false)
 				net.SendToServer()
@@ -1713,42 +1712,6 @@ if ARCBank then
 					surface.DrawLine( minsscr[i].x, minsscr[i].y,maxsscr[i].x, maxsscr[i].y ) 
 				end
 			end
-			
-		--[[
-			maxslocal = LocalToWorld( ATMThing.ATMType.MoneyHitBoxSize, angle_zero, ATMThing.ATMType.MoneyHitBoxPos, ATMThing.ATMType.MoneyHitBoxAng )
-			minslocal[1] = ATMThing.ATMType.MoneyHitBoxPos
-			minslocal[2] = Vector(maxslocal.x,minslocal[1].y,minslocal[1].z)
-			minslocal[3] = Vector(maxslocal.x,maxslocal.y,minslocal[1].z)
-			minslocal[4] = Vector(minslocal[1].x,maxslocal.y,minslocal[1].z)
-			minslocal[5] = minslocal[1]
-			for i = 1,5 do
-				maxsscr[i] = ATMThing:LocalToWorld(Vector(minslocal[i].x,minslocal[i].y,maxslocal.z)):ToScreen( )
-				minsscr[i] = ATMThing:LocalToWorld(minslocal[i]):ToScreen( )
-			end
-			--draw.SimpleText("ATM Creator Entity", "ARCBankATMCreatorSSmall", screencord.x,screencord.y, Color(255,255,255,255), TEXT_ALIGN_CENTER , TEXT_ALIGN_CENTER)
-			surface.SetDrawColor( 0,0,255,255 ) 
-			--local test = minslocal[1]:ToScreen()
-			for i = 1,4 do
-				if maxsscr[i].visible && maxsscr[i+1].visible then
-					surface.DrawLine( maxsscr[i].x, maxsscr[i].y,maxsscr[i+1].x, maxsscr[i+1].y ) 
-				end
-				if minsscr[i].visible && minsscr[i+1].visible then
-					surface.DrawLine( minsscr[i].x, minsscr[i].y,minsscr[i+1].x, minsscr[i+1].y ) 
-				end
-				if maxsscr[i].visible && minsscr[i].visible then
-					surface.DrawLine( minsscr[i].x, minsscr[i].y,maxsscr[i].x, maxsscr[i].y ) 
-				end
-			end
-			
-			--[[
-			surface.SetDrawColor( 255,255,0,255 ) 
-			surface.DrawLine( ATMThing.TourchScreenPos[1].x, ATMThing.TourchScreenPos[1].y,ATMThing.TourchScreenPos[2].x, ATMThing.TourchScreenPos[2].y ) 
-			surface.DrawLine( ATMThing.TourchScreenPos[2].x, ATMThing.TourchScreenPos[2].y,ATMThing.TourchScreenPos[3].x, ATMThing.TourchScreenPos[3].y ) 
-			surface.DrawLine( ATMThing.TourchScreenPos[3].x, ATMThing.TourchScreenPos[3].y,ATMThing.TourchScreenPos[4].x, ATMThing.TourchScreenPos[4].y ) 
-			surface.DrawLine( ATMThing.TourchScreenPos[4].x, ATMThing.TourchScreenPos[4].y,ATMThing.TourchScreenPos[1].x, ATMThing.TourchScreenPos[1].y ) 
-			]]
-			
-			
 		end
 	end)
 	

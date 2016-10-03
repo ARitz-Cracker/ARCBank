@@ -1,7 +1,0 @@
-"UnlitGeneric"
-{
-	"$basetexture" "icon32_t/arrow_right"
-	"$translucent" 1
-	"$vertexcolor" 1
-	"$vertexalpha" 1 
-}

@@ -6,9 +6,9 @@ include('shared.lua')
 local icons_rank = {}
 icons_rank[0] = "hand_fuck"
 icons_rank[1] = "user"
-icons_rank[2] = "medal_bronze_1"
-icons_rank[3] = "medal_silver_3"
-icons_rank[4] = "medal_gold_2"
+icons_rank[2] = "medal_bronze_red"
+icons_rank[3] = "medal_silver_blue"
+icons_rank[4] = "medal_gold_green"
 icons_rank[5] = "hand_fuck"
 icons_rank[6] = "group"
 icons_rank[7] = "group_add"
@@ -44,8 +44,6 @@ function ENT:Initialize()
 	
 	self.Loading = false
 	self.Percent = 0
-	self.Resolutionx = 278
-	self.Resolutiony = 315
 	self.MoneyMsg = 0
 	self.UseDelay = CurTime() 
 
@@ -95,8 +93,9 @@ function ENT:Initialize()
 		end
 	end
 	self.spriteMaterial = CreateMaterial(name,"UnlitGeneric",params)
-	
-
+	self.TouchIcons = {}
+	self.TouchScreenX = 0
+	self.TouchScreenY = 0
 end
 function ENT:EnableInput(usesteamid,callback)
 	self.InputNum = 0
@@ -838,28 +837,29 @@ function ENT:Screen_Welcome()
 end
 function ENT:Screen_Number()
 	local textcol = 255*ARCLib.BoolToNumber(ARCBank.ATM_DarkTheme)
-	ARCBank_Draw:Window(-105, -45, 190, 50,"Input",ARCBank.ATM_DarkTheme,ARCLib.Icons16["textfield"],self.ATMType.ForegroundColour)
-	draw.SimpleText(ARCBank.Msgs.ATMMsgs.Keypad, "ARCBankATMBigger", 0, -8, Color(textcol,textcol,textcol,255), TEXT_ALIGN_CENTER , TEXT_ALIGN_CENTER  ) 
+	local shiftup = 60*ARCLib.BoolToNumber(self.ATMType.UseTouchScreen)
+	ARCBank_Draw:Window(-105, -45 - shiftup, 190, 50,"Input",ARCBank.ATM_DarkTheme,ARCLib.GetIcon(1,"textfield"),self.ATMType.ForegroundColour)
+	draw.SimpleText(ARCBank.Msgs.ATMMsgs.Keypad, "ARCBankATMBigger", 0, -8 - shiftup, Color(textcol,textcol,textcol,255), TEXT_ALIGN_CENTER , TEXT_ALIGN_CENTER  ) 
 	local str = ""
 	if math.sin(CurTime()*2*math.pi) > 0 then
 		str = "|"
 	end
 	if self.InputNum > 0 then
 		if self.InputSteamID then
-			draw.SimpleText(self.InputSID..self.InputNum..str, "ARCBankATMBigger", -98, 10, Color(textcol,textcol,textcol,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_CENTER  ) 
+			draw.SimpleText(self.InputSID..self.InputNum..str, "ARCBankATMBigger", -98, 10 - shiftup, Color(textcol,textcol,textcol,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_CENTER  ) 
 		else
-			draw.SimpleText(self.InputNum..str, "ARCBankATMBigger", -98, 10, Color(textcol,textcol,textcol,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_CENTER  ) 
+			draw.SimpleText(self.InputNum..str, "ARCBankATMBigger", -98, 10 - shiftup, Color(textcol,textcol,textcol,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_CENTER  ) 
 		end
 		--draw.SimpleText( ARCBank.ATMMsgs.Enter, "ARCBankATM",0, 140, Color(255,255,255,255), TEXT_ALIGN_CENTER , TEXT_ALIGN_CENTER  ) 
 	else
 		if self.InputSteamID then
-			draw.SimpleText(self.InputSID..str, "ARCBankATMBigger", -98, 10, Color(textcol,textcol,textcol,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_CENTER  ) 
+			draw.SimpleText(self.InputSID..str, "ARCBankATMBigger", -98, 10 - shiftup, Color(textcol,textcol,textcol,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_CENTER  ) 
 		else
-			draw.SimpleText(str, "ARCBankATMBigger", -98, 10, Color(textcol,textcol,textcol,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_CENTER  ) 
+			draw.SimpleText(str, "ARCBankATMBigger", -98, 10 - shiftup, Color(textcol,textcol,textcol,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_CENTER  ) 
 		end
 	end
 	surface.SetDrawColor( textcol, textcol, textcol, 255 )
-	surface.DrawOutlinedRect( -100, 1, 200, 18)
+	surface.DrawOutlinedRect( -100, 1  - shiftup, 200, 18)
 	--draw.SimpleText( self.InputMsg, "ARCBankATM",0, 125, Color(255,255,255,255), TEXT_ALIGN_CENTER , TEXT_ALIGN_CENTER  ) 
 end
 function ENT:Screen_Log()
@@ -867,7 +867,7 @@ function ENT:Screen_Log()
 	--self.LogPage = 1
 	--self.LogPageMax = 1
 	
-	ARCBank_Draw:Window(-137,-150,254,280,string.Replace(ARCBank.Msgs.ATMMsgs.File,"%PAGE%","("..self.LogPage.."/"..self.LogPageMax..")"),ARCBank.ATM_DarkTheme,ARCLib.Icons16["page"],self.ATMType.ForegroundColour)
+	ARCBank_Draw:Window(-137,-150,254,280,string.Replace(ARCBank.Msgs.ATMMsgs.File,"%PAGE%","("..self.LogPage.."/"..self.LogPageMax..")"),ARCBank.ATM_DarkTheme,ARCLib.GetIcon(1,"page"),self.ATMType.ForegroundColour)
 	surface.SetDrawColor( textcol, textcol, textcol, 255 )
 	surface.DrawOutlinedRect( -137, 112, 274, 20)
 	for i = 1,20 do
@@ -880,13 +880,19 @@ function ENT:Screen_Log()
 	draw.SimpleText(ARCBank.Msgs.ATMMsgs.FileClose,"ARCBankATMBigger", 0, 140, Color(textcol,textcol,textcol,255), TEXT_ALIGN_CENTER , TEXT_ALIGN_CENTER  )
 end
 function ENT:Screen_Options()
-	ARCBank_Draw:Window_MsgBox(-137,-150,254,self.Title,self.TitleText,ARCBank.ATM_DarkTheme,0,ARCLib.Icons32t[self.TitleIcon],nil,self.ATMType.ForegroundColour)
 	local light = 255*ARCLib.BoolToNumber(ARCBank.ATM_DarkTheme)
 	local darkk = 255*ARCLib.BoolToNumber(!ARCBank.ATM_DarkTheme)
-	
+	local halfres = math.Round(self.ATMType.Resolutionx*0.5)
+	ARCBank_Draw:Window_MsgBox((halfres*-1)+2,-150,self.ATMType.Resolutionx-24,self.Title,self.TitleText,ARCBank.ATM_DarkTheme,0,ARCLib.GetIcon(2,self.TitleIcon),nil,self.ATMType.ForegroundColour)
+
 	for i = 1,8 do
 		if self.ScreenOptions[i+(self.Page*8)] then
-			local xpos = -137+(140*(i%2))
+			local xpos = 0
+			if i%2 == 0 then
+				xpos = (halfres*-1)+2
+			else
+				xpos = halfres - 136
+			end
 			local ypos = -80+((math.floor((i-1)/2))*61)
 			local fitstr = ARCLib.FitText(self.ScreenOptions[i+(self.Page*8)].text,"ARCBankATMNormal",98)
 			surface.SetDrawColor( darkk, darkk, darkk, 255 )
@@ -897,7 +903,7 @@ function ENT:Screen_Options()
 				draw.SimpleText( fitstr[ii], "ARCBankATMNormal",xpos+37+((i%2)*63), ypos+((ii-1)*12), Color(light,light,light,255), (i%2)*2 , TEXT_ALIGN_TOP  )
 			end
 			surface.SetDrawColor( 255, 255, 255, 255 )
-			surface.SetTexture(ARCLib.Icons32t[self.ScreenOptions[i+(self.Page*8)].icon])
+			surface.SetMaterial(ARCLib.GetIcon(2,self.ScreenOptions[i+(self.Page*8)].icon))
 			surface.DrawTexturedRect( xpos+2+((i%2)*98), ypos+4, 32, 32)
 		end
 	end
@@ -916,7 +922,7 @@ function ENT:Screen_Loading()
 
 		surface.SetDrawColor( 255, 255, 255, 200 )
 		
-		surface.SetTexture( ARCLib.Icons32t["hourglass"] )
+		surface.SetMaterial( ARCLib.GetIcon(2,"hourglass") )
 		surface.DrawTexturedRectRotated(-100, -16, 32, 32,90 + ((math.sin(CurTime()*2) * math.sin(CurTime()) + math.cos(CurTime()))*75)) 
 		
 		local wcolr = 255*ARCLib.BoolToNumber(ARCBank.ATM_DarkTheme)
@@ -956,7 +962,7 @@ function ENT:Screen_HAX()
 		hackmsg = "Decoding Security Syetem"
 		for i=-12,13 do
 			if (self.Percent) > 0.005 then
-				draw.SimpleText( ARCLib.RandomString(14,hexarr), "ARCBankATM",self.Resolutionx/-2, i*12, Color(255,255,255,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_BOTTOM  )
+				draw.SimpleText( ARCLib.RandomString(14,hexarr), "ARCBankATM",self.ATMType.Resolutionx/-2, i*12, Color(255,255,255,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_BOTTOM  )
 			end
 			if (self.Percent) > 0.0195 then
 				draw.SimpleText( ARCLib.RandomString(14,hexarr), "ARCBankATM",-41, i*12, Color(255,255,255,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_BOTTOM  ) 	
@@ -969,20 +975,20 @@ function ENT:Screen_HAX()
 		
 		--hackmsg = "Accesing Network..."
 		
-		draw.SimpleText( "Using username \"root\"", "ARCBankATM",self.Resolutionx/-2, -140, Color(255,255,255,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_BOTTOM  )
-		draw.SimpleText( "Authenticating...", "ARCBankATM",self.Resolutionx/-2, -124, Color(255,255,255,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_BOTTOM  )
-		draw.SimpleText( "Login Successful!", "ARCBankATM",self.Resolutionx/-2, -108, Color(255,255,255,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_BOTTOM  )
-		draw.SimpleText( "**ARCBank ATM**", "ARCBankATM",self.Resolutionx/-2, -92, Color(255,255,255,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_BOTTOM  )
+		draw.SimpleText( "Using username \"root\"", "ARCBankATM",self.ATMType.Resolutionx/-2, -140, Color(255,255,255,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_BOTTOM  )
+		draw.SimpleText( "Authenticating...", "ARCBankATM",self.ATMType.Resolutionx/-2, -124, Color(255,255,255,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_BOTTOM  )
+		draw.SimpleText( "Login Successful!", "ARCBankATM",self.ATMType.Resolutionx/-2, -108, Color(255,255,255,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_BOTTOM  )
+		draw.SimpleText( "**ARCBank ATM**", "ARCBankATM",self.ATMType.Resolutionx/-2, -92, Color(255,255,255,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_BOTTOM  )
 		if self.HackComplete then
-			draw.SimpleText( "root@atm_"..self:EntIndex()..":~# mount /dev/sdb1 /mnt", "ARCBankATM",self.Resolutionx/-2, -76, Color(255,255,255,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_BOTTOM  )
-			draw.SimpleText( "root@atm_"..self:EntIndex()..":~# /mnt/atm_money_stealer", "ARCBankATM",self.Resolutionx/-2, -60, Color(255,255,255,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_BOTTOM  )
+			draw.SimpleText( "root@atm_"..self:EntIndex()..":~# mount /dev/sdb1 /mnt", "ARCBankATM",self.ATMType.Resolutionx/-2, -76, Color(255,255,255,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_BOTTOM  )
+			draw.SimpleText( "root@atm_"..self:EntIndex()..":~# /mnt/atm_money_stealer", "ARCBankATM",self.ATMType.Resolutionx/-2, -60, Color(255,255,255,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_BOTTOM  )
 			if self.HackRandom then
-				draw.SimpleText( "Targetting ARCBank system...", "ARCBankATM",self.Resolutionx/-2, -44, Color(255,255,255,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_BOTTOM  )
+				draw.SimpleText( "Targetting ARCBank system...", "ARCBankATM",self.ATMType.Resolutionx/-2, -44, Color(255,255,255,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_BOTTOM  )
 			else
-				draw.SimpleText( "Withdrawing cash from random account...", "ARCBankATM",self.Resolutionx/-2, -44, Color(255,255,255,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_BOTTOM  )
+				draw.SimpleText( "Withdrawing cash from random account...", "ARCBankATM",self.ATMType.Resolutionx/-2, -44, Color(255,255,255,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_BOTTOM  )
 			end
 		else
-			draw.SimpleText( "root@atm_"..tostring(self:EntIndex())..":~#", "ARCBankATM",self.Resolutionx/-2, -76, Color(255,255,255,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_BOTTOM  )
+			draw.SimpleText( "root@atm_"..tostring(self:EntIndex())..":~#", "ARCBankATM",self.ATMType.Resolutionx/-2, -76, Color(255,255,255,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_BOTTOM  )
 		end
 	end
 	--[[
@@ -1009,6 +1015,10 @@ net.Receive( "arcbank_atm_reboot", function(length,ply)
 		ent.MsgBox.GreenFunc = function() self.MsgBox.Type = 0 end
 		ent.MsgBox.RedFunc = function() self.MsgBox.Type = 0 end
 		ent.MsgBox.YellowFunc = function() self.MsgBox.Type = 0 end
+		if (!stuff.Broken) then
+			ent.TouchScreenX = 0
+			ent.TouchScreenY = 0
+		end
 	else
 		brokenATMs[enti] = stuff
 	end
@@ -1041,22 +1051,22 @@ end
 function ENT:Screen_Main()
 	--if LocalPlayer():GetEyeTrace().Entity == self then
 		--end
-		local maxx = self.Resolutionx/2
-		local maxy = self.Resolutiony/2
-		local minx = self.Resolutionx/-2
-		local miny = self.Resolutiony/-2
+		local maxx = self.ATMType.Resolutionx/2
+		local maxy = self.ATMType.Resolutiony/2
+		local minx = self.ATMType.Resolutionx/-2
+		local miny = self.ATMType.Resolutiony/-2
 		
 		if (self.Hacked && self.Percent == 1) || (self.RebootTime - 3 > CurTime())then
 			surface.SetDrawColor( 10, 10, 10, 255 )
-			surface.DrawOutlinedRect( (self.Resolutionx+2)/-2, (self.Resolutiony+2)/-2, self.Resolutionx+2, self.Resolutiony+2 ) 
+			surface.DrawOutlinedRect( (self.ATMType.Resolutionx+2)/-2, (self.ATMType.Resolutiony+2)/-2, self.ATMType.Resolutionx+2, self.ATMType.Resolutiony+2 ) 
 			surface.SetDrawColor( 0, 0, 0, 255 )
 		else
 			surface.SetDrawColor( 255, 255, 255, 255 )
-			surface.DrawOutlinedRect( (self.Resolutionx+2)/-2, (self.Resolutiony+2)/-2, self.Resolutionx+2, self.Resolutiony+2 ) 
+			surface.DrawOutlinedRect( (self.ATMType.Resolutionx+2)/-2, (self.ATMType.Resolutiony+2)/-2, self.ATMType.Resolutionx+2, self.ATMType.Resolutiony+2 ) 
 			surface.SetDrawColor( ARCLib.ConvertColor(self.ATMType.BackgroundColour))
 		end
 
-		surface.DrawRect( self.Resolutionx/-2, self.Resolutiony/-2, self.Resolutionx, self.Resolutiony ) 
+		surface.DrawRect( self.ATMType.Resolutionx/-2, self.ATMType.Resolutiony/-2, self.ATMType.Resolutionx, self.ATMType.Resolutiony ) 
 		
 		if self.Hacked then
 			self:Screen_HAX()
@@ -1079,43 +1089,46 @@ function ENT:Screen_Main()
 			self:Screen_Number()
 		end
 		if self.MsgBox && self.MsgBox.Type > 0 then
-			ARCBank_Draw:Window_MsgBox(-130,-90,240,self.MsgBox.Title,self.MsgBox.Text,ARCBank.ATM_DarkTheme,self.MsgBox.Type,ARCLib.Icons32t[self.MsgBox.TextIcon],ARCLib.Icons16[self.MsgBox.TitleIco],self.ATMType.ForegroundColour)
+			self.boxY,self.boxGX,self.boxRX,self.boxYX = ARCBank_Draw:Window_MsgBox(-130,-90,240,self.MsgBox.Title,self.MsgBox.Text,ARCBank.ATM_DarkTheme,self.MsgBox.Type,ARCLib.GetIcon(2,self.MsgBox.TextIcon),ARCLib.GetIcon(1,self.MsgBox.TitleIco),self.ATMType.ForegroundColour)
 		end
 		if self.RebootTime -7 < CurTime() && self.RebootTime > CurTime() then
-			ARCBank_Draw:Window_MsgBox(-125,-40,230,ARCBank.Settings.name,"System is starting up!",ARCBank.ATM_DarkTheme,0,ARCLib.Icons32t["information"],nil,self.ATMType.ForegroundColour)
+			ARCBank_Draw:Window_MsgBox(-125,-40,230,ARCBank.Settings.name,"System is starting up!",ARCBank.ATM_DarkTheme,0,ARCLib.GetIcon(2,"information"),nil,self.ATMType.ForegroundColour)
 		end
 		if self.Broken then
-			ARCBank_Draw:Window_MsgBox(-125,-40,230,"Criticao EräÞr",ARCBank.Msgs.ATMMsgs.HackingError,ARCBank.ATM_DarkTheme,0,ARCLib.Icons32t["emotion_dead"],nil,self.ATMType.ForegroundColour)
+			ARCBank_Draw:Window_MsgBox(-125,-40,230,"Criticao EräÞr",ARCBank.Msgs.ATMMsgs.HackingError,ARCBank.ATM_DarkTheme,0,ARCLib.GetIcon(2,"emotion_dead"),nil,self.ATMType.ForegroundColour)
 		end
 		if self.Loading then
 			self:Screen_Loading()
 		end
 		
 		if !self.ARCBankLoaded then
-			ARCBank_Draw:Window_MsgBox(-120,-50,220,ARCBank.Msgs.ATMMsgs.NetworkErrorTitle,ARCBank.Msgs.ATMMsgs.NetworkError,ARCBank.ATM_DarkTheme,0,ARCLib.Icons32t["server_error"],nil,self.ATMType.ForegroundColour)
+			ARCBank_Draw:Window_MsgBox(-120,-50,220,ARCBank.Msgs.ATMMsgs.NetworkErrorTitle,ARCBank.Msgs.ATMMsgs.NetworkError,ARCBank.ATM_DarkTheme,0,ARCLib.GetIcon(2,"server_error"),nil,self.ATMType.ForegroundColour)
 		end
-		--ARCBank_Draw:Window_MsgBox(-120,-50,220,"","Hello\nBob!\n!!!! Wow this is cool! It supports \n and everything!",false,0,ARCLib.Icons32t["cancel"],nil)
+		if self.ATMType.UseTouchScreen && self.RebootTime -7.1 < CurTime() && !self.Hacked then
+			self:Screen_Touch()
+		end
+		--ARCBank_Draw:Window_MsgBox(-120,-50,220,"","Hello\nBob!\n!!!! Wow this is cool! It supports \n and everything!",false,0,ARCLib.GetIcon(2,"cancel"),nil)
 		if self.Hacked then
 			if self.Percent > 0.0415 && self.Percent < 1 then
-				ARCBank_Draw:Window_MsgBox(-120,-50,220,"","user is not in the sudoers file. This incident will be reported.",ARCBank.ATM_DarkTheme,1,ARCLib.Icons32t["cancel"],nil,self.ATMType.ForegroundColour)
+				ARCBank_Draw:Window_MsgBox(-120,-50,220,"","user is not in the sudoers file. This incident will be reported.",ARCBank.ATM_DarkTheme,1,ARCLib.GetIcon(2,"cancel"),nil,self.ATMType.ForegroundColour)
 			end
 			if self.Percent > 0.1 && self.Percent < 1 then
-				ARCBank_Draw:Window_MsgBox(-135,-150,250,"","The instruction at '0x18a5ef73' referenced memory at '0x28fe5a7c'. \nThe memory could not be written.",ARCBank.ATM_DarkTheme,6,ARCLib.Icons32t["cancel"],nil,self.ATMType.ForegroundColour)
+				ARCBank_Draw:Window_MsgBox(-135,-150,250,"","The instruction at '0x18a5ef73' referenced memory at '0x28fe5a7c'. \nThe memory could not be written.",ARCBank.ATM_DarkTheme,6,ARCLib.GetIcon(2,"cancel"),nil,self.ATMType.ForegroundColour)
 			end
 			if self.Percent > 0.12 && self.Percent < 1 then
-				ARCBank_Draw:Window_MsgBox(-135,-120,250,"","The instruction at '0x28fe5a7c' referenced memory at '0x04d42f78'. \nThe memory could not be written.",ARCBank.ATM_DarkTheme,6,ARCLib.Icons32t["cancel"],nil,self.ATMType.ForegroundColour)
+				ARCBank_Draw:Window_MsgBox(-135,-120,250,"","The instruction at '0x28fe5a7c' referenced memory at '0x04d42f78'. \nThe memory could not be written.",ARCBank.ATM_DarkTheme,6,ARCLib.GetIcon(2,"cancel"),nil,self.ATMType.ForegroundColour)
 			end
 			if self.Percent > 0.14 && self.Percent < 1 then
-				ARCBank_Draw:Window_MsgBox(-135,-90,250,"","The instruction at '0x28fe5a7c' referenced memory at '0x00000000'. \nThe memory could not be read.",ARCBank.ATM_DarkTheme,6,ARCLib.Icons32t["cancel"],nil,self.ATMType.ForegroundColour)
+				ARCBank_Draw:Window_MsgBox(-135,-90,250,"","The instruction at '0x28fe5a7c' referenced memory at '0x00000000'. \nThe memory could not be read.",ARCBank.ATM_DarkTheme,6,ARCLib.GetIcon(2,"cancel"),nil,self.ATMType.ForegroundColour)
 			end
 			if self.Percent > 0.16 && self.Percent < 1 then
-				ARCBank_Draw:Window_MsgBox(-135,-90,250,"","The instruction at '0x00000000' referenced memory at '0xffffffff'. \nThe memory could not be read.",ARCBank.ATM_DarkTheme,6,ARCLib.Icons32t["cancel"],nil,self.ATMType.ForegroundColour)
+				ARCBank_Draw:Window_MsgBox(-135,-90,250,"","The instruction at '0x00000000' referenced memory at '0xffffffff'. \nThe memory could not be read.",ARCBank.ATM_DarkTheme,6,ARCLib.GetIcon(2,"cancel"),nil,self.ATMType.ForegroundColour)
 			end
 			if self.Percent > 0.18 && self.Percent < 1 then
 				if self.Percent < 0.25 then
-					ARCBank_Draw:Window_MsgBox(-110,-60,200,"","SECURITY ERROR! Arbitrary memory access detected.",ARCBank.ATM_DarkTheme,1,ARCLib.Icons32t["cancel"],nil,self.ATMType.ForegroundColour)
+					ARCBank_Draw:Window_MsgBox(-110,-60,200,"","SECURITY ERROR! Arbitrary memory access detected.",ARCBank.ATM_DarkTheme,1,ARCLib.GetIcon(2,"cancel"),nil,self.ATMType.ForegroundColour)
 				else
-					ARCBank_Draw:Window_MsgBox(-110,-60,200,"",table.Random({"UNKNOWN ERROR!\nUNKNOWN ERROR!\nUNKNOWN ERROR!\nUNKNOWN ERROR!","ERROR: P3N15","^&*DGY*SGY *7fg8egg8y f87a t8G**^SFG8g f6g8 8^T*98ds//f a78","BDSM GEY BUTTSECKS","HAAAAAAX!!\nDUH HAAAAAX!"}),ARCBank.ATM_DarkTheme,1,ARCLib.Icons32t["cancel"],nil,self.ATMType.ForegroundColour)
+					ARCBank_Draw:Window_MsgBox(-110,-60,200,"",table.Random({"UNKNOWN ERROR!\nUNKNOWN ERROR!\nUNKNOWN ERROR!\nUNKNOWN ERROR!","ERROR: P3N15","^&*DGY*SGY *7fg8egg8y f87a t8G**^SFG8g f6g8 8^T*98ds//f a78","BDSM GEY BUTTSECKS","HAAAAAAX!!\nDUH HAAAAAX!"}),ARCBank.ATM_DarkTheme,1,ARCLib.GetIcon(2,"cancel"),nil,self.ATMType.ForegroundColour)
 				end
 			end
 			--self:Screen_Loading()
@@ -1127,15 +1140,147 @@ function ENT:Screen_Main()
 				local maxh
 				for i=1,math.random(self.Percent*100,self.Percent*200) do
 					surface.SetDrawColor( 0, 0, 0, 255 )
-					xpos = math.random((self.Resolutionx/-2)-20,10)
-					ypos = math.random(self.Resolutiony/-2,self.Resolutiony/2)
-					maxw = self.Resolutionx - xpos
-					maxh = self.Resolutiony - ypos
-					surface.DrawRect( xpos, ypos, math.Clamp(math.random(0,self.Resolutionx),0,maxw), math.Clamp(math.random(0,40)*self.Percent,0,maxh) )
+					xpos = math.random((self.ATMType.Resolutionx/-2)-20,10)
+					ypos = math.random(self.ATMType.Resolutiony/-2,self.ATMType.Resolutiony/2)
+					maxw = self.ATMType.Resolutionx - xpos
+					maxh = self.ATMType.Resolutiony - ypos
+					surface.DrawRect( xpos, ypos, math.Clamp(math.random(0,self.ATMType.Resolutionx),0,maxw), math.Clamp(math.random(0,40)*self.Percent,0,maxh) )
 				end
 			end
 		end
 end
+
+local touchPadIcons = {}
+touchPadIcons[0] = "tick"
+touchPadIcons[1] = "button_navigation_back"
+touchPadIcons[2] = "cross"
+
+function ENT:Screen_Touch()
+	local len = 0
+	local maxx = self.ATMType.Resolutionx/2
+	local maxy = self.ATMType.Resolutiony/2
+	local minx = self.ATMType.Resolutionx/-2
+	local miny = self.ATMType.Resolutiony/-2
+	local light = 255*ARCLib.BoolToNumber(ARCBank.ATM_DarkTheme)
+	local darkk = 255*ARCLib.BoolToNumber(!ARCBank.ATM_DarkTheme)
+	local halfres = math.Round(self.ATMType.Resolutionx*0.5)
+	self.Highlightbutton = -1
+	if !self.Loading then
+		if false then
+		
+		elseif self.MsgBox && self.MsgBox.Type > 0 && self.boxY then
+			if (self.boxGX) then
+				len = len + 1
+				self.TouchIcons[len] = self.TouchIcons[len] || {}
+				self.TouchIcons[len].x = self.boxGX
+				self.TouchIcons[len].y = self.boxY
+				self.TouchIcons[len].w = 70
+				self.TouchIcons[len].h = 20
+				self.TouchIcons[len].button = 10
+			end
+			if (self.boxRX) then
+				len = len + 1
+				self.TouchIcons[len] = self.TouchIcons[len] || {}
+				self.TouchIcons[len].x = self.boxRX
+				self.TouchIcons[len].y = self.boxY
+				self.TouchIcons[len].w = 70
+				self.TouchIcons[len].h = 20
+				self.TouchIcons[len].button = 12
+			end
+			if (self.boxYX) then
+				len = len + 1
+				self.TouchIcons[len] = self.TouchIcons[len] || {}
+				self.TouchIcons[len].x = self.boxYX
+				self.TouchIcons[len].y = self.boxY
+				self.TouchIcons[len].w = 70
+				self.TouchIcons[len].h = 20
+				self.TouchIcons[len].button = 11
+			end
+		elseif self.InputtingNumber then
+			
+			ARCBank_Draw:Window(-80, -28, 160 - 22, 146,"Touch Keypad",ARCBank.ATM_DarkTheme,ARCLib.GetIcon(1,"keyboard"),self.ATMType.ForegroundColour)
+			surface.SetDrawColor( light, light, light, 255 )
+			
+			for i=0,8 do
+				len = len + 1
+				self.TouchIcons[len] = self.TouchIcons[len] || {}
+				self.TouchIcons[len].x = i%3*32 - 70
+				self.TouchIcons[len].y = math.floor(i/3)*32
+				self.TouchIcons[len].w = 32
+				self.TouchIcons[len].h = 32
+				self.TouchIcons[len].button = i+1
+				surface.DrawOutlinedRect( self.TouchIcons[len].x, self.TouchIcons[len].y, 32, 32)
+				draw.SimpleText(i+1, "ARCBankATMBigger",  self.TouchIcons[len].x + 16, self.TouchIcons[len].y + 16, Color(light,light,light,255), TEXT_ALIGN_CENTER , TEXT_ALIGN_CENTER  ) 
+			end
+			len = len + 1
+			self.TouchIcons[len] = self.TouchIcons[len] || {}
+			self.TouchIcons[len].x = 32 - 70
+			self.TouchIcons[len].y = 96
+			self.TouchIcons[len].w = 32
+			self.TouchIcons[len].h = 32
+			self.TouchIcons[len].button = 0
+			surface.DrawOutlinedRect( 32 - 70, 96, 32, 32)
+			draw.SimpleText(0, "ARCBankATMBigger",  32 - 70 + 16, 96 + 16, Color(light,light,light,255), TEXT_ALIGN_CENTER , TEXT_ALIGN_CENTER  ) 
+
+			
+			for i=0,2 do
+				surface.SetDrawColor(light,light,light,255)
+				surface.DrawOutlinedRect( 37, i*32, 32, 32)
+				len = len + 1
+				self.TouchIcons[len] = self.TouchIcons[len] || {}
+				self.TouchIcons[len].x = 37
+				self.TouchIcons[len].y = i*32
+				self.TouchIcons[len].w = 32
+				self.TouchIcons[len].h = 32
+				self.TouchIcons[len].button = i + 10
+				surface.SetDrawColor(255,255,255,255)
+				surface.SetMaterial(ARCLib.GetIcon(1,touchPadIcons[i]))
+				surface.DrawTexturedRect( 37 + 8, i*32 + 8, 16, 16)
+			end
+			
+			
+		else
+			for i = 1,8 do
+				if self.ScreenOptions[i+(self.Page*8)] then
+					local xpos = 0
+					if i%2 == 0 then
+						xpos = (halfres*-1)+2
+					else
+						xpos = halfres - 136
+					end
+					local ypos = -80+((math.floor((i-1)/2))*61)
+					local fitstr = ARCLib.FitText(self.ScreenOptions[i+(self.Page*8)].text,"ARCBankATMNormal",98)
+					len = len + 1
+					self.TouchIcons[len] = self.TouchIcons[len] || {}
+					self.TouchIcons[len].x = xpos
+					self.TouchIcons[len].y = ypos
+					self.TouchIcons[len].w = 134
+					self.TouchIcons[len].h = 40
+					self.TouchIcons[len].button = i + 12
+				end
+			end
+		end
+	end
+	
+	for i=1,len do
+		if ARCLib.InBetween(self.TouchIcons[i].x,self.TouchScreenX,self.TouchIcons[i].x+self.TouchIcons[i].w) && ARCLib.InBetween(self.TouchIcons[i].y,self.TouchScreenY,self.TouchIcons[i].y+self.TouchIcons[i].h) then
+			surface.SetDrawColor(light,light,light,128)
+			surface.DrawRect(self.TouchIcons[i].x,self.TouchIcons[i].y,self.TouchIcons[i].w,self.TouchIcons[i].h)
+			self.Highlightbutton = self.TouchIcons[i].button
+			break
+		end
+	end
+	surface.SetMaterial(ARCLib.GetIcon(1,"cursor"))
+	surface.SetDrawColor(255,255,255,255)
+	if self.Loading || self.RebootTime + 0.5 > CurTime() then
+		surface.SetMaterial(ARCLib.GetIcon(1,"hourglass"))
+		surface.DrawTexturedRectRotated(math.Clamp(self.TouchScreenX,minx+8,maxx-8),math.Clamp(self.TouchScreenY,miny+8,maxy-8),16,16,270 - ((math.sin(CurTime()*2) * math.sin(CurTime()) + math.cos(CurTime()))*75)) 
+	else
+		surface.SetMaterial(ARCLib.GetIcon(1,"cursor"))
+		surface.DrawTexturedRect(math.Clamp(self.TouchScreenX-3,minx,maxx-16),math.Clamp(self.TouchScreenY,miny,maxy-16),16,16)
+	end
+end
+
 function ENT:DrawHolo()--Good
 	if ARCBank.Settings["atm_holo_flicker"] then
 		draw.SimpleText(tostring(ARCBank.Settings["atm_holo_text"]), "ARCBankHolo",math.Rand(-0.5,0.5), math.Rand(0,0.25), Color(255,255,255,math.random(150,200)), TEXT_ALIGN_CENTER , TEXT_ALIGN_CENTER  ) 
@@ -1250,83 +1395,86 @@ function ENT:Draw()--Good
 		return
 	end
 	if !self.ATMType.buttons then return end
-	local Ply = LocalPlayer()
-	
+	local ply = LocalPlayer()
+	self.CurPos = ply:GetEyeTrace().HitPos
 	if self.ATMType.UseTouchScreen then
-		ErrorNoHalt( "Touch Screen isn't available yet. It will be added in a future update.\n" )
-		local hit,dir,frac = util.IntersectRayWithOBB(LocalPlayer():GetShootPos(),LocalPlayer():GetAimVector()*100, self:LocalToWorld(self.ATMType.Screen), self:LocalToWorldAngles(self.ATMType.ScreenAng), Vector((self.ATMType.Resolutionx/2)*-self.ATMType.ScreenSize,(self.ATMType.Resolutiony/2)*-self.ATMType.ScreenSize,-0.00001),Vector((self.ATMType.Resolutionx/2)*self.ATMType.ScreenSize,(self.ATMType.Resolutiony/2)*self.ATMType.ScreenSize,0.00001)) 
-		if hit then
-			local adjhit = self:WorldToLocal(hit)-self.ATMType.Screen
-			self.TouchScreenX =  adjhit.y/self.ATMType.ScreenSize
-			self.TouchScreenY = adjhit.z/-self.ATMType.ScreenSize
-			--LocalPlayer():ChatPrint()
+		local pos = util.IntersectRayWithPlane( ply:GetShootPos(), ply:GetAimVector(), self:LocalToWorld(self.ATMType.Screen), self:LocalToWorldAngles(self.ATMType.ScreenAng):Up() ) 
+		if pos then
+			--local adjhit = self:WorldToLocal(hit)-self.ATMType.Screen
+			pos = WorldToLocal( pos, self:LocalToWorldAngles(self.ATMType.ScreenAng), self:LocalToWorld(self.ATMType.Screen), self:LocalToWorldAngles(self.ATMType.ScreenAng) ) 
+			self.TouchScreenX = pos.x/self.ATMType.ScreenSize
+			self.TouchScreenY = pos.y/-self.ATMType.ScreenSize
+			
+			surface.SetDrawColor(255,0,0,128)
+			surface.DrawRect(402,47,44,28)
 		end
-		return
-	end
-	
-	self.buttonpos[1] = self:LocalToWorld(self.ATMType.buttons[1])
-	self.buttonpos[2] = self:LocalToWorld(self.ATMType.buttons[2])
-	self.buttonpos[3] = self:LocalToWorld(self.ATMType.buttons[3])
-	self.buttonpos[12] = self:LocalToWorld(self.ATMType.buttons[12])
-	self.buttonpos[4] = self:LocalToWorld(self.ATMType.buttons[4])
-	self.buttonpos[5] = self:LocalToWorld(self.ATMType.buttons[5])
-	self.buttonpos[6] = self:LocalToWorld(self.ATMType.buttons[6])
-	self.buttonpos[11] = self:LocalToWorld(self.ATMType.buttons[11])
-	self.buttonpos[7] = self:LocalToWorld(self.ATMType.buttons[7])
-	self.buttonpos[8] = self:LocalToWorld(self.ATMType.buttons[8])
-	self.buttonpos[9] = self:LocalToWorld(self.ATMType.buttons[9])
-	self.buttonpos[23] = self:LocalToWorld(self.ATMType.buttons[23])
-	
-	self.buttonpos[21] = self:LocalToWorld(self.ATMType.buttons[21])
-	self.buttonpos[0] = self:LocalToWorld(self.ATMType.buttons[0])
-	self.buttonpos[22] = self:LocalToWorld(self.ATMType.buttons[22])
-	self.buttonpos[10] = self:LocalToWorld(self.ATMType.buttons[10])
-	
-	self.buttonpos[13] = self:LocalToWorld(self.ATMType.buttons[13])
-	self.buttonpos[14] = self:LocalToWorld(self.ATMType.buttons[14])
-	self.buttonpos[15] = self:LocalToWorld(self.ATMType.buttons[15])
-	self.buttonpos[16] = self:LocalToWorld(self.ATMType.buttons[16])
-	self.buttonpos[17] = self:LocalToWorld(self.ATMType.buttons[17])
-	self.buttonpos[18] = self:LocalToWorld(self.ATMType.buttons[18])
-	self.buttonpos[19] = self:LocalToWorld(self.ATMType.buttons[19])
-	self.buttonpos[20] = self:LocalToWorld(self.ATMType.buttons[20])
+	else
+		self.buttonpos[1] = self:LocalToWorld(self.ATMType.buttons[1])
+		self.buttonpos[2] = self:LocalToWorld(self.ATMType.buttons[2])
+		self.buttonpos[3] = self:LocalToWorld(self.ATMType.buttons[3])
+		self.buttonpos[12] = self:LocalToWorld(self.ATMType.buttons[12])
+		self.buttonpos[4] = self:LocalToWorld(self.ATMType.buttons[4])
+		self.buttonpos[5] = self:LocalToWorld(self.ATMType.buttons[5])
+		self.buttonpos[6] = self:LocalToWorld(self.ATMType.buttons[6])
+		self.buttonpos[11] = self:LocalToWorld(self.ATMType.buttons[11])
+		self.buttonpos[7] = self:LocalToWorld(self.ATMType.buttons[7])
+		self.buttonpos[8] = self:LocalToWorld(self.ATMType.buttons[8])
+		self.buttonpos[9] = self:LocalToWorld(self.ATMType.buttons[9])
+		self.buttonpos[23] = self:LocalToWorld(self.ATMType.buttons[23])
+		
+		self.buttonpos[21] = self:LocalToWorld(self.ATMType.buttons[21])
+		self.buttonpos[0] = self:LocalToWorld(self.ATMType.buttons[0])
+		self.buttonpos[22] = self:LocalToWorld(self.ATMType.buttons[22])
+		self.buttonpos[10] = self:LocalToWorld(self.ATMType.buttons[10])
+		
+		self.buttonpos[13] = self:LocalToWorld(self.ATMType.buttons[13])
+		self.buttonpos[14] = self:LocalToWorld(self.ATMType.buttons[14])
+		self.buttonpos[15] = self:LocalToWorld(self.ATMType.buttons[15])
+		self.buttonpos[16] = self:LocalToWorld(self.ATMType.buttons[16])
+		self.buttonpos[17] = self:LocalToWorld(self.ATMType.buttons[17])
+		self.buttonpos[18] = self:LocalToWorld(self.ATMType.buttons[18])
+		self.buttonpos[19] = self:LocalToWorld(self.ATMType.buttons[19])
+		self.buttonpos[20] = self:LocalToWorld(self.ATMType.buttons[20])
 
 
-	render.SetMaterial(self.spriteMaterial)
-	self.Dist = math.huge
-	self.Highlightbutton = -1
-	self.CurPos = LocalPlayer():GetEyeTrace().HitPos
-	--render.DrawSprite(self.CurPos, 6.5,6.5,Color(0,255,0,200))
-	for i=0,23 do
-		if self.buttonpos[i] then
-			if LocalPlayer().ARCBank_FullScreen then
-				local butscrpos = self.buttonpos[i]:ToScreen()
-				if Vector(butscrpos.x,butscrpos.y,0):IsEqualTol( Vector(gui.MouseX(),gui.MouseY(),0), surface.ScreenHeight()/20  ) then
-					if Vector(butscrpos.x,butscrpos.y,0):DistToSqr(Vector(gui.MouseX(),gui.MouseY(),0)) < self.Dist then
-						self.Dist = Vector(butscrpos.x,butscrpos.y,0):DistToSqr(Vector(gui.MouseX(),gui.MouseY(),0))
-						self.Highlightbutton = i
+		render.SetMaterial(self.spriteMaterial)
+		self.Dist = math.huge
+		self.Highlightbutton = -1
+		
+		--render.DrawSprite(self.CurPos, 6.5,6.5,Color(0,255,0,200))
+		for i=0,23 do
+			if self.buttonpos[i] then
+				if LocalPlayer().ARCBank_FullScreen then
+					local butscrpos = self.buttonpos[i]:ToScreen()
+					if Vector(butscrpos.x,butscrpos.y,0):IsEqualTol( Vector(gui.MouseX(),gui.MouseY(),0), surface.ScreenHeight()/20  ) then
+						if Vector(butscrpos.x,butscrpos.y,0):DistToSqr(Vector(gui.MouseX(),gui.MouseY(),0)) < self.Dist then
+							self.Dist = Vector(butscrpos.x,butscrpos.y,0):DistToSqr(Vector(gui.MouseX(),gui.MouseY(),0))
+							self.Highlightbutton = i
+						end
 					end
-				end
-			else
-				if self.buttonpos[i]:IsEqualTol(self.CurPos,1.6) then
-					if self.buttonpos[i]:DistToSqr(self.CurPos) < self.Dist then
-						self.Dist = self.buttonpos[i]:DistToSqr(self.CurPos)
-						self.Highlightbutton = i
+				else
+					if self.buttonpos[i]:IsEqualTol(self.CurPos,1.6) then
+						if self.buttonpos[i]:DistToSqr(self.CurPos) < self.Dist then
+							self.Dist = self.buttonpos[i]:DistToSqr(self.CurPos)
+							self.Highlightbutton = i
+						end
+					--else --
+						--render.DrawSprite(self.buttonpos[i], 6.5, 6.5, Color(255,0,0,255))
 					end
-				--else --
-					--render.DrawSprite(self.buttonpos[i], 6.5, 6.5, Color(255,0,0,255))
 				end
 			end
 		end
 	end
 	--self.UseButton = self.Highlightbutton
-	if self.Highlightbutton >= 0 && Ply:GetShootPos():Distance(self.CurPos) < 70 then
-		render.DrawSprite(self.buttonpos[self.Highlightbutton], 6.5, 6.5, Color(255,255,255,255))
+	if self.Highlightbutton >= 0 && ply:GetShootPos():Distance(self.CurPos) < 70 then
+		if !self.ATMType.UseTouchScreen then
+			render.DrawSprite(self.buttonpos[self.Highlightbutton], 6.5, 6.5, Color(255,255,255,255))
+		end
 		local pushedbutton
-		if Ply.ARCBank_FullScreen then
+		if ply.ARCBank_FullScreen then
 			pushedbutton = input.IsMouseDown(MOUSE_LEFT)
 		else
-			pushedbutton = --[[Ply:KeyDown(IN_USE)||]]Ply:KeyReleased(IN_USE)||Ply:KeyDownLast(IN_USE)
+			pushedbutton = --[[ply:KeyDown(IN_USE)||]]ply:KeyReleased(IN_USE)||ply:KeyDownLast(IN_USE)
 		end
 		if self.UseDelay <= CurTime() && !self.Loading then
 			if pushedbutton then
@@ -1600,6 +1748,7 @@ net.Receive( "ARCATM_USE", function(length)
 		LocalPlayer().ARCBank_UsingATM = false
 		LocalPlayer().ARCBank_ATM = NULL
 		if IsValid(atm) then
+			atm.InputtingNumber = false
 			atm.MsgBox.Type = 0
 			atm.Title = ""
 			atm.TitleText = ""

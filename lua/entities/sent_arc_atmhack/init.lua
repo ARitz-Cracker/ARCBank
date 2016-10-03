@@ -42,9 +42,10 @@ end
 function ENT:Setup(hacker,ent,energy,amount,rand,side)
 	self.Hacker = hacker
 	self.HackEnt = ent
-	self.EnergyLevel = amount
+	self.EnergyLevel = energy
 	self.HackAmount = amount
 	self.HackRandom = rand
+	MsgN(self.EnergyLevel)
 	if (!IsValid(self:GetParent())) then
 		ErrorNoHalt("Parent not set!")
 	end
@@ -119,7 +120,6 @@ function ENT:HackBegin()
 end
 
 function ENT:HackStop()
-	if self.OurHealth <= 0 then return end
 	self.GottaStop = true
 end
 
@@ -143,6 +143,10 @@ function ENT:OnTakeDamage(dmg)
 				ARCLib.NotifyBroadcast(string.Replace( string.Replace( ARCBank.Msgs.UserMsgs.HackHero, "%IDIOT%",tostring(self.Hacker:Nick())), "%HERO%", tostring(attname) ),NOTIFY_GENERIC,15,true)
 			end
 		end
+		net.Start( "arcbank_hacker_status" )
+		net.WriteUInt(self:EntIndex(),16)
+		net.WriteUInt(6,4)
+		net.Broadcast()
 		self:HackStop()
 		
 		if self.spark && self.spark != NULL && !self.Broken then
@@ -173,7 +177,6 @@ function ENT:OnTakeDamage(dmg)
 	end
 end
 function ENT:Think()
-	if self.OurHealth <= 0 then return end
 	if self.Rotate then
 		if self.whirang < 90 then
 			self.whirang = self.whirang + 2.5
@@ -215,8 +218,8 @@ function ENT:Think()
 				end
 				
 				self.EnergyStart = CurTime()
+				MsgN(self.EnergyLevel)
 				self.EnergyEnd = CurTime() + self.EnergyLevel
-				
 				local hacktime = ARCBank.HackTimeCalculate(self.HackEnt,self.HackAmount,self.HackRandom)
 				local hackoffset = ARCBank.HackTimeOffset(self.HackEnt,hacktime)
 				
@@ -261,13 +264,19 @@ function ENT:Think()
 				self.EnergyLevel = 0
 			end
 			self:GetParent()._HackAttached = false
-			timer.Simple(3,function()
+			local detachtime = 3
+			if(self.OurHealth <= 0) then
+				detachtime = 10
+			end
+			timer.Simple(detachtime,function()
 				if !IsValid(self) || !IsValid(self:GetParent()) then return end
 				local pos = self:GetParent():WorldToLocal(self:GetPos()) - Vector(0,self.left,0)
 				self:SetPos(pos)
 				self:SetParent()
 				self:GetPhysicsObject():Wake()
-				self:EmitSound("npc/roller/blade_in.wav")
+				if(self.OurHealth <= 0) then
+					self:EmitSound("npc/roller/blade_in.wav")
+				end
 			end)
 		end
 		return
@@ -332,6 +341,10 @@ function ENT:Think()
 			net.WriteBit(false)
 			net.Send(self.Cops)
 		end
+		net.Start( "arcbank_hacker_status" )
+		net.WriteUInt(self:EntIndex(),16)
+		net.WriteUInt(4,4)
+		net.Broadcast()
 		self:GetParent():HackSpark()
 	end
 end

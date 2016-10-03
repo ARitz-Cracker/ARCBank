@@ -55,6 +55,8 @@ function ARCBank.SettingsReset() --DO NOT EDIT THIS!!!!
 	ARCBank.Settings["card_texture"] = "arc/atm_base/screen/card" --DO NOT EDIT THIS!!!!
 	ARCBank.Settings["card_weapon_slot"] = 1 --DO NOT EDIT THIS!!!!
 	ARCBank.Settings["card_weapon_slotpos"] = 4 --DO NOT EDIT THIS!!!!
+	ARCBank.Settings["card_weapon_position_up"] = 0
+	ARCBank.Settings["card_weapon_position_left"] = 0
 	
 	ARCBank.Settings["atm_hack_max"] = 5000 --DO NOT EDIT THIS!!!!
 	ARCBank.Settings["atm_hack_min"] = 25 --DO NOT EDIT THIS!!!!
@@ -101,6 +103,14 @@ function ARCBank.SettingsReset() --DO NOT EDIT THIS!!!!
 	ARCBank.Settings["interest_4_gold"] = 8 --DO NOT EDIT THIS!!!!
 	ARCBank.Settings["interest_6_group_standard"] = 2.5 --DO NOT EDIT THIS!!!!
 	ARCBank.Settings["interest_7_group_premium"] = 5 --DO NOT EDIT THIS!!!!
+	
+	ARCBank.Settings["money_max_1_standard"] = 1000000000 --DO NOT EDIT THIS!!!!
+	ARCBank.Settings["money_max_2_bronze"] = 10000000000 --DO NOT EDIT THIS!!!!
+	ARCBank.Settings["money_max_3_silver"] = 1000000000000 --DO NOT EDIT THIS!!!!
+	ARCBank.Settings["money_max_4_gold"] = 99999999999999 --DO NOT EDIT THIS!!!!
+	ARCBank.Settings["money_max_6_group_standard"] = 1000000000000 --DO NOT EDIT THIS!!!!
+	ARCBank.Settings["money_max_7_group_premium"] = 99999999999999 --DO NOT EDIT THIS!!!!
+	
 	ARCBank.Settings["usergroup_1_standard"] = {"user"} --DO NOT EDIT THIS!!!!
 	ARCBank.Settings["usergroup_2_bronze"] = {"vip"} --DO NOT EDIT THIS!!!!
 	ARCBank.Settings["usergroup_3_silver"] = {"donaor"} --DO NOT EDIT THIS!!!!

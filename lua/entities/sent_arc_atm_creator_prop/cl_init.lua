@@ -263,7 +263,9 @@ function ENT:Draw()--Good
 		render.DrawSprite(self.TourchScreenPos[2], 2, 2, Color(255,255,0,255))
 		
 
-		
+		if !self.SpriteNoZ then
+			render.DrawWireframeBox(self:LocalToWorld(self.ATMType.MoneyHitBoxPos), self:LocalToWorldAngles(self.ATMType.MoneyHitBoxAng), vector_origin, self.ATMType.MoneyHitBoxSize, Color(0,0,255,255), true ) 
+		end
 	else
 		self.buttonpos={}
 		

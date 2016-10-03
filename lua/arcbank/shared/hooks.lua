@@ -32,11 +32,13 @@ else
 	hook.Add( "CanTool", "ARCBank Tool", function( ply, tr, tool )
 		if IsValid(tr.Entity) then -- Overrides shitty FPP
 			if tr.Entity.IsAFuckingATM && tr.Entity.ARCBank_MapEntity then return false end 
+			--[[
 			for k, v in pairs(constraint.GetAllConstrainedEntities(tr.Entity)) do
 				if v:GetClass() == "sent_arc_pinmachine" && v._Owner == ply then -- Overrides shitty FPP
 					return true
 				end
 			end
+			]]
 		end
 	end)
 	hook.Add( "CanPlayerUnfreeze", "ARCBank BlockUnfreeze", function( ply, ent, phys )
@@ -99,7 +101,7 @@ else
 	end)
 
 	hook.Add( "GravGunPunt", "ARCBank PuntHacker", function( ply, ent ) if ent:GetClass() == "sent_arc_atmhack" then ent:TakeDamage( 100, ply, ply:GetActiveWeapon() ) end end)
-	hook.Add( "ARCLoad_OnPlayerLoaded", "ARCBank PlyAuth", function( ply ) 
+	hook.Add( "ARCLib_OnPlayerFullyLoaded", "ARCBank PlyAuth", function( ply ) 
 		if IsValid(ply) && ply:IsPlayer() then
 			if table.HasValue(ARCBank.Disk.NommedCards,ply:SteamID()) then
 				ply:PrintMessage( HUD_PRINTTALK, "ARCBank: "..ARCBank.Msgs.UserMsgs.Eatcard1 )
@@ -217,7 +219,7 @@ else
 
 	hook.Add( "PostCleanupMap", "ARCBank PostCleanupATM", function() timer.Simple(1,function() ARCBank.SpawnATMs() end ) end )
 	]]
-
+	--[[
 	hook.Add( "ARCLoad_OnLoaded", "ARCBank SpawnATMs", function(loaded)
 		if loaded != true && loaded != "ARCBank" then return end
 			ARCBank.Load()
@@ -231,6 +233,7 @@ else
 		ARCBank.SaveDisk()
 		ARCBank.ClearATMs()
 	end)
+	]]
 	hook.Add( "ShutDown", "ARCBank Shutdown", function()
 		for _, oldatms in pairs( ents.FindByClass("sent_arc_atm") ) do
 			oldatms.ARCBank_MapEntity = false

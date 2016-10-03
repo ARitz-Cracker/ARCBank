@@ -1198,7 +1198,9 @@ function ARCBank.AtmFunc(ply,amount,groupname,callback)
 			end
 		end
 		accountdata.money = accountdata.money + amount
-		if accountdata.money >= 1e14 && amount > 0 then
+		
+		
+		if accountdata.money >= ARCBank.Settings["money_max_"..accountdata.rank.."_"..ARCBANK_ACCOUNTSTRINGS[accountdata.rank]] && amount > 0 then
 			callback(ARCBANK_ERROR_TOO_MUCH_CASH)
 			return
 		end
@@ -1268,7 +1270,7 @@ function ARCBank.Transfer(fromply,toply,fromname,toname,amount,reason,callback)
 				accountdatafrom.money = accountdatafrom.money - amount
 				accountdatato.money = accountdatato.money + amount
 			end
-			if accountdatato.money >= 1e14 then
+			if ARCBank.Settings["money_max_"..accountdatato.rank.."_"..ARCBANK_ACCOUNTSTRINGS[accountdatato.rank]] >= 1e14 then
 				callback(ARCBANK_ERROR_TOO_MUCH_CASH)
 				return
 			end

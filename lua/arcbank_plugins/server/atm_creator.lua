@@ -160,6 +160,7 @@ if ARCBank then
 					net.WriteString(util.TableToJSON(ATMCreatorProp.ATMType))
 					net.Send(ply)
 				end)
+				ATMCreatorProp.CreatorPerson = ply
 				ATMCreatorPerson = ply
 			end
 		end, 
