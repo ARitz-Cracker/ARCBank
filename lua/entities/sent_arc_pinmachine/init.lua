@@ -86,7 +86,7 @@ function ENT:Use(ply,caller)
 				end)
 			else
 				if self.Status == 0 then
-					ARCBank.AccountExists(ARCBank.GetAccountID(ply:SteamID()),false,function(yes)
+					ARCBank.AccountExists(ARCBank.GetAccountID(ARCBank.GetPlayerID(ply)),false,function(yes)
 						if yes then
 						--if true then
 							self:EmitSound("buttons/button18.wav",75,255)

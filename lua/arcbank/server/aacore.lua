@@ -38,7 +38,7 @@ function ARCBankAccountMsg(accountdata,msg)
 	end
 end
 function ARCBank.FuckIdiotPlayer(ply,reason)
-	ARCBank.Msg("ARCBANK ANTI-CHEAT WARNING: Some stupid shit by the name of "..ply:Nick().." ("..ply:SteamID()..") tried to use an exploit: ["..tostring(reason).."]")
+	ARCBank.Msg("ARCBANK ANTI-CHEAT WARNING: Some stupid shit by the name of "..ply:Nick().." ("..ARCBank.GetPlayerID(ply)..") tried to use an exploit: ["..tostring(reason).."]")
 	if ply.ARCBank_AFuckingIdiot then
 		ply:Ban(ARCBank.Settings["autoban_time"])
 		ply:SendLua("Derma_Message( \"You will be autobanned for "..ARCLib.TimeString( ARCBank.Settings["autoban_time"]*60 )..".\", \"You're a failure at hacking\", \"Shit, Looks like I'm an idiot.\" )")
@@ -388,7 +388,7 @@ function ARCBank.CreateAccount(ply,rank,initbalance,groupname,callback)
 			return
 		end
 		accountdata.isgroup = false
-		accountdata.filename = ARCBank.GetAccountID(ply:SteamID())
+		accountdata.filename = ARCBank.GetAccountID(ARCBank.GetPlayerID(ply))
 		accountdata.name = ply:Nick()
 		accountdata.money = tostring(initbalance)
 		accountdata.rank = rank
@@ -402,7 +402,7 @@ function ARCBank.CreateAccount(ply,rank,initbalance,groupname,callback)
 		accountdata.name = groupname
 		accountdata.money = tostring(initbalance)
 		accountdata.rank = rank
-		accountdata.owner = ply:SteamID()
+		accountdata.owner = ARCBank.GetPlayerID(ply)
 		accountdata.members = {}
 	end
 	
@@ -412,7 +412,7 @@ function ARCBank.CreateAccount(ply,rank,initbalance,groupname,callback)
 		else
 			ARCBank.WriteAccountFile(accountdata,function(didwrite)
 				if didwrite then
-					ARCBank.Msg(ply:Nick().."("..ply:SteamID()..") ceated an account named "..accountdata.name.." with "..initbalance.." munnies")
+					ARCBank.Msg(ply:Nick().."("..ARCBank.GetPlayerID(ply)..") ceated an account named "..accountdata.name.." with "..initbalance.." munnies")
 					ARCBankAccountMsg(accountdata,"Account Created/Reset!")
 					callback(ARCBANK_ERROR_NONE)
 				else
@@ -489,7 +489,7 @@ function ARCBank.RemoveAccount(ply,groupname,callback)
 			callback(ARCBANK_ERROR_NIL_ACCOUNT)
 			return
 		end
-		if accountdata.isgroup && accountdata.owner != ply:SteamID() then
+		if accountdata.isgroup && accountdata.owner != ARCBank.GetPlayerID(ply) then
 			callback(ARCBANK_ERROR_NO_ACCESS)
 			return
 		end
@@ -503,7 +503,7 @@ function ARCBank.RemoveAccount(ply,groupname,callback)
 		end
 		ARCBank.EraseAccount(accountdata.filename,accountdata.isgroup,function(yes)
 			if yes then
-				ARCBank.Msg(ply:Nick().."("..ply:SteamID()..") closed their account named "..accountdata.name.." ("..accountdata.filename..")")
+				ARCBank.Msg(ply:Nick().."("..ARCBank.GetPlayerID(ply)..") closed their account named "..accountdata.name.." ("..accountdata.filename..")")
 				callback(ARCBANK_ERROR_NONE)
 			else
 				callback(ARCBANK_ERROR_WRITE_FAILURE)
@@ -513,7 +513,7 @@ function ARCBank.RemoveAccount(ply,groupname,callback)
 	end
 
 	if !groupname || groupname == "" then
-		ARCBank.ReadAccountFile(ARCBank.GetAccountID(ply:SteamID()),false,datafunc)
+		ARCBank.ReadAccountFile(ARCBank.GetAccountID(ARCBank.GetPlayerID(ply)),false,datafunc)
 	else
 		ARCBank.ReadAccountFile(ARCBank.GetAccountID(groupname),true,datafunc)
 	end
@@ -528,12 +528,12 @@ function ARCBank.AddPlayerToGroup(ply,newguysteamid,groupname,callback)
 			callback(ARCBANK_ERROR_NIL_ACCOUNT)
 			return
 		end
-		if accountdata.owner != ply:SteamID() then
+		if accountdata.owner != ARCBank.GetPlayerID(ply) then
 			callback(ARCBANK_ERROR_NO_ACCESS)
 			return
 		end
 		--MsgN("LINE 476 OF CORE!")
-		if table.HasValue(accountdata.members,newguysteamid) || newguysteamid == ply:SteamID() then
+		if table.HasValue(accountdata.members,newguysteamid) || newguysteamid == ARCBank.GetPlayerID(ply) then
 			callback(ARCBANK_ERROR_DUPE_PLAYER)
 			return
 		end
@@ -567,7 +567,7 @@ function ARCBank.RemovePlayerFromGroup(ply,guysteamid,groupname,callback)
 			callback(ARCBANK_ERROR_NIL_ACCOUNT)
 			return
 		end
-		if accountdata.owner != ply:SteamID() then
+		if accountdata.owner != ARCBank.GetPlayerID(ply) then
 			callback(ARCBANK_ERROR_NO_ACCESS)
 			return
 		end
@@ -592,7 +592,7 @@ function ARCBank.GroupAccountOwner(ply,callback)
 	if ARCBank.Busy then callback(ARCBANK_ERROR_BUSY,{}) return end
 	local sid = ""
 	if !isstring(ply)&& ply:IsPlayer() then
-		sid = ply:SteamID()
+		sid = ARCBank.GetPlayerID(ply)
 	elseif string.StartWith(ply,"STEAM_") then
 		sid = ply
 	else
@@ -631,7 +631,7 @@ function ARCBank.GroupAccountAcces(ply,callback)
 	if ARCBank.Busy then callback(ARCBANK_ERROR_BUSY,{}) return end
 	local sid = ""
 	if !isstring(ply)&& ply:IsPlayer() then
-		sid = ply:SteamID()
+		sid = ARCBank.GetPlayerID(ply)
 	elseif string.StartWith(ply,"STEAM_") then
 		sid = ply
 	else
@@ -686,7 +686,7 @@ function ARCBank.GetAccountInformation(ply,groupname,callback)
 	if ARCBank.Busy then callback(ARCBANK_ERROR_BUSY) return end
 	local sid = ""
 	if !isstring(ply)&& ply:IsPlayer() then
-		sid = ply:SteamID()
+		sid = ARCBank.GetPlayerID(ply)
 	elseif string.StartWith(ply,"STEAM_") then
 		sid = ply
 	else
@@ -716,7 +716,7 @@ function ARCBank.CanAfford(ply,amount,groupname,callback)
 	if ARCBank.Busy then callback(ARCBANK_ERROR_BUSY) return end
 	local sid = ""
 	if !isstring(ply)&& ply:IsPlayer() then
-		sid = ply:SteamID()
+		sid = ARCBank.GetPlayerID(ply)
 	elseif string.StartWith(ply,"STEAM_") then
 		sid = ply
 	else
@@ -751,9 +751,9 @@ end
 --
 function ARCBank.PlayerHasAccesToAccount(ply,accounttable)
 	if accounttable.isgroup then
-		return accounttable.owner == ply:SteamID() || table.HasValue( accounttable.members, ply:SteamID() ) 
+		return accounttable.owner == ARCBank.GetPlayerID(ply) || table.HasValue( accounttable.members, ARCBank.GetPlayerID(ply) ) 
 	else
-		return accounttable.filename == ARCBank.GetAccountID(ply:SteamID())
+		return accounttable.filename == ARCBank.GetAccountID(ARCBank.GetPlayerID(ply))
 	end
 end
 function ARCBank.GetAllAccounts(amount,callback)
@@ -1013,7 +1013,7 @@ function ARCBank.AddMoney(ply,amount,groupaccount,reason,callback)
 	ARCBank.CanAfford(ply,-amount,groupaccount,function(errc)
 		if errc == ARCBANK_ERROR_NONE then
 			if !isstring(ply) && ply:IsPlayer() then
-				sid = ply:SteamID()
+				sid = ARCBank.GetPlayerID(ply)
 			elseif string.StartWith(ply,"STEAM_") then
 				sid = ply
 			else
@@ -1033,9 +1033,9 @@ function ARCBank.AddMoney(ply,amount,groupaccount,reason,callback)
 								reason = "No reason specified"
 							end
 							if amount > 0 then
-								ARCBankAccountMsg(accountdata,string.Replace( string.Replace( ARCBank.Msgs.LogMsgs.AddMoney, "%VALUE%", tostring(amount)), "%PLAYER%", ply:SteamID()).."["..tostring(reason).."]")
+								ARCBankAccountMsg(accountdata,string.Replace( string.Replace( ARCBank.Msgs.LogMsgs.AddMoney, "%VALUE%", tostring(amount)), "%PLAYER%", ARCBank.GetPlayerID(ply)).."["..tostring(reason).."]")
 							else
-								ARCBankAccountMsg(accountdata,string.Replace( string.Replace( ARCBank.Msgs.LogMsgs.RemoveMoney, "%VALUE%", tostring(-amount)), "%PLAYER%", ply:SteamID()).."["..tostring(reason).."]")
+								ARCBankAccountMsg(accountdata,string.Replace( string.Replace( ARCBank.Msgs.LogMsgs.RemoveMoney, "%VALUE%", tostring(-amount)), "%PLAYER%", ARCBank.GetPlayerID(ply)).."["..tostring(reason).."]")
 							end
 							callback(ARCBANK_ERROR_NONE)
 						else
@@ -1094,7 +1094,7 @@ function ARCBank.StealMoney(ply,amount,accounttable,hidden,callback)
 						if num > #fuckinglongqueryies then 
 							callback(ARCBANK_ERROR_NONE,1)
 							if IsValid(ply) then
-								ARCBank.Msg(ply:Nick().."("..ply:SteamID()..") performed a distributed hack. All accounts were affected. Stole a total of "..tostring(amount))
+								ARCBank.Msg(ply:Nick().."("..ARCBank.GetPlayerID(ply)..") performed a distributed hack. All accounts were affected. Stole a total of "..tostring(amount))
 							else
 								ARCBank.Msg("(Someone) performed a distributed hack. All accounts were affected. Stole a total of "..tostring(amount))
 							end
@@ -1123,7 +1123,7 @@ function ARCBank.StealMoney(ply,amount,accounttable,hidden,callback)
 					end
 					timer.Simple(math.random(0.5,5),function() callback(ARCBANK_ERROR_NONE,1) end)
 					if IsValid(ply) then
-						ARCBank.Msg(ply:Nick().."("..ply:SteamID()..") performed a distributed hack. All accounts were affected. Stole a total of "..tostring(amount))
+						ARCBank.Msg(ply:Nick().."("..ARCBank.GetPlayerID(ply)..") performed a distributed hack. All accounts were affected. Stole a total of "..tostring(amount))
 					else
 						ARCBank.Msg("(Someone) performed a distributed hack. All accounts were affected. Stole a total of "..tostring(amount))
 					end
@@ -1147,7 +1147,7 @@ function ARCBank.StealMoney(ply,amount,accounttable,hidden,callback)
 					timer.Simple(math.random(0.5,5),function() callback(ARCBANK_ERROR_NONE,1) end)
 					if !hidden then
 						if IsValid(ply) then
-							ARCBank.Msg(ply:Nick().."("..ply:SteamID()..") hacked into "..accounttable.filename.." stole "..tostring(amount))
+							ARCBank.Msg(ply:Nick().."("..ARCBank.GetPlayerID(ply)..") hacked into "..accounttable.filename.." stole "..tostring(amount))
 						else
 							ARCBank.Msg("(Someone) hacked into "..accounttable.filename.." stole "..tostring(amount))
 						end
@@ -1174,7 +1174,7 @@ function ARCBank.AtmFunc(ply,amount,groupname,callback)
 			return
 		end
 		if accountdata.isgroup then
-			if accountdata.owner != ply:SteamID() && !table.HasValue( accountdata.members, ply:SteamID() ) then
+			if accountdata.owner != ARCBank.GetPlayerID(ply) && !table.HasValue( accountdata.members, ARCBank.GetPlayerID(ply) ) then
 				callback(ARCBANK_ERROR_NO_ACCESS)
 				return
 			end
@@ -1182,10 +1182,10 @@ function ARCBank.AtmFunc(ply,amount,groupname,callback)
 			accountdata.name = ply:Nick()
 		end
 		local mode = "Added "..amount.." to account."
-		local logmode = string.Replace( string.Replace( ARCBank.Msgs.LogMsgs.AddMoney, "%VALUE%", tostring(amount)), "%PLAYER%", ply:SteamID())
+		local logmode = string.Replace( string.Replace( ARCBank.Msgs.LogMsgs.AddMoney, "%VALUE%", tostring(amount)), "%PLAYER%", ARCBank.GetPlayerID(ply))
 		if amount <= 0 then
 			mode = "Subtracted "..tostring(-amount).." from account."
-			logmode = string.Replace( string.Replace( ARCBank.Msgs.LogMsgs.RemoveMoney, "%VALUE%", tostring(-amount)), "%PLAYER%", ply:SteamID())
+			logmode = string.Replace( string.Replace( ARCBank.Msgs.LogMsgs.RemoveMoney, "%VALUE%", tostring(-amount)), "%PLAYER%", ARCBank.GetPlayerID(ply))
 			if accountdata.money+ARCBank.Settings["account_debt_limit"] < -amount then
 				--MsgN("Can't Afford!")
 				callback(ARCBANK_ERROR_NO_CASH)
@@ -1208,7 +1208,7 @@ function ARCBank.AtmFunc(ply,amount,groupname,callback)
 		ARCBank.WriteAccountFile(accountdata,function(didwork)
 			if didwork then
 				ARCBank.PlayerAddMoney(ply,amount*-1)
-				ARCBank.Msg(ply:Nick().."("..ply:SteamID()..") "..mode..accountdata.name.."'s Account. ("..accountdata.filename..") ("..accountdata.money..")")
+				ARCBank.Msg(ply:Nick().."("..ARCBank.GetPlayerID(ply)..") "..mode..accountdata.name.."'s Account. ("..accountdata.filename..") ("..accountdata.money..")")
 				ARCBankAccountMsg(accountdata,logmode.." ("..accountdata.money..")")
 				callback(ARCBANK_ERROR_NONE)
 			else
@@ -1218,7 +1218,7 @@ function ARCBank.AtmFunc(ply,amount,groupname,callback)
 	end
 	
 	if !groupname || groupname == "" then
-		ARCBank.ReadAccountFile(ARCBank.GetAccountID(ply:SteamID()),false,datafunc)
+		ARCBank.ReadAccountFile(ARCBank.GetAccountID(ARCBank.GetPlayerID(ply)),false,datafunc)
 	else
 		ARCBank.ReadAccountFile(ARCBank.GetAccountID(groupname),true,datafunc)
 	end
@@ -1242,7 +1242,7 @@ function ARCBank.Transfer(fromply,toply,fromname,toname,amount,reason,callback)
 			return
 		end
 		if accountdatafrom.isgroup then
-			if accountdatafrom.owner != fromply:SteamID() && !table.HasValue( accountdatafrom.members, fromply:SteamID() ) then
+			if accountdatafrom.owner != fromARCBank.GetPlayerID(ply) && !table.HasValue( accountdatafrom.members, fromARCBank.GetPlayerID(ply) ) then
 				callback(ARCBANK_ERROR_NO_ACCESS)
 				return
 			end
@@ -1280,9 +1280,9 @@ function ARCBank.Transfer(fromply,toply,fromname,toname,amount,reason,callback)
 				if didwork then
 					ARCBank.WriteAccountFile(accountdatafrom,function(didwork)
 						if didwork then
-							ARCBankAccountMsg(accountdatafrom,string.Replace(string.Replace(string.Replace(string.Replace( ARCBank.Msgs.LogMsgs.GiveMoney, "%VALUE%", tostring(amount)),"%ACCOUNT%",accountdatato.filename),"%PLAYER2%",sid),"%PLAYER1%",fromply:SteamID()).."["..tostring(reason).."]")
-							ARCBankAccountMsg(accountdatato,string.Replace(string.Replace(string.Replace(string.Replace( ARCBank.Msgs.LogMsgs.GiveMoney, "%VALUE%", tostring(amount)),"%ACCOUNT%",accountdatafrom.filename),"%PLAYER2%",sid),"%PLAYER1%",fromply:SteamID()).."["..tostring(reason).."]")
-							ARCBank.Msg(fromply:Nick().."("..fromply:SteamID()..") gave "..amount.." to "..nic.."("..sid..") (From accounts "..accountdatafrom.filename.." to "..accountdatato.filename..") ["..tostring(reason).."]")
+							ARCBankAccountMsg(accountdatafrom,string.Replace(string.Replace(string.Replace(string.Replace( ARCBank.Msgs.LogMsgs.GiveMoney, "%VALUE%", tostring(amount)),"%ACCOUNT%",accountdatato.filename),"%PLAYER2%",sid),"%PLAYER1%",fromARCBank.GetPlayerID(ply)).."["..tostring(reason).."]")
+							ARCBankAccountMsg(accountdatato,string.Replace(string.Replace(string.Replace(string.Replace( ARCBank.Msgs.LogMsgs.GiveMoney, "%VALUE%", tostring(amount)),"%ACCOUNT%",accountdatafrom.filename),"%PLAYER2%",sid),"%PLAYER1%",fromARCBank.GetPlayerID(ply)).."["..tostring(reason).."]")
+							ARCBank.Msg(fromply:Nick().."("..fromARCBank.GetPlayerID(ply)..") gave "..amount.." to "..nic.."("..sid..") (From accounts "..accountdatafrom.filename.." to "..accountdatato.filename..") ["..tostring(reason).."]")
 							callback(ARCBANK_ERROR_NONE)
 						else
 							callback(ARCBANK_ERROR_WRITE_FAILURE)
@@ -1294,7 +1294,7 @@ function ARCBank.Transfer(fromply,toply,fromname,toname,amount,reason,callback)
 			end)
 		end
 		if !isstring(toply) && toply:IsPlayer() then
-			sid = toply:SteamID()
+			sid = toARCBank.GetPlayerID(ply)
 			nic = toply:Nick()
 		elseif string.StartWith(toply,"STEAM_") then
 			sid = toply
@@ -1316,7 +1316,7 @@ function ARCBank.Transfer(fromply,toply,fromname,toname,amount,reason,callback)
 			callback(ARCBANK_ERROR_NIL_PLAYER)
 			return
 		end
-		accountdatafrom = ARCBank.ReadAccountFile(ARCBank.GetAccountID(fromply:SteamID()),false,dothingfr)
+		accountdatafrom = ARCBank.ReadAccountFile(ARCBank.GetAccountID(fromARCBank.GetPlayerID(ply)),false,dothingfr)
 	else
 		accountdatafrom = ARCBank.ReadAccountFile(ARCBank.GetAccountID(fromname),true,dothingfr)
 	end
@@ -1712,7 +1712,7 @@ function ARCBank.Load()
 			ARCBank.CapAccountRank();
 		end
 		for k,ply in pairs(player.GetAll()) do
-			local f = ARCBank.Dir.."/accounts_unused/"..string.lower(string.gsub(ply:SteamID(), "[^_%w]", "_"))..".txt" 
+			local f = ARCBank.Dir.."/accounts_unused/"..string.lower(string.gsub(ARCBank.GetPlayerID(ply), "[^_%w]", "_"))..".txt" 
 			if file.Exists(f,"DATA") then 
 				local accounts = string.Explode( "\r\n", file.Read(f,"DATA")) 
 				for i=1,#accounts do 

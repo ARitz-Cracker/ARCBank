@@ -10,7 +10,7 @@ function ARCBank.CapAccountRank(ply) -- %%CONFIRMATION_HASH%%
 			ARCBank.CapAccountRank(v)
 		end
 	else
-		ARCBank.ReadAccountFile(ARCBank.GetAccountID(ply:SteamID()),false,function(accdata)
+		ARCBank.ReadAccountFile(ARCBank.GetAccountID(ARCBank.GetPlayerID(ply)),false,function(accdata)
 			if (accdata) then
 				local maxrank = ARCBank.MaxAccountRank(ply,false)
 				if maxrank == ARCBANK_PERSONALACCOUNTS_ then

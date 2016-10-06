@@ -213,7 +213,7 @@ local function ENT_AccountOptions(accountdata,ent)
 				else
 					data = string.Replace(data,"STEAM_0:0:0",LocalPlayer():Nick())
 					for k,v in pairs(player.GetAll()) do -- I don't know why I didn't think of this before...
-						data = string.Replace(data,v:SteamID(),v:Nick())
+						data = string.Replace(data,ARCBank.GetPlayerID(v),v:Nick())
 					end
 					ARCLib.FitTextRealtime(data,"ARCBankATMSmall",274,function(per,tab)
 						if !IsValid(ent) then return end
@@ -285,12 +285,12 @@ function ENT:PlayerSearch(addgroup)
 	self.ScreenOptions = {}
 	for i = 1,#plys do 
 		self.ScreenOptions[i] = {}
-		self.ScreenOptions[i].text = plys[i]:Nick().."\n"..string.Replace(plys[i]:SteamID(),"STEAM_","")
+		self.ScreenOptions[i].text = plys[i]:Nick().."\n"..string.sub(ARCBank.GetPlayerID(plys[i]),#ARCBank.PlayerIDPrefix+1)
 		if addgroup then
 			self.ScreenOptions[i].icon = "user_add"
 			self.ScreenOptions[i].func = function() 
 				self.Loading = true
-				ARCBank.EditPlayerGroup(self.RequestedAccount,plys[i]:SteamID(),true,self.Entity,function(err,ent) 
+				ARCBank.EditPlayerGroup(self.RequestedAccount,ARCBank.GetPlayerID(plys[i]),true,self.Entity,function(err,ent) 
 					ent.Loading = false
 					ent:ThrowError(err) 
 				end)
@@ -301,7 +301,7 @@ function ENT:PlayerSearch(addgroup)
 				--Clicked one of the players
 
 				self.Loading = true
-				ARCBank.GroupList(plys[i]:SteamID(),self.Entity,function(data,per,_)
+				ARCBank.GroupList(ARCBank.GetPlayerID(plys[i]),self.Entity,function(data,per,_)
 					if data == ARCBANK_ERROR_DOWNLOADING then
 						self.Percent = per
 					elseif isnumber(data) then
@@ -317,7 +317,7 @@ function ENT:PlayerSearch(addgroup)
 						self.ScreenOptions[1].func = function()
 							self:EnableInput(false,function(nummm)
 								self.Loading = true
-								ARCBank.TransferFunds(plys[i]:SteamID(),self.RequestedAccount,"",nummm,"ATM Transfer",self.Entity,function(err,ent) 
+								ARCBank.TransferFunds(ARCBank.GetPlayerID(plys[i]),self.RequestedAccount,"",nummm,"ATM Transfer",self.Entity,function(err,ent) 
 									ent:ThrowError(err) 
 									ARCBank.GetAccountInformation(self.RequestedAccount,self.Entity,ENT_AccountOptions) 
 								end)
@@ -333,7 +333,7 @@ function ENT:PlayerSearch(addgroup)
 							self.ScreenOptions[ii+1].func = function()
 								self:EnableInput(false,function(nummm)
 									self.Loading = true
-									ARCBank.TransferFunds(plys[i]:SteamID(),self.RequestedAccount,self.ScreenOptions[ii+1].text,nummm,"ATM Transfer",self.Entity,function(err,ent) 
+									ARCBank.TransferFunds(ARCBank.GetPlayerID(plys[i]),self.RequestedAccount,self.ScreenOptions[ii+1].text,nummm,"ATM Transfer",self.Entity,function(err,ent) 
 										ent:ThrowError(err) 
 										ARCBank.GetAccountInformation(self.RequestedAccount,self.Entity,ENT_AccountOptions) 
 									end)
@@ -354,16 +354,6 @@ function ENT:PlayerSearch(addgroup)
 						self.Loading = false
 					end
 				end)
-				
-				
-				
-				
-				--[[
-				ARCBank.TransferFunds(plys[i]:SteamID(),self.RequestedAccount,accto,amount,"ATM Transfer",self.Entity,function(err,ent) 
-					ent.Loading = false
-					ent:ThrowError(err) 
-				end)
-				]]
 			end
 		end
 	end
@@ -463,13 +453,13 @@ end
 function ENT:PlayerGroup(members)
 	self.ScreenOptions = {}
 	for i = 1,#members do 
-		local ply = ARCLib.GetPlayerBySteamID(members[i])
+		local ply = ARCBank.GetPlayerID(members[i])
 		self.ScreenOptions[i] = {}
-		self.ScreenOptions[i].text = tostring(ply:Nick()).."\n"..string.Replace(tostring(ply:SteamID()),"STEAM_","")
+		self.ScreenOptions[i].text = tostring(ply:Nick()).."\n"..string.Replace(tostring(ARCBank.GetPlayerID(ply)),"STEAM_","")
 		self.ScreenOptions[i].icon = "user_delete"
 		self.ScreenOptions[i].func = function() 
 			self.Loading = true
-			ARCBank.EditPlayerGroup(self.RequestedAccount,ply:SteamID(),false,self.Entity,function(err,ent) 
+			ARCBank.EditPlayerGroup(self.RequestedAccount,ARCBank.GetPlayerID(ply),false,self.Entity,function(err,ent) 
 				ent:ThrowError(err)
 				ent.Loading = false
 			end)
@@ -574,7 +564,7 @@ function ENT:HomeScreen()
 	self.ScreenOptions[1].icon = "group"
 	self.ScreenOptions[1].func = function() 
 		self.Loading = true
-		ARCBank.GroupList(LocalPlayer():SteamID(),self.Entity,function(data,per,_)
+		ARCBank.GroupList(ARCBank.GetPlayerID(LocalPlayer()),self.Entity,function(data,per,_)
 			if data == ARCBANK_ERROR_DOWNLOADING then
 				self.Percent = per
 			elseif isnumber(data) then
@@ -622,7 +612,7 @@ function ENT:HomeScreen()
 	self.ScreenOptions[3].icon = "group_edit"
 	self.ScreenOptions[3].func = function() 
 			self.Loading = true
-			ARCBank.GroupList(LocalPlayer():SteamID(),self.Entity,function(data,per,_)
+			ARCBank.GroupList(ARCBank.GetPlayerID(LocalPlayer()),self.Entity,function(data,per,_)
 				if data == ARCBANK_ERROR_DOWNLOADING then
 					self.Percent = per
 				elseif isnumber(data) then
@@ -1356,7 +1346,7 @@ function ENT:Draw()--Good
 	cam.Start3D2D(self:LocalToWorld(self.ATMType.Screen)+vecram, self:LocalToWorldAngles(self.ATMType.ScreenAng), self.ATMType.ScreenSize+Rand2)
 		self:Screen_Main()
 	cam.End3D2D()
-	if self.BEEP then
+	if self.BEEP && self.ATMType.UseMoneylight then
 		cam.Start3D2D(self:LocalToWorld(self.ATMType.Moneylight), self:LocalToWorldAngles(self.ATMType.MoneylightAng), self.ATMType.MoneylightSize)
 			surface.SetDrawColor(ARCLib.ConvertColor(self.ATMType.MoneylightColour))
 			if self.ATMType.MoneylightFill then

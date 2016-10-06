@@ -267,8 +267,8 @@ if ARCBank then
 					AccountPopup:MakePopup()
 					local str = ARCBank.Msgs.AdminMenu.AccID..AccountTable[data].filename.."\n"..ARCBank.Msgs.AdminMenu.Name..AccountTable[data].name.."\n"..ARCBank.Msgs.AdminMenu.Rank..ARCBank.Msgs.AccountRank[AccountTable[data].rank].."\n"..ARCBank.Msgs.ATMMsgs.Balance..AccountTable[data].money
 					if AccountTable[data].isgroup then
-						local ply = ARCLib.GetPlayerBySteamID(AccountTable[data].owner)
-						str = str.."\n"..ARCBank.Msgs.AdminMenu.Owner..ply:SteamID().." - "..ply:Nick()
+						local ply = ARCBank.GetPlayerID(AccountTable[data].owner)
+						str = str.."\n"..ARCBank.Msgs.AdminMenu.Owner..ARCBank.GetPlayerID(ply).." - "..ply:Nick()
 						
 						
 						local AccountMembers = vgui.Create( "DButton", AccountPopup )
@@ -278,8 +278,8 @@ if ARCBank then
 						AccountMembers.DoClick = function()
 							local memstr = ""
 							for k,v in pairs(AccountTable[data].members) do
-								local ply = ARCLib.GetPlayerBySteamID(v)
-								memstr = memstr..ply:SteamID().." - "..ply:Nick().."\n"
+								local ply = ARCBank.GetPlayerID(v)
+								memstr = memstr..ARCBank.GetPlayerID(ply).." - "..ply:Nick().."\n"
 							end
 							local MembersPopup = vgui.Create( "DFrame" )
 							MembersPopup:SetSize( 250, 300 )
@@ -336,7 +336,7 @@ if ARCBank then
 								end
 							else
 								for k,v in pairs(player.GetAll()) do -- I don't know why I didn't think of this before...
-									data = string.Replace(data,v:SteamID(),v:Nick())
+									data = string.Replace(data,ARCBank.GetPlayerID(v),v:Nick())
 								end
 								AccText:SetText(data)
 							end

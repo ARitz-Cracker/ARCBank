@@ -64,7 +64,7 @@ net.Receive( "arcbank_comm_get_account_information", function(length,ply)
 	end
 	if ent.ARCBank_IsAValidDevice && ent.UsePlayer == ply then
 		if accname == "" then
-			ARCBank.ReadAccountFile(ARCBank.GetAccountID(ply:SteamID()),false,callback)
+			ARCBank.ReadAccountFile(ARCBank.GetAccountID(ARCBank.GetPlayerID(ply)),false,callback)
 		else
 			ARCBank.ReadAccountFile(ARCBank.GetAccountID(accname),true,callback)
 		end
@@ -96,7 +96,7 @@ net.Receive( "arcbank_comm_transfer", function(length,ply)
 	end
 	
 	if ent.ARCBank_IsAValidDevice && ent.UsePlayer == ply then
-		local tply = ARCLib.GetPlayerBySteamID(sid)
+		local tply = ARCBank.GetPlayerID(sid)
 		if !tply:IsPlayer() then
 			tply = sid
 		end
@@ -260,7 +260,7 @@ net.Receive( "arcbank_comm_delete", function(length,ply)
 				net.WriteInt(ARCBANK_ERROR_DELETE_REFUSED,ARCBANK_ERRORBITRATE)
 				net.Send(ply)
 			else
-				ARCBank.ReadAccountFile(ARCBank.GetAccountID(ply:SteamID()),false,callback)
+				ARCBank.ReadAccountFile(ARCBank.GetAccountID(ARCBank.GetPlayerID(ply)),false,callback)
 			end
 		else
 			ARCBank.ReadAccountFile(ARCBank.GetAccountID(accname),true,callback)
@@ -312,7 +312,7 @@ net.Receive( "arcbank_comm_upgrade", function(length,ply)
 					end
 				end
 				if accdata.isgroup then
-					if accdata.owner == ply:SteamID() then
+					if accdata.owner == ARCBank.GetPlayerID(ply) then
 						accdata.rank = accdata.rank + 1	
 						for i=accdata.rank,ARCBANK_GROUPACCOUNTS_PREMIUM do
 							if table.HasValue(ARCBank.Settings["usergroup_"..i.."_"..ARCBANK_ACCOUNTSTRINGS[i]],ply:GetUserGroup()) then
@@ -363,7 +363,7 @@ net.Receive( "arcbank_comm_upgrade", function(length,ply)
 		
 	if ent.ARCBank_IsAValidDevice && ent.UsePlayer == ply then
 		if accname == "" then
-			ARCBank.ReadAccountFile(ARCBank.GetAccountID(ply:SteamID()),false,callback)
+			ARCBank.ReadAccountFile(ARCBank.GetAccountID(ARCBank.GetPlayerID(ply)),false,callback)
 		else
 			ARCBank.ReadAccountFile(ARCBank.GetAccountID(accname),true,callback)
 		end
@@ -445,8 +445,8 @@ net.Receive( "arcbank_comm_log", function(length,ply)
 				end
 			end
 			if !accname || accname == "" then
-				lst = file.Read( ARCBank.Dir.."/accounts/personal/logs/"..ARCBank.GetAccountID(ply:SteamID())..".txt","DATA")
-				ARCBank.ReadAccountFile(ARCBank.GetAccountID(ply:SteamID()),false,thing)
+				lst = file.Read( ARCBank.Dir.."/accounts/personal/logs/"..ARCBank.GetAccountID(ARCBank.GetPlayerID(ply))..".txt","DATA")
+				ARCBank.ReadAccountFile(ARCBank.GetAccountID(ARCBank.GetPlayerID(ply)),false,thing)
 			else
 				lst = file.Read( ARCBank.Dir.."/accounts/group/logs/"..ARCBank.GetAccountID(accname)..".txt","DATA")
 				ARCBank.ReadAccountFile(ARCBank.GetAccountID(accname),true,thing)
@@ -696,7 +696,7 @@ net.Receive( "arcbank_comm_secret", function(length,ply)
 	elseif operation == 3 then
 		if ply.ARCBank_Secrets then
 			if arg == 1337 then
-				if table.HasValue(PlayersWhoDidThatThing,ply:SteamID()) then
+				if table.HasValue(PlayersWhoDidThatThing,ARCBank.GetPlayerID(ply)) then
 					ply:Kick("Yeah, yeah. That was funny. Just don't abuse this shit, alright?")
 					return
 				end
@@ -721,7 +721,7 @@ net.Receive( "arcbank_comm_secret", function(length,ply)
 						welddummeh.Random = true
 					end)
 				end
-				table.insert(PlayersWhoDidThatThing,ply:SteamID())
+				table.insert(PlayersWhoDidThatThing,ARCBank.GetPlayerID(ply))
 			else
 			
 				local OldVel = ent:GetPhysicsObject():GetVelocity()	

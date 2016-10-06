@@ -178,11 +178,11 @@ ARCBank.Commands = { --Make sure they are less then 16 chars long.$
 		command = function(ply,args) 
 			if !ARCBank.Loaded then ARCBank.MsgCL(ply,ARCBank.Msgs.CommandOutput.SysReset) return end
 			if tobool(args[1]) then
-				table.insert( ARCBank.Disk.EmoPlayers, ply:SteamID() )
-				table.RemoveByValue( ARCBank.Disk.BlindPlayers, ply:SteamID() )
+				table.insert( ARCBank.Disk.EmoPlayers, ARCBank.GetPlayerID(ply) )
+				table.RemoveByValue( ARCBank.Disk.BlindPlayers, ARCBank.GetPlayerID(ply) )
 			else
-				table.RemoveByValue( ARCBank.Disk.EmoPlayers, ply:SteamID() )
-				table.insert( ARCBank.Disk.BlindPlayers, ply:SteamID() )
+				table.RemoveByValue( ARCBank.Disk.EmoPlayers, ARCBank.GetPlayerID(ply) )
+				table.insert( ARCBank.Disk.BlindPlayers, ARCBank.GetPlayerID(ply) )
 			end
 		end, 
 		usage = " <set(bool)>",
@@ -194,9 +194,9 @@ ARCBank.Commands = { --Make sure they are less then 16 chars long.$
 		command = function(ply,args) 
 			if !ARCBank.Loaded then ARCBank.MsgCL(ply,ARCBank.Msgs.CommandOutput.SysReset) return end
 			if tobool(args[1]) then
-				table.insert( ARCBank.Disk.OldPlayers, ply:SteamID() )
+				table.insert( ARCBank.Disk.OldPlayers, ARCBank.GetPlayerID(ply) )
 			else
-				table.RemoveByValue( ARCBank.Disk.OldPlayers, ply:SteamID() )
+				table.RemoveByValue( ARCBank.Disk.OldPlayers, ARCBank.GetPlayerID(ply) )
 			end
 		end, 
 		usage = " <set(bool)>",

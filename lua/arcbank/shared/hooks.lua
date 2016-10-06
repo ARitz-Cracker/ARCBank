@@ -2,7 +2,7 @@
 
 -- This file is under copyright, and is bound to the agreement stated in the EULA.
 -- Any 3rd party content has been used as either public domain or with permission.
--- © Copyright 2014 Aritz Beobide-Cardinal All rights reserved.
+-- © Copyright 2014-2016 Aritz Beobide-Cardinal All rights reserved.
 ARCBank.Loaded = false
 
 if CLIENT then
@@ -93,7 +93,7 @@ else
 	end)
 
 	hook.Add( "PlayerUse", "ARCBank NoUse", function( ply, ent ) 
-		if ent != NULL && ent:IsValid() && !ent.IsAFuckingATM && table.HasValue(ARCBank.Disk.NommedCards,ply:SteamID()) then
+		if ent != NULL && ent:IsValid() && !ent.IsAFuckingATM && table.HasValue(ARCBank.Disk.NommedCards,ARCBank.GetPlayerID(ply)) then
 			ply:PrintMessage( HUD_PRINTTALK, "ARCBank: "..ARCBank.Msgs.UserMsgs.AtmUse )
 			return false
 		end 
@@ -103,21 +103,21 @@ else
 	hook.Add( "GravGunPunt", "ARCBank PuntHacker", function( ply, ent ) if ent:GetClass() == "sent_arc_atmhack" then ent:TakeDamage( 100, ply, ply:GetActiveWeapon() ) end end)
 	hook.Add( "ARCLib_OnPlayerFullyLoaded", "ARCBank PlyAuth", function( ply ) 
 		if IsValid(ply) && ply:IsPlayer() then
-			if table.HasValue(ARCBank.Disk.NommedCards,ply:SteamID()) then
+			if table.HasValue(ARCBank.Disk.NommedCards,ARCBank.GetPlayerID(ply)) then
 				ply:PrintMessage( HUD_PRINTTALK, "ARCBank: "..ARCBank.Msgs.UserMsgs.Eatcard1 )
 			end
 			ARCLib.SendAddonLanguage("ARCBank",ply)
 			ARCLib.SendAddonSettings("ARCBank",ply) 
 			if ARCBank.Settings["atm_darkmode_default"] then
-				if !table.HasValue(ARCBank.Disk.EmoPlayers,ply:SteamID()) && table.HasValue(ARCBank.Disk.BlindPlayers,ply:SteamID()) then
+				if !table.HasValue(ARCBank.Disk.EmoPlayers,ARCBank.GetPlayerID(ply)) && table.HasValue(ARCBank.Disk.BlindPlayers,ARCBank.GetPlayerID(ply)) then
 					ply:SendLua("ARCBank.ATM_DarkTheme = false")
 				else
 					ply:SendLua("ARCBank.ATM_DarkTheme = true")
 				end
 			else
-				ply:SendLua("ARCBank.ATM_DarkTheme = "..tostring(table.HasValue(ARCBank.Disk.EmoPlayers,ply:SteamID())))
+				ply:SendLua("ARCBank.ATM_DarkTheme = "..tostring(table.HasValue(ARCBank.Disk.EmoPlayers,ARCBank.GetPlayerID(ply))))
 			end
-			ply:SendLua("LocalPlayer().ARCBank_FullScreen = "..tostring(table.HasValue(ARCBank.Disk.OldPlayers,ply:SteamID())))
+			ply:SendLua("LocalPlayer().ARCBank_FullScreen = "..tostring(table.HasValue(ARCBank.Disk.OldPlayers,ARCBank.GetPlayerID(ply))))
 			for k,atm in pairs(ents.FindByClass("sent_arc_atm")) do
 				net.Start("ARCBank CustomATM")
 				net.WriteEntity(atm)
@@ -127,10 +127,10 @@ else
 			
 		end
 		timer.Simple(1,function()
-			if IsValid(ply) && ply:IsPlayer() && table.HasValue(ARCBank.Disk.NommedCards,ply:SteamID()) then
+			if IsValid(ply) && ply:IsPlayer() && table.HasValue(ARCBank.Disk.NommedCards,ARCBank.GetPlayerID(ply)) then
 				ply:PrintMessage( HUD_PRINTTALK, "ARCBank: "..ARCBank.Msgs.UserMsgs.Eatcard2 )
 				ply:Give("weapon_arc_atmcard")
-				table.RemoveByValue(ARCBank.Disk.NommedCards,ply:SteamID())
+				table.RemoveByValue(ARCBank.Disk.NommedCards,ARCBank.GetPlayerID(ply))
 			end
 		end)
 	end)
@@ -193,7 +193,7 @@ else
 		end
 	end)
 	hook.Add( "PlayerInitialSpawn", "ARCBank RestoreArchivedAccount", function(ply)
-		local f = ARCBank.Dir.."/accounts_unused/"..string.lower(string.gsub(ply:SteamID(), "[^_%w]", "_"))..".txt"
+		local f = ARCBank.Dir.."/accounts_unused/"..string.lower(string.gsub(ARCBank.GetPlayerID(ply), "[^_%w]", "_"))..".txt"
 		if file.Exists(f,"DATA") then
 			local accounts = string.Explode( "\r\n", file.Read(f,"DATA"))
 			for i=1,#accounts do
