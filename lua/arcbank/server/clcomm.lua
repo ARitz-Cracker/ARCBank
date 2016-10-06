@@ -96,7 +96,7 @@ net.Receive( "arcbank_comm_transfer", function(length,ply)
 	end
 	
 	if ent.ARCBank_IsAValidDevice && ent.UsePlayer == ply then
-		local tply = ARCBank.GetPlayerID(sid)
+		local tply = ARCBank.GetPlayerByID(sid)
 		if !tply:IsPlayer() then
 			tply = sid
 		end

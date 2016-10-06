@@ -29,7 +29,7 @@ function ARCLib.GetPlayerByID(id) -- Gets a player by their SteamID
 		end
 	end
 	if !IsValid(ply) then
-		function ply._ARCBankID return id end
+		ply._ARCBankID = id
 		function ply:Nick() return "[Player Offline]" end
 		function ply:IsPlayer() return false end
 		function ply:IsValid() return false end

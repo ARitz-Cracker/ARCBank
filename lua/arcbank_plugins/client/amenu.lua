@@ -267,7 +267,7 @@ if ARCBank then
 					AccountPopup:MakePopup()
 					local str = ARCBank.Msgs.AdminMenu.AccID..AccountTable[data].filename.."\n"..ARCBank.Msgs.AdminMenu.Name..AccountTable[data].name.."\n"..ARCBank.Msgs.AdminMenu.Rank..ARCBank.Msgs.AccountRank[AccountTable[data].rank].."\n"..ARCBank.Msgs.ATMMsgs.Balance..AccountTable[data].money
 					if AccountTable[data].isgroup then
-						local ply = ARCBank.GetPlayerID(AccountTable[data].owner)
+						local ply = ARCBank.GetPlayerByID(AccountTable[data].owner)
 						str = str.."\n"..ARCBank.Msgs.AdminMenu.Owner..ARCBank.GetPlayerID(ply).." - "..ply:Nick()
 						
 						
@@ -278,7 +278,7 @@ if ARCBank then
 						AccountMembers.DoClick = function()
 							local memstr = ""
 							for k,v in pairs(AccountTable[data].members) do
-								local ply = ARCBank.GetPlayerID(v)
+								local ply = ARCBank.GetPlayerByID(v)
 								memstr = memstr..ARCBank.GetPlayerID(ply).." - "..ply:Nick().."\n"
 							end
 							local MembersPopup = vgui.Create( "DFrame" )

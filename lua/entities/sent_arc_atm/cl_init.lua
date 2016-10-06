@@ -453,7 +453,7 @@ end
 function ENT:PlayerGroup(members)
 	self.ScreenOptions = {}
 	for i = 1,#members do 
-		local ply = ARCBank.GetPlayerID(members[i])
+		local ply = ARCBank.GetPlayerByID(members[i])
 		self.ScreenOptions[i] = {}
 		self.ScreenOptions[i].text = tostring(ply:Nick()).."\n"..string.Replace(tostring(ARCBank.GetPlayerID(ply)),"STEAM_","")
 		self.ScreenOptions[i].icon = "user_delete"

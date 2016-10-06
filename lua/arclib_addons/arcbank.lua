@@ -22,7 +22,7 @@ ARCBank.Msg("© Copyright 2014-2016 Aritz Beobide-Cardinal (ARitz Cracker) All r
 ARCBank.Features = {}
 ARCBank.Features["hackapi"] = true
 
-ARCBank.Update = "October 2nd 2016"
+ARCBank.Update = "October 12th 2016"
 ARCBank.Version = "1.3.6"
 
 
@@ -140,7 +140,7 @@ ARCBANK_ACCOUNTBITRATE = 4
 ARCBank.Msg("Version: "..ARCBank.Version)
 ARCBank.Msg("Updated on: "..ARCBank.Update)
 if SERVER then
-
+	resource.AddWorkshop( "200318235" )
 
 	function ARCBank.MsgCL(ply,msg)
 		--net.Start( "ARCBank_Msg" )
