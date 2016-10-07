@@ -85,7 +85,6 @@ function ARCBank.SettingsReset() --DO NOT EDIT THIS!!!!
 	
 	ARCBank.Settings["use_bank_for_payday"] = true --DO NOT EDIT THIS!!!!
 	ARCBank.Settings["atm_holo"] = true --DO NOT EDIT THIS!!!!
-	ARCBank.Settings["atm_holo_flicker"] = true --DO NOT EDIT THIS!!!!
 	ARCBank.Settings["atm_holo_rotate"] = true --DO NOT EDIT THIS!!!!
 	ARCBank.Settings["atm_holo_text"] = "$$ ATM $$" --DO NOT EDIT THIS!!!!
 	ARCBank.Settings["group_account_limit"] = 4 --DO NOT EDIT THIS!!!!

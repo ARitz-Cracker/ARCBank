@@ -13,7 +13,7 @@ ENT.Contact    		= "aritz@aritzcracker.ca"
 ENT.Purpose 		= ""
 ENT.Instructions 	= "Use"
 
-ENT.Spawnable = false
+ENT.Spawnable = true
 ENT.AdminOnly = false
 
 function ENT:SetupDataTables()

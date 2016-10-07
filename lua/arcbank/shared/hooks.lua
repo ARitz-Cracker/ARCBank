@@ -106,8 +106,6 @@ else
 			if table.HasValue(ARCBank.Disk.NommedCards,ARCBank.GetPlayerID(ply)) then
 				ply:PrintMessage( HUD_PRINTTALK, "ARCBank: "..ARCBank.Msgs.UserMsgs.Eatcard1 )
 			end
-			ARCLib.SendAddonLanguage("ARCBank",ply)
-			ARCLib.SendAddonSettings("ARCBank",ply) 
 			if ARCBank.Settings["atm_darkmode_default"] then
 				if !table.HasValue(ARCBank.Disk.EmoPlayers,ARCBank.GetPlayerID(ply)) && table.HasValue(ARCBank.Disk.BlindPlayers,ARCBank.GetPlayerID(ply)) then
 					ply:SendLua("ARCBank.ATM_DarkTheme = false")

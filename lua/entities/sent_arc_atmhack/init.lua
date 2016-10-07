@@ -123,9 +123,38 @@ function ENT:HackStop()
 	self.GottaStop = true
 end
 
-ENT.OurHealth = 5; -- Amount of damage that the entity can handle - set to 0 to make it indestructible
+function ENT:Break()
+	if self.spark && self.spark != NULL && !self.Broken then
+		self.Broken = true
+		self.spark:Fire( "SparkOnce","",0.01 )
+		self.spark:Fire( "SparkOnce","",0.02 )
+		for i=1,math.random(5,40) do
+			self.spark:Fire( "SparkOnce","",math.random(i/10,i) )
+		end
+		self.spark:Fire( "Kill","",41 )
+		--math.random(10,40)
+		local rtime = math.random(5,35)
+		for i=1,28 do
+			self.spark:Fire( "SparkOnce","",rtime+(i/10) )
+		end
+		timer.Simple(rtime+math.Rand(1,3),function()
+			if !self || self == NULL then return end
+			local effectdata = EffectData()
+			effectdata:SetStart(self:GetPos()) -- not sure if we need a start and origin (endpoint) for this effect, but whatever.
+			effectdata:SetOrigin(self:GetPos())
+			effectdata:SetScale(1)
+			self:EmitSound("npc/turret_floor/detonate.wav")
+			util.Effect( "HelicopterMegaBomb", effectdata )	
+			util.Effect( "cball_explode", effectdata )	
+			self:Remove()
+		end)
+	end
+
+end
+
+ENT.OurHealth = 50; -- Amount of damage that the entity can handle - set to 0 to make it indestructible
 function ENT:OnTakeDamage(dmg)
-	if self.GottaStop then return end
+	--if self.GottaStop then return end
 	self:TakePhysicsDamage(dmg); -- React physically when getting shot/blown
 	self.OurHealth = self.OurHealth - dmg:GetDamage(); -- Reduce the amount of damage took from our health-variable
 	if(self.OurHealth <= 0) then -- If our health-variable is zero or below it
@@ -142,39 +171,21 @@ function ENT:OnTakeDamage(dmg)
 				self.Hacker:ConCommand("say "..string.Replace( ARCBank.Msgs.UserMsgs.HackIdiot, "%HERO%", tostring(attname) ) )
 				ARCLib.NotifyBroadcast(string.Replace( string.Replace( ARCBank.Msgs.UserMsgs.HackHero, "%IDIOT%",tostring(self.Hacker:Nick())), "%HERO%", tostring(attname) ),NOTIFY_GENERIC,15,true)
 			end
+			
+			
+		end
+		if self.GottaStop then
+			self.GottaBreak = true
+		else
+			self:Break()
 		end
 		net.Start( "arcbank_hacker_status" )
 		net.WriteUInt(self:EntIndex(),16)
 		net.WriteUInt(6,4)
 		net.Broadcast()
 		self:HackStop()
-		
-		if self.spark && self.spark != NULL && !self.Broken then
-			self.Broken = true
-			self.spark:Fire( "SparkOnce","",0.01 )
-			self.spark:Fire( "SparkOnce","",0.02 )
-			for i=1,math.random(5,40) do
-				self.spark:Fire( "SparkOnce","",math.random(i/10,i) )
-			end
-			self.spark:Fire( "Kill","",41 )
-			--math.random(10,40)
-			local rtime = math.random(5,35)
-			for i=1,28 do
-				self.spark:Fire( "SparkOnce","",rtime+(i/10) )
-			end
-			timer.Simple(rtime+math.Rand(1,3),function()
-				if !self || self == NULL then return end
-				local effectdata = EffectData()
-				effectdata:SetStart(self:GetPos()) -- not sure if we need a start and origin (endpoint) for this effect, but whatever.
-				effectdata:SetOrigin(self:GetPos())
-				effectdata:SetScale(1)
-				self:EmitSound("npc/turret_floor/detonate.wav")
-				util.Effect( "HelicopterMegaBomb", effectdata )	
-				util.Effect( "cball_explode", effectdata )	
-				self:Remove()
-			end)
-		end
 	end
+
 end
 function ENT:Think()
 	if self.Rotate then
@@ -245,6 +256,11 @@ function ENT:Think()
 			self.Rotate = false
 		end
 	end
+	if self.GottaBreak then
+		if math.random(1,3) == 1 && IsValid(self.spark) then
+			self.spark:Fire( "SparkOnce","",0.01)
+		end
+	end
 	if !self.Hacking then return end
 	if self.GottaStop then
 		if (!self:GetParent():HackStop()) then
@@ -266,7 +282,7 @@ function ENT:Think()
 			self:GetParent()._HackAttached = false
 			local detachtime = 3
 			if(self.OurHealth <= 0) then
-				detachtime = 10
+				detachtime = 0.1
 			end
 			timer.Simple(detachtime,function()
 				if !IsValid(self) || !IsValid(self:GetParent()) then return end
@@ -278,6 +294,9 @@ function ENT:Think()
 					self:EmitSound("npc/roller/blade_in.wav")
 				end
 			end)
+			if self.GottaBreak then
+				self:Break()
+			end
 		end
 		return
 	end

@@ -1272,8 +1272,8 @@ function ENT:Screen_Touch()
 end
 
 function ENT:DrawHolo()--Good
-	if ARCBank.Settings["atm_holo_flicker"] then
-		draw.SimpleText(tostring(ARCBank.Settings["atm_holo_text"]), "ARCBankHolo",math.Rand(-0.5,0.5), math.Rand(0,0.25), Color(255,255,255,math.random(150,200)), TEXT_ALIGN_CENTER , TEXT_ALIGN_CENTER  ) 
+	if self.Hacked && math.random(1,3) == 1 then
+		draw.SimpleText(tostring(ARCBank.Settings["atm_holo_text"]), "ARCBankHolo",math.Rand(-4,4), math.Rand(0,0.5), Color(255,255,255,math.random(5,180)), TEXT_ALIGN_CENTER , TEXT_ALIGN_CENTER  ) 
 	else
 		draw.SimpleText(tostring(ARCBank.Settings["atm_holo_text"]), "ARCBankHolo",0,0, Color(255,255,255,175), TEXT_ALIGN_CENTER , TEXT_ALIGN_CENTER  ) 
 	end
@@ -1284,7 +1284,7 @@ function ENT:DrawHolo()--Good
 	]]
 end
 
-
+local vector_up = Vector(0,0,1)
 net.Receive( "ARCATM_COMM_BEEP", function(length,ply)
 	net.ReadEntity().BEEP = tobool(net.ReadBit())
 end)
@@ -1294,7 +1294,7 @@ function ENT:Draw()--Good
 	self:DrawShadow( true )
 	if !self.ATMType then return end
 	if ARCBank.Settings["atm_holo"] then
-		self.HoloPos = self:LocalToWorld(self:OBBCenter()+self:OBBMaxs()*Vector(0,0,(3+math.sin(CurTime()*1)*3)))
+		self.HoloPos = self:LocalToWorld(self:OBBCenter()+self:OBBMaxs()*vector_up+Vector(0,0,(15+math.sin(CurTime()*1)*3)))
 		self.HoloAng1 = self:GetAngles()+Angle( 0, 0, 90 )
 		if ARCBank.Settings["atm_holo_rotate"] then
 			self.HoloAng1:RotateAroundAxis( self.HoloAng1:Right(), (CurTime()*36)%360 )
