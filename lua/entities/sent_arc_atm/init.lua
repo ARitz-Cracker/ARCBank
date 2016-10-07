@@ -124,20 +124,12 @@ function ENT:HackComplete(ply,amount,rand)
 			self.UsePlayer = nil
 			timer.Destroy( "ATM_WIN" ) 
 			timer.Create( "ATM_WIN", 0.2, math.Rand(10,20), function()
-				local moneyprop = ents.Create( "base_anim" ) --I don't want to create another entity. 
-				moneyprop:SetModel( "models/props/cs_assault/money.mdl" )
+				local moneyprop = ents.Create( "sent_arc_cash" ) --I don't want to create another entity. 
 				moneyprop:SetPos( moneyproppos)
 				local moneyang = self:GetAngles()
 				moneyang:RotateAroundAxis( moneyang:Up(), -90 )
-				moneyprop:SetAngles( moneyang )
-				moneyprop:PhysicsInit( SOLID_VPHYSICS )
-				moneyprop:SetMoveType( MOVETYPE_VPHYSICS )
-				moneyprop:SetSolid( SOLID_VPHYSICS )
 				moneyprop:GetPhysicsObject():SetVelocity(moneyprop:GetRight()) 
-				function moneyprop:Use( ply, caller )
-					ARCBank.PlayerAddMoney(ply,1000)
-					moneyprop:Remove()
-				end
+				moneyprop:SetValue(1000)
 				moneyprop:Spawn()
 				
 			end)

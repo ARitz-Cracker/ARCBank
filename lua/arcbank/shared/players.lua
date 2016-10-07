@@ -37,3 +37,65 @@ function ARCLib.GetPlayerByID(id) -- Gets a player by their SteamID
 	return ply
 end
 
+function ARCBank.PlayerAddMoney(ply,amount)
+	if (nut) then
+		if amount > 0 then
+			ply:getChar():giveMoney(amount)
+		else
+			amount = amount * -1
+			ply:getChar():takeMoney(amount)
+		end
+	elseif string.lower(GAMEMODE.Name) == "gmod day-z" then
+		if amount > 0 then
+			ply:GiveItem("item_money", amount)
+		else
+			amount = amount * -1
+			ply:TakeItem("item_money", amount)
+		end
+	elseif string.lower(GAMEMODE.Name) == "underdone - rpg" then
+		if amount > 0 then
+			ply:AddItem("money", amount)
+		else
+			amount = amount * -1
+			ply:RemoveItem("money", amount)
+		end
+	elseif ply.addMoney then -- DarkRP 2.5+
+		ply:addMoney(amount)
+	elseif ply.AddMoney then -- DarkRP 2.4
+		ply:AddMoney(amount)
+	else
+		ply:SendLua("notification.AddLegacy( \"I'm going to pretend that your wallet is unlimited because this is an unsupported gamemode.\", 0, 5 )")
+	end
+end
+	
+function ARCBank.PlayerCanAfford(ply,amount)
+	if (nut) then
+		return ply:getChar():getMoney() >= amount
+	elseif string.lower(GAMEMODE.Name) == "gmod day-z" then
+		return ply:HasItemAmount("item_money", amount)
+	elseif string.lower(GAMEMODE.Name) == "underdone - rpg" then
+		return ply:HasItem("money", amount)
+	elseif ply.canAfford then -- DarkRP 2.5+
+		return ply:canAfford(amount)
+	elseif ply.CanAfford then -- DarkRP 2.4
+		return ply:CanAfford(amount)
+	else
+		return false
+	end
+end
+
+function ARCBank.PlayerGetMoney(ply,amount)
+	if (nut) then
+		return ply:getChar():getMoney()
+	elseif string.lower(GAMEMODE.Name) == "gmod day-z" then
+		return ply:GetItem("item_money")
+	elseif string.lower(GAMEMODE.Name) == "underdone - rpg" then
+		return ply:GetMoney()
+	elseif ply.canAfford then -- DarkRP 2.5+
+		return ply:getDarkRPVar("money")
+	elseif ply.CanAfford then -- DarkRP 2.4
+		return ply.DarkRPVars["money"]
+	else
+		return false
+	end
+end
