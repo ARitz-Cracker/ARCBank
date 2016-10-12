@@ -23,6 +23,9 @@ function ENT:Initialize()
 	self.ATMType.ScreenAng = angle_zero
 	self.ATMType.ScreenSize = 0.043
 	
+	self.ATMType.FullScreen = vector_origin
+	self.ATMType.FullScreenAng = angle_zero
+	
 	self.ATMType.CardInsertPos = vector_origin
 	self.ATMType.CardInsertVec = vector_origin
 	self.ATMType.CardRemovePos = vector_origin

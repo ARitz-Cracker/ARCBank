@@ -67,7 +67,7 @@ if ARCBank then
 			MainPanel = vgui.Create( "DFrame" )
 			MainPanel:SetPos( 0, ScrH()-430 )
 			MainPanel:SetSize( 390, 430 )
-			MainPanel:SetTitle( "ATM Creator Menu - "..ATMThing.ATMType.Name )
+			MainPanel:SetTitle( ARCBank.Msgs.ATMCreator.Name.." - "..ATMThing.ATMType.Name )
 			MainPanel:SetVisible( true )
 			MainPanel:SetDraggable( true )
 			MainPanel:ShowCloseButton( true )
@@ -77,15 +77,15 @@ if ARCBank then
 			PropertySheet:SetSize( 380, 370 )
 			local SaveButton = vgui.Create( "DButton",MainPanel)
 			SaveButton:SetPos( 5, 405 )
-			SaveButton:SetText( "Save the custom atm!" )
+			SaveButton:SetText( ARCBank.Msgs.ATMCreator.SaveTitle )
 			SaveButton:SetSize( 380, 20 )
 			SaveButton.DoClick = function()
-				Derma_StringRequest( "ARCBank ATM Creator", "Save as...", ATMThing.ATMType.Name, function(txt)
+				Derma_StringRequest( ARCBank.Msgs.ATMCreator.Name, ARCBank.Msgs.ATMCreator.SaveAs, ATMThing.ATMType.Name, function(txt)
 					ATMThing.ATMType.Name = txt
 					net.Start("ARCBank ATM Creator")
 					net.WriteString(util.TableToJSON(ATMThing.ATMType))
 					net.SendToServer()
-				end, nil, "Save", "Don't Save" ) 
+				end, nil, ARCBank.Msgs.ATMCreator.Save, ARCBank.Msgs.ATMCreator.NoSave ) 
 
 			end
 			
@@ -276,6 +276,16 @@ if ARCBank then
 			function ScrSliderW:OnValueChanged(value )
 				ATMThing.ATMType.Resolutionx = value
 			end
+			
+			local PlaceFull = vgui.Create( "DButton", ScreenPlacement )
+			PlaceFull:SetText( ARCBank.Msgs.ATMCreator.Fullscreen )
+			PlaceFull:SetPos( 20, 190 )
+			PlaceFull:SetSize( 320, 20 )
+			PlaceFull.DoClick = function()
+				ATMThing.ATMType.FullScreen = vector_origin
+				ATMThing.ATMType.FullScreenAng = angle_zero
+			end
+
 			
 			local ScreenColour = vgui.Create( "DPanel")
 			
@@ -629,7 +639,7 @@ if ARCBank then
 			
 			local EZPutButton = vgui.Create( "DButton",ButtonsPlacement)
 			EZPutButton:SetPos( 10, 130 )
-			EZPutButton:SetText( "Place the button where you're aiming" )
+			EZPutButton:SetText( ARCBank.Msgs.ATMCreator.ButtonAim )
 			EZPutButton:SetSize( 340, 20 )
 			EZPutButton.DoClick = function()
 				if ATMThing.SelectedButton < 24 then

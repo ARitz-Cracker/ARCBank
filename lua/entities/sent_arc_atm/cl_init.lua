@@ -22,6 +22,9 @@ net.Receive( "ARCBank CustomATM", function(length)
 			atm.hackedscrs[i] = surface.GetTextureID(atm.ATMType.HackedWelcomeScreen[i])
 		end
 		atm.hackedscrs[#atm.hackedscrs+1] = surface.GetTextureID(atm.ATMType.WelcomeScreen)
+		atm.ATMType.FullScreen = atm.ATMType.FullScreen || vector_origin
+		atm.ATMType.FullScreenAng = atm.ATMType.FullScreenAng || angle_zero
+		
 	end
 end)
 
@@ -164,7 +167,7 @@ local function ENT_AccountOptions(accountdata,ent)
 	else
 		ent.OnHomeScreen = false
 		ent.Title = accountdata.name
-		ent.TitleText = ARCBank.Msgs.ATMMsgs.Balance.." "..ARCLib.MoneyLimit(accountdata.money)
+		ent.TitleText = ARCBank.Msgs.ATMMsgs.Balance..ARCBank.Settings["money_symbol"]..ARCLib.MoneyLimit(accountdata.money)
 		ent.TitleIcon = icons_rank[accountdata.rank]
 		
 		ent.ScreenOptions = {}
@@ -757,48 +760,55 @@ function ENT:Think()
 		self.LastCheck = CurTime() + math.Rand(3,6)
 	end
 	if !self.InUse || self.UseDelay > CurTime() || self.Loading || !LocalPlayer().ARCBank_FullScreen then return end
-
-			for i = 0,9 do
-				
-				if input.IsKeyDown( 37+i ) then
-					if oldkeypress != 37+i || (pressedkeys[37+i] && pressedkeys[37+i] < CurTime()) then
-						self.UseDelay = CurTime() + 0.1
-						self:PushNumber(i)
-						oldkeypress = 37+i
-						pressedkeys[37+i] = CurTime() + 0.25
-					end
-				end
-			end
 			
+	if self.ATMType.UseTouchScreen then
+		RunConsoleCommand("arcbank","fullscreenmode","false")
+		gui.EnableScreenClicker(false) 
+		LocalPlayer().ARCBank_FullScreen = false
+		self:NewMsgBox("Fullscreen Error","Fullscreen mode is currently not supported for touchscreen ATMs. (This will be fixed in a future update)",nil,"monitor_error",1)
+	end
+			
+	for i = 0,9 do
+		
+		if input.IsKeyDown( 37+i ) then
+			if oldkeypress != 37+i || (pressedkeys[37+i] && pressedkeys[37+i] < CurTime()) then
+				self.UseDelay = CurTime() + 0.1
+				self:PushNumber(i)
+				oldkeypress = 37+i
+				pressedkeys[37+i] = CurTime() + 0.25
+			end
+		end
+	end
+	
 
-			if input.IsKeyDown( KEY_PAD_ENTER ) || input.IsKeyDown( KEY_ENTER ) then
-				if oldkeypress != KEY_ENTER || (pressedkeys[KEY_ENTER] && pressedkeys[KEY_ENTER] < CurTime()) then
-					self.UseDelay = CurTime() + 0.1
-					self:EmitSoundTable(self.ATMType.ClientPressSound)
-					ARCLib.PlaySoundOnOtherPlayers(table.Random(self.ATMType.PressSound),self,65)
-					self:PushEnter()
-					oldkeypress = KEY_ENTER
-					pressedkeys[KEY_ENTER] = CurTime() + 0.25
-				end
-			end
-			if input.IsKeyDown( KEY_PAD_PLUS ) then
-				if oldkeypress != KEY_PAD_PLUS || (pressedkeys[KEY_PAD_PLUS] && pressedkeys[KEY_PAD_PLUS] < CurTime()) then
-					self.UseDelay = CurTime() + 0.1
-					self:EmitSoundTable(self.ATMType.ClientPressSound)
-					ARCLib.PlaySoundOnOtherPlayers(table.Random(self.ATMType.PressSound),self,65)
-					self:PushCancel()
-					oldkeypress = KEY_PAD_PLUS
-					pressedkeys[KEY_PAD_PLUS] = CurTime() + 0.25
-				end
-			end
-			if input.IsKeyDown( KEY_PAD_MINUS ) then
-				if oldkeypress != KEY_PAD_MINUS || (pressedkeys[KEY_PAD_MINUS] && pressedkeys[KEY_PAD_MINUS] < CurTime()) then
-					self.UseDelay = CurTime() + 0.1
-					self:PushClear()
-					oldkeypress = KEY_PAD_MINUS
-					pressedkeys[KEY_PAD_MINUS] = CurTime() + 0.25
-				end
-			end
+	if input.IsKeyDown( KEY_PAD_ENTER ) || input.IsKeyDown( KEY_ENTER ) then
+		if oldkeypress != KEY_ENTER || (pressedkeys[KEY_ENTER] && pressedkeys[KEY_ENTER] < CurTime()) then
+			self.UseDelay = CurTime() + 0.1
+			self:EmitSoundTable(self.ATMType.ClientPressSound)
+			ARCLib.PlaySoundOnOtherPlayers(table.Random(self.ATMType.PressSound),self,65)
+			self:PushEnter()
+			oldkeypress = KEY_ENTER
+			pressedkeys[KEY_ENTER] = CurTime() + 0.25
+		end
+	end
+	if input.IsKeyDown( KEY_PAD_PLUS ) then
+		if oldkeypress != KEY_PAD_PLUS || (pressedkeys[KEY_PAD_PLUS] && pressedkeys[KEY_PAD_PLUS] < CurTime()) then
+			self.UseDelay = CurTime() + 0.1
+			self:EmitSoundTable(self.ATMType.ClientPressSound)
+			ARCLib.PlaySoundOnOtherPlayers(table.Random(self.ATMType.PressSound),self,65)
+			self:PushCancel()
+			oldkeypress = KEY_PAD_PLUS
+			pressedkeys[KEY_PAD_PLUS] = CurTime() + 0.25
+		end
+	end
+	if input.IsKeyDown( KEY_PAD_MINUS ) then
+		if oldkeypress != KEY_PAD_MINUS || (pressedkeys[KEY_PAD_MINUS] && pressedkeys[KEY_PAD_MINUS] < CurTime()) then
+			self.UseDelay = CurTime() + 0.1
+			self:PushClear()
+			oldkeypress = KEY_PAD_MINUS
+			pressedkeys[KEY_PAD_MINUS] = CurTime() + 0.25
+		end
+	end
 end
 
 function ENT:OnRestore()
@@ -908,6 +918,7 @@ local ghgjhgshjghjsad = surface.GetTextureID( "arc/atm_base/screen/givemoneh" )
 local sdhusai = surface.GetTextureID( "arc/atm_base/screen/takemoneh" ) 
 function ENT:Screen_Loading()
 	if self.MoneyMsg == 0 then
+		if (self.ATMType.UseTouchScreen && self.Percent == 0) then return end
 		ARCBank_Draw:Window(-125, -60, 230, 70,ARCBank.Msgs.ATMMsgs.Loading,ARCBank.ATM_DarkTheme,nil,self.ATMType.ForegroundColour)
 
 		surface.SetDrawColor( 255, 255, 255, 200 )
@@ -1227,8 +1238,28 @@ function ENT:Screen_Touch()
 				surface.SetMaterial(ARCLib.GetIcon(1,touchPadIcons[i]))
 				surface.DrawTexturedRect( 37 + 8, i*32 + 8, 16, 16)
 			end
-			
-			
+		elseif #self.LogTable > 0 then
+			len = len + 1
+			self.TouchIcons[len] = self.TouchIcons[len] || {}
+			self.TouchIcons[len].x = 8
+			self.TouchIcons[len].y = 112
+			self.TouchIcons[len].w = 128
+			self.TouchIcons[len].h = 20
+			self.TouchIcons[len].button = 19
+			len = len + 1
+			self.TouchIcons[len] = self.TouchIcons[len] || {}
+			self.TouchIcons[len].x = -112-24
+			self.TouchIcons[len].y = 112
+			self.TouchIcons[len].w = 128
+			self.TouchIcons[len].h = 20
+			self.TouchIcons[len].button = 20
+			len = len + 1
+			self.TouchIcons[len] = self.TouchIcons[len] || {}
+			self.TouchIcons[len].x = -128
+			self.TouchIcons[len].y = 132
+			self.TouchIcons[len].w = 256
+			self.TouchIcons[len].h = 18
+			self.TouchIcons[len].button = 12
 		else
 			for i = 1,8 do
 				if self.ScreenOptions[i+(self.Page*8)] then
@@ -1256,6 +1287,7 @@ function ENT:Screen_Touch()
 		if ARCLib.InBetween(self.TouchIcons[i].x,self.TouchScreenX,self.TouchIcons[i].x+self.TouchIcons[i].w) && ARCLib.InBetween(self.TouchIcons[i].y,self.TouchScreenY,self.TouchIcons[i].y+self.TouchIcons[i].h) then
 			surface.SetDrawColor(light,light,light,128)
 			surface.DrawRect(self.TouchIcons[i].x,self.TouchIcons[i].y,self.TouchIcons[i].w,self.TouchIcons[i].h)
+
 			self.Highlightbutton = self.TouchIcons[i].button
 			break
 		end
@@ -1371,7 +1403,7 @@ function ENT:Draw()--Good
 	--18  17--
 	--20  19--
 	if !self.InUse then 
-		if math.sin((CurTime()+(self:EntIndex()/50))*math.pi*2) > 0 && self.ARCBankLoaded && self.RebootTime < CurTime() then
+		if self.ATMType.UseCardlight && math.sin((CurTime()+(self:EntIndex()/50))*math.pi*2) > 0 && self.ARCBankLoaded && self.RebootTime < CurTime() then
 			cam.Start3D2D(self:LocalToWorld(self.ATMType.Cardlight), self:LocalToWorldAngles(self.ATMType.CardlightAng), self.ATMType.CardlightSize)
 				surface.SetDrawColor(ARCLib.ConvertColor(self.ATMType.CardlightColour))
 

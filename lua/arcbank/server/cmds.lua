@@ -16,6 +16,19 @@ ARCBank.Commands = { --Make sure they are less then 16 chars long.$
 		adminonly = false,
 		hidden = false
 	},
+	["test"] = { -- %%CONFIRMATION_HASH%%
+		command = function(ply,args) 
+			local str = "Arguments:"
+			for _,arg in ipairs(args) do
+				str = str.." | "..arg
+			end
+			ARCBank.MsgCL(ply,str)
+		end, 
+		usage = " [argument(any)] [argument(any)] [argument(any)]",
+		description = "[Debug] Tests arguments",
+		adminonly = false,
+		hidden = true
+	},
 	["help"] = {
 		command = function(ply,args) 
 			if !ARCBank.Loaded then ARCBank.MsgCL(ply,ARCBank.Msgs.CommandOutput.SysReset) return end
@@ -53,19 +66,6 @@ ARCBank.Commands = { --Make sure they are less then 16 chars long.$
 		end, 
 		usage = "",
 		description = "Who owns this copy of ARCBank?",
-		adminonly = false,
-		hidden = true
-	},
-	["test"] = { -- %%CONFIRMATION_HASH%%
-		command = function(ply,args) 
-			local str = "Arguments:"
-			for _,arg in ipairs(args) do
-				str = str.." | "..arg
-			end
-			ARCBank.MsgCL(ply,str)
-		end, 
-		usage = " [argument(any)] [argument(any)] [argument(any)]",
-		description = "[Debug] Tests arguments",
 		adminonly = false,
 		hidden = true
 	},
@@ -233,4 +233,4 @@ ARCBank.Commands = { --Make sure they are less then 16 chars long.$
 }
 
 ARCLib.AddSettingConsoleCommands("ARCBank")
-ARCLib.AddAddonConcommand("ARCBank","arcbank") 
+ARCLib.AddAddonConcommand("ARCBank","arcbank")

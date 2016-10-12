@@ -191,7 +191,7 @@ ARCBank.Msgs.ATMCreator.CardAnim = "Card animation"
 ARCBank.Msgs.ATMCreator.CardLight = "Card light"
 ARCBank.Msgs.ATMCreator.SoundsOther = "Other Sounds"
 ARCBank.Msgs.ATMCreator.Removed = "Custom ATM Creator has been removed."
-
+ARCBank.Msgs.ATMCreator.Fullscreen = "Set Fullscreen camera position"
 
 ARCBank.Msgs.CommandOutput.SysReset = "System reset required!"
 ARCBank.Msgs.CommandOutput.SysSetting = "%SETTING% has been changed to %VALUE%"
@@ -213,8 +213,8 @@ ARCBank.Msgs.CommandOutput.MySQL4 = "ARCBank failed to restart. Contact your ser
 ARCBank.Msgs.CommandOutput.MySQLCopy = "Copying all accounts to MySQL database. This might take a while..."
 ARCBank.Msgs.CommandOutput.MySQLCopyFrom = "Copying all accounts from MySQL database. The server might freeze for a bit."
 
-ARCBank.Msgs.ATMMsgs.NetworkErrorTitle = "ARCBank - Server Error"
-ARCBank.Msgs.ATMMsgs.NetworkError = "The ARCBank System isn't running or isn't set up properly. Contact the server owner."
+ARCBank.Msgs.ATMMsgs.NetworkErrorTitle = "Server ARCBank Error"
+ARCBank.Msgs.ATMMsgs.NetworkError = "ARCBank failed to load! The most common cause of this is incorrect configuration.\nPlease enter \"arcbank reset\" in console to reload ARCBank."
 ARCBank.Msgs.ATMMsgs.HackingError = "I'm out-of-service :(\nINVALID_MEMORY_OPERATION\nPlease visit a different terminal."
 
 ARCBank.Msgs.Items.Hacker = "ATM Hacking Unit"
@@ -417,6 +417,10 @@ ARCBank.SettingsDesc["account_debt_limit"] = "How much below 0 an account can ge
 ARCBank.SettingsDesc["account_starting_cash"] = "Players will start with this amount of money when they open a bank account."
 ARCBank.SettingsDesc["account_group_limit"] = "A player can only create this many group accounts"
 
+ARCBank.SettingsDesc["death_money_remove"] = "The % of money that should be removed from the player when the die."
+ARCBank.SettingsDesc["death_money_drop"] = "The % of money that should spawned where the player dies. (This should always be lower than death_money_remove)"
+ARCBank.SettingsDesc["death_money_drop_model"] = "The model of the dropped money"
+
 ARCBank.SettingsDesc["interest_time"] = "The interval time of the giving of interest. (hours)"
 ARCBank.SettingsDesc["interest_enable"] = "The bank will give players interest."
 
@@ -434,6 +438,7 @@ ARCBank.SettingsDesc["money_max_4_gold"] = "The amount of money a gold account c
 ARCBank.SettingsDesc["money_max_6_group_standard"] = "The amount of money a group account account can hold. (Anything above 99999999999999 may break ARCBank)"
 ARCBank.SettingsDesc["money_max_7_group_premium"] = "The amount of money a premium group account can hold. (Anything above 99999999999999 may break ARCBank)"
 
+ARCBank.SettingsDesc["money_symbol"] = "The symbol used for money"
 
 ARCBank.SettingsDesc["usergroup_1_standard"] = "The in-game rank(s) the player must be to create a standard account. "
 ARCBank.SettingsDesc["usergroup_2_bronze"] = "The in-game rank(s) the player must be to create a bronze account."
@@ -443,8 +448,6 @@ ARCBank.SettingsDesc["usergroup_6_group_standard"] = "The in-game rank(s) the pl
 ARCBank.SettingsDesc["usergroup_7_group_premium"] = "The in-game rank(s) the player must be to create a premium group account."
 ARCBank.SettingsDesc["usergroup_all"] = "People of these ranks can create any account."
 
-ARCBank.SettingsDesc["notify_update"] = "Disable this. It's useless now"
-ARCBank.SettingsDesc["superadmin_only"] = "Only superadmins can use admin commands"
 ARCBank.SettingsDesc["atm_darkmode_default"] = "Dark Mode will be enabled on the ATM by default."
 
 ARCBank.SettingsDesc["admins"] = "List of in game rank(s) that can use the admin GUI and the admin commands."

@@ -12,10 +12,8 @@ if CLIENT then
 	--    view.origin = pos-( angles:Forward()*100 )
 	--    view.angles = angles
 	--    view.fov = fov
-			view.origin = ply.ARCBank_ATM:GetPos() + (ply.ARCBank_ATM:GetAngles():Up() * 15) + (ply.ARCBank_ATM:GetAngles():Forward() * 14.5) + (ply.ARCBank_ATM:GetAngles():Right() * -0.015 )
-			local aim = view.origin + (ply.ARCBank_ATM:GetAngles():Up() * -1.8 ) + (ply.ARCBank_ATM:GetAngles():Forward() * -3.2)
-			view.angles = (aim - view.origin):Angle()
-			ply:SetEyeAngles( ( ply.ARCBank_ATM:LocalToWorld(ply.ARCBank_ATM.ATMType.Screen) - ply:GetShootPos() ):Angle() )
+			view.origin = ply.ARCBank_ATM:LocalToWorld(ply.ARCBank_ATM.ATMType.FullScreen)
+			view.angles = ply.ARCBank_ATM:LocalToWorldAngles(ply.ARCBank_ATM.ATMType.FullScreenAng)
 			view.fov = fov
 			
 			return view
@@ -132,8 +130,21 @@ else
 			end
 		end)
 	end)
-		
 
+				
+	hook.Add( "PlayerDeath", "ARCBank DeathTax", function( victim, inflictor, attacker )
+		local amount = ARCBank.PlayerGetMoney(victim) 
+		local dropped = math.ceil(amount * ARCBank.Settings["death_money_drop"] / 100)
+		if dropped > 0 then
+			local moneyprop = ents.Create( "sent_arc_cash" ) --I don't want to create another entity. 
+			moneyprop:SetPos(victim:GetPos()+Vector(0,0,16))
+			moneyprop:SetAngles(AngleRand())
+			moneyprop:Spawn()
+			moneyprop:SetValue(dropped)
+		end
+		ARCBank.PlayerAddMoney(victim,amount * ARCBank.Settings["death_money_remove"] / -100 )
+	end)
+	
 	hook.Add( "PlayerGetSalary", "ARCBank PaydayATM DRP2.4", function(ply, amount)
 		if ARCBank.Settings["use_bank_for_payday"] && amount > 0 then
 			local pay = ply.DarkRPVars["money"]
@@ -142,7 +153,7 @@ else
 				if pay <= 0 then return end
 				ARCBank.AtmFunc(ply,pay,"",function(errcode)
 					if errcode == 0 then
-						ARCLib.NotifyPlayer(ply,string.Replace(ARCBank.Msgs.UserMsgs.Paycheck.." ("..pay..")","ARCBank",ARCBank.Settings.name),NOTIFY_HINT,4,false)
+						ARCLib.NotifyPlayer(ply,string.Replace(ARCBank.Msgs.UserMsgs.Paycheck.." ("..ARCBank.Settings["money_symbol"]..pay..")","ARCBank",ARCBank.Settings.name),NOTIFY_HINT,4,false)
 					elseif errcode != ARCBANK_ERROR_NIL_ACCOUNT then
 						ARCLib.NotifyPlayer(ply,string.Replace(ARCBank.Msgs.UserMsgs.PaycheckFail,"ARCBank",ARCBank.Settings.name).." ("..ARCBANK_ERRORSTRINGS[errcode]..")",NOTIFY_ERROR,4,true)
 					end
@@ -159,7 +170,7 @@ else
 				if pay <= 0 then return end
 				ARCBank.AtmFunc(ply,pay,"",function(errcode)
 					if errcode == 0 then
-						ARCLib.NotifyPlayer(ply,string.Replace(ARCBank.Msgs.UserMsgs.Paycheck.." ("..pay..")","ARCBank",ARCBank.Settings.name),NOTIFY_HINT,4,false)
+						ARCLib.NotifyPlayer(ply,string.Replace(ARCBank.Msgs.UserMsgs.Paycheck.." ("..ARCBank.Settings["money_symbol"]..pay..")","ARCBank",ARCBank.Settings.name),NOTIFY_HINT,4,false)
 					elseif errcode != ARCBANK_ERROR_NIL_ACCOUNT then
 						ARCLib.NotifyPlayer(ply,string.Replace(ARCBank.Msgs.UserMsgs.PaycheckFail,"ARCBank",ARCBank.Settings.name).." ("..ARCBANK_ERRORSTRINGS[errcode]..")",NOTIFY_ERROR,4,true)
 					end

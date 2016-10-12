@@ -1204,7 +1204,7 @@ function ARCBank.Transfer(fromply,toply,fromname,toname,amount,reason,callback)
 			return
 		end
 		if accountdatafrom.isgroup then
-			if accountdatafrom.owner != fromARCBank.GetPlayerID(ply) && !table.HasValue( accountdatafrom.members, fromARCBank.GetPlayerID(ply) ) then
+			if accountdatafrom.owner != ARCBank.GetPlayerID(fromply) && !table.HasValue( accountdatafrom.members, ARCBank.GetPlayerID(fromply) ) then
 				callback(ARCBANK_ERROR_NO_ACCESS)
 				return
 			end
@@ -1242,9 +1242,9 @@ function ARCBank.Transfer(fromply,toply,fromname,toname,amount,reason,callback)
 				if didwork then
 					ARCBank.WriteAccountFile(accountdatafrom,function(didwork)
 						if didwork then
-							ARCBankAccountMsg(accountdatafrom,string.Replace(string.Replace(string.Replace(string.Replace( ARCBank.Msgs.LogMsgs.GiveMoney, "%VALUE%", tostring(amount)),"%ACCOUNT%",accountdatato.filename),"%PLAYER2%",sid),"%PLAYER1%",fromARCBank.GetPlayerID(ply)).."["..tostring(reason).."]")
-							ARCBankAccountMsg(accountdatato,string.Replace(string.Replace(string.Replace(string.Replace( ARCBank.Msgs.LogMsgs.GiveMoney, "%VALUE%", tostring(amount)),"%ACCOUNT%",accountdatafrom.filename),"%PLAYER2%",sid),"%PLAYER1%",fromARCBank.GetPlayerID(ply)).."["..tostring(reason).."]")
-							ARCBank.Msg(fromply:Nick().."("..fromARCBank.GetPlayerID(ply)..") gave "..amount.." to "..nic.."("..sid..") (From accounts "..accountdatafrom.filename.." to "..accountdatato.filename..") ["..tostring(reason).."]")
+							ARCBankAccountMsg(accountdatafrom,string.Replace(string.Replace(string.Replace(string.Replace( ARCBank.Msgs.LogMsgs.GiveMoney, "%VALUE%", tostring(amount)),"%ACCOUNT%",accountdatato.filename),"%PLAYER2%",sid),"%PLAYER1%",ARCBank.GetPlayerID(fromply)).."["..tostring(reason).."]")
+							ARCBankAccountMsg(accountdatato,string.Replace(string.Replace(string.Replace(string.Replace( ARCBank.Msgs.LogMsgs.GiveMoney, "%VALUE%", tostring(amount)),"%ACCOUNT%",accountdatafrom.filename),"%PLAYER2%",sid),"%PLAYER1%",ARCBank.GetPlayerID(fromply)).."["..tostring(reason).."]")
+							ARCBank.Msg(fromply:Nick().."("..ARCBank.GetPlayerID(fromply)..") gave "..amount.." to "..nic.."("..sid..") (From accounts "..accountdatafrom.filename.." to "..accountdatato.filename..") ["..tostring(reason).."]")
 							callback(ARCBANK_ERROR_NONE)
 						else
 							callback(ARCBANK_ERROR_WRITE_FAILURE)
@@ -1256,7 +1256,7 @@ function ARCBank.Transfer(fromply,toply,fromname,toname,amount,reason,callback)
 			end)
 		end
 		if !isstring(toply) && toply:IsPlayer() then
-			sid = toARCBank.GetPlayerID(ply)
+			sid = ARCBank.GetPlayerID(toply)
 			nic = toply:Nick()
 		elseif string.StartWith(toply,"STEAM_") then
 			sid = toply
@@ -1278,7 +1278,7 @@ function ARCBank.Transfer(fromply,toply,fromname,toname,amount,reason,callback)
 			callback(ARCBANK_ERROR_NIL_PLAYER)
 			return
 		end
-		accountdatafrom = ARCBank.ReadAccountFile(ARCBank.GetAccountID(fromARCBank.GetPlayerID(ply)),false,dothingfr)
+		accountdatafrom = ARCBank.ReadAccountFile(ARCBank.GetAccountID(ARCBank.GetPlayerID(fromply)),false,dothingfr)
 	else
 		accountdatafrom = ARCBank.ReadAccountFile(ARCBank.GetAccountID(fromname),true,dothingfr)
 	end

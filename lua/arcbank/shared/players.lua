@@ -9,18 +9,22 @@ if (nut) then
 	ARCBank.PlayerIDPrefix = "NUT_"
 end
 
+ARCBank.GetCustomPlayerID = false
+
 function ARCBank.GetPlayerID(plyy)
 	if (plyy._ARCBankID) then
 		return plyy._ARCBankID
 	end
-	if (nut) then
-		return "NUT_"..plyy:getChar():getID()
+	if (type(ARCBank.GetCustomPlayerID) == "function") then
+		return ARCBank.GetCustomPlayerID(ply)
+	elseif (nut) then
+		return ARCBank.PlayerIDPrefix..plyy:getChar():getID()
 	else
 		return plyy:SteamID()
 	end
 end
 
-function ARCLib.GetPlayerByID(id) -- Gets a player by their SteamID
+function ARCBank.GetPlayerByID(id)
 	local ply = {}
 	if !isstring(id) then return NULL end
 	for _, v in pairs( player.GetHumans() ) do
@@ -84,7 +88,7 @@ function ARCBank.PlayerCanAfford(ply,amount)
 	end
 end
 
-function ARCBank.PlayerGetMoney(ply,amount)
+function ARCBank.PlayerGetMoney(ply)
 	if (nut) then
 		return ply:getChar():getMoney()
 	elseif string.lower(GAMEMODE.Name) == "gmod day-z" then
@@ -96,6 +100,6 @@ function ARCBank.PlayerGetMoney(ply,amount)
 	elseif ply.CanAfford then -- DarkRP 2.4
 		return ply.DarkRPVars["money"]
 	else
-		return false
+		return 0
 	end
 end

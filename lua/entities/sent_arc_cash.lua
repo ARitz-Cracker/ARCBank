@@ -13,7 +13,7 @@ ENT.Contact    		= "aritz@aritzcracker.ca"
 ENT.Purpose 		= ""
 ENT.Instructions 	= "Use"
 
-ENT.Spawnable = true
+ENT.Spawnable = false
 ENT.AdminOnly = false
 
 function ENT:SetupDataTables()
@@ -21,19 +21,53 @@ function ENT:SetupDataTables()
 end
 
 if CLIENT then 
+local vector_up = Vector(0,0,1)
+function ENT:Draw()
+    self:DrawModel()
+    local offset = (self:OBBMaxs() - self:OBBCenter())*vector_up
+	
+	local Pos = self:OBBCenter() 
+    local Ang = self:GetAngles()
 
+    surface.SetFont("ChatFont")
+    local text = tostring(self:GetMoneyAmount())
+    local TextWidth = surface.GetTextSize(text)
+
+    cam.Start3D2D(self:LocalToWorld(Pos+offset), Ang, 0.1)
+        draw.WordBox(2, -TextWidth * 0.5, -10, text, "ChatFont", Color(0, 140, 0, 100), Color(255, 255, 255, 255))
+    cam.End3D2D()
+
+    Ang:RotateAroundAxis(Ang:Right(), 180)
+
+    cam.Start3D2D(self:LocalToWorld(Pos-offset), Ang, 0.1)
+        draw.WordBox(2, -TextWidth * 0.5, -10, text, "ChatFont", Color(0, 140, 0, 100), Color(255, 255, 255, 255))
+    cam.End3D2D()
+
+end
 	return  -- No more client
 end
 
 -- Server
 
+function ENT:SpawnFunction( ply, tr, ClassName )
+	if ( !tr.Hit ) then return end
+	local SpawnPos = tr.HitPos + tr.HitNormal * 16
+	local ent = ents.Create( ClassName )
+	ent:SetPos( SpawnPos )
+	ent:Spawn()
+	ent:Activate()
+	ent:SetValue(1000)
+	return ent
+
+end
 
 function ENT:Initialize()
+	self:SetModel( ARCBank.Settings["death_money_drop_model"] )
 	self:PhysicsInit( SOLID_VPHYSICS )
 	self:SetMoveType( MOVETYPE_VPHYSICS )
 	self:SetSolid( SOLID_VPHYSICS )
 	self:SetUseType( SIMPLE_USE )
-	self:SetModel( "models/props/cs_assault/money.mdl" )
+	
 	local phys = self:GetPhysicsObject()
 	if phys:IsValid() then
 		phys:Wake() 
@@ -45,6 +79,6 @@ function ENT:SetValue(val)
 end
 
 function ENT:Use( ply, caller )
-	ARCBank.PlayerAddMoney(ply,1000)
-	moneyprop:Remove()
+	ARCBank.PlayerAddMoney(ply,self:GetMoneyAmount() || 0)
+	self:Remove()
 end

@@ -27,9 +27,9 @@ hook.Add("HUDPaint", "ARCBank ATMHackerDetector", function()
 			else
 				surface.SetDrawColor( 255, 255, 255, 255*mul )
 			end
-			surface.SetTexture( ARCLib.Icons32t["atm"])
+			surface.SetMaterial( ARCLib.GetWebIcon32("atm"))
 			surface.DrawTexturedRect( scrpos.x-16 ,scrpos.y-16,32,32 )
-			surface.SetMaterial( ARCLib.Icons16["error"])
+			surface.SetMaterial( ARCLib.GetWebIcon16("error"))
 			surface.SetDrawColor( 255, 255, 255, 255*math.sin(CurTime()*10)^2*mul )
 			surface.DrawTexturedRect( scrpos.x ,scrpos.y,16,16 )
 		end
