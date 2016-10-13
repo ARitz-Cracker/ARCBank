@@ -15,7 +15,6 @@ if CLIENT then
 			view.origin = ply.ARCBank_ATM:LocalToWorld(ply.ARCBank_ATM.ATMType.FullScreen)
 			view.angles = ply.ARCBank_ATM:LocalToWorldAngles(ply.ARCBank_ATM.ATMType.FullScreenAng)
 			view.fov = fov
-			
 			return view
 		end
 	end)

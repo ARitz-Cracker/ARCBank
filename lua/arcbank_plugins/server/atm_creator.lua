@@ -10,21 +10,21 @@ if ARCBank then
 	local ATMCreationTable = {}
 	ARCBank.Commands["create_atm"] = {
 		command = function(ply,args) 
-			if !ARCBank.Loaded then ARCBank.MsgCL(ply,"System reset required!") return end
+			if !ARCBank.Loaded then ARCBank.MsgCL(ply,ARCBank.Msgs.CommandOutput.SysReset) return end
 			if IsValid(ATMCreatorProp) then
-				ARCBank.MsgCL(ply,"The ATM Creator is already in use!")
+				ARCBank.MsgCL(ply,ARCBank.Msgs.ATMCreator.InUse)
 				return
 			end
 			
 			if !args[1] || args[1] == "" then
-				ARCBank.MsgCL(ply,"Your custom ATM needs a name.")
+				ARCBank.MsgCL(ply,ARCBank.Msgs.ATMCreator.NoName)
 				return
 			else
 				if file.Exists(ARCBank.Dir.."/custom_atms/"..args[1]..".txt","DATA") then
 					ATMCreationTable = util.JSONToTable(file.Read(ARCBank.Dir.."/custom_atms/"..args[1]..".txt","DATA"))
 				else
 					if !args[2] || !util.IsValidModel( args[2] ) then
-						ARCBank.MsgCL(ply,"The specified custom ATM file doesn't exist, and the specified model isn't valid.")
+						ARCBank.MsgCL(ply,ARCBank.Msgs.ATMCreator.Invalid)
 						return
 					else
 						ATMCreationTable.Name = string.lower(string.gsub(args[1], "[^_%w]", "_"))
@@ -179,10 +179,10 @@ if ARCBank then
 			ATMCreatorProp.ATMType = util.JSONToTable(net.ReadString())
 			ATMCreatorProp.ATMType.Name = string.lower(string.gsub(ATMCreatorProp.ATMType.Name, "[^_%w]", "_"))
 			if ATMCreatorProp.ATMType.Name == "default" then
-				ARCLib.NotifyPlayer(ply,"You're not allowed to overwrite the default ATM.",NOTIFY_ERROR,10,true)
+				ARCLib.NotifyPlayer(ply,ARCBank.Msgs.ATMCreator.SavedFileDefault,NOTIFY_ERROR,10,true)
 			else
 				file.Write(ARCBank.Dir.."/custom_atms/"..ATMCreatorProp.ATMType.Name..".txt",util.TableToJSON(ATMCreatorProp.ATMType))
-				ARCLib.NotifyPlayer(ply,"Custom ATM has been saved as garrysmod/data/"..ARCBank.Dir.."/custom_atms/"..ATMCreatorProp.ATMType.Name..".txt on the server.",NOTIFY_GENERIC,10,true)
+				ARCLib.NotifyPlayer(ply,ARCLib.PlaceholderReplace(ARCBank.Msgs.ATMCreator.SavedFile,{FILENAME="garrysmod/data/"..ARCBank.Dir.."/custom_atms/"..ATMCreatorProp.ATMType.Name..".txt"}),NOTIFY_GENERIC,10,true)
 			end
 		end
 	end)
@@ -282,7 +282,6 @@ if ARCBank then
 				net.WriteEntity( atm )
 				net.WriteUInt(2,2)
 				net.Send(ply)
-				ply:SendLua("notification.AddLegacy( \"Use the money to pick it up. (Press E)\", 3, 5 )")
 				atm.PlayerNeedsToDoSomething = true
 			end)
 		else
@@ -302,7 +301,6 @@ if ARCBank then
 				end
 			end)
 			timer.Simple(atm.ATMType.PauseBeforeDepositAnimation + atm.ATMType.PauseBeforeDepositSoundLoop,function()
-				ply:SendLua("notification.AddLegacy( \"Use the mouth of the ATM to deposit money. (Press E)\", 3, 5 )")
 				atm.PlayerNeedsToDoSomething = true
 				if #atm.ATMType.DepositLoopSound > 0 then
 					atm.whirsound:PlayEx(0.65, 100)

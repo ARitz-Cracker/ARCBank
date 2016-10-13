@@ -103,9 +103,10 @@ if ARCBank then
 				local SettingDesc = vgui.Create( "DLabel", SettingsContainer )
 				SettingDesc:SetPos( 12, 30 ) -- Set the position of the label
 				if string.EndsWith(value,"Sound") then
-					SettingDesc:SetText( "When playing the "..value..", a random sound will play from the specified list. If your sound doesn't seem to be playing in 3D ingame, you will have to add a \"^\" before your sound. For example: ^arcbank/atm-spit-out.wav" )
+					
+					SettingDesc:SetText( ARCLib.PlaceholderReplace(ARCBank.Msgs.ATMCreator.SoundExplination,{SOUNDNAME=value}))
 				else
-					SettingDesc:SetText( "While recovering from a hack, the welcome screen will choose a random texture from the following list every 0.1ish seconds." )
+					SettingDesc:SetText( ARCBank.Msgs.ATMCreator.HackedExplination )
 				end
 				SettingDesc:SetWrap(true)
 				SettingDesc:SetSize( 255, 66 )
@@ -133,11 +134,11 @@ if ARCBank then
 				SettingTaba:SetEnterAllowed( true )
 				
 				local SettingRemove = vgui.Create( "DButton", SettingsTabContainer )
-				SettingRemove:SetText( "Remove" )
+				SettingRemove:SetText( ARCBank.Msgs.AdminMenu.Remove )
 				SettingRemove:SetPos( 210, 0 )
 				SettingRemove:SetSize( 55, 20 )
 				local SettingAdd = vgui.Create( "DButton", SettingsTabContainer )
-				SettingAdd:SetText( "Add" )
+				SettingAdd:SetText( ARCBank.Msgs.AdminMenu.Add )
 				SettingAdd:SetPos( 210, 30)
 				SettingAdd:SetSize( 55, 20 )
 				SettingAdd.DoClick = function()
@@ -155,7 +156,7 @@ if ARCBank then
 			end
 			local ScreenPlacement = vgui.Create( "DPanel")
 			local ScrSliderXD = vgui.Create( "DLabel", ScreenPlacement )
-			ScrSliderXD:SetText( "X Position" )
+			ScrSliderXD:SetText( ARCBank.Msgs.ATMCreator.PositionX )
 			ScrSliderXD:SetPos( 10, 20 )
 			ScrSliderXD:SizeToContents()
 			ScrSliderXD:SetDark(true)
@@ -170,7 +171,7 @@ if ARCBank then
 				ATMThing.ATMType.Screen.x = value
 			end
 			local ScrSliderYD = vgui.Create( "DLabel", ScreenPlacement )
-			ScrSliderYD:SetText( "Y Position" )
+			ScrSliderYD:SetText( ARCBank.Msgs.ATMCreator.PositionY )
 			ScrSliderYD:SetPos( 10, 40 )
 			ScrSliderYD:SizeToContents()
 			ScrSliderYD:SetDark(true)
@@ -185,7 +186,7 @@ if ARCBank then
 				ATMThing.ATMType.Screen.y = value
 			end
 			local ScrSliderZD = vgui.Create( "DLabel", ScreenPlacement )
-			ScrSliderZD:SetText( "Z Position" )
+			ScrSliderZD:SetText( ARCBank.Msgs.ATMCreator.PositionZ )
 			ScrSliderZD:SetPos( 10, 60 )
 			ScrSliderZD:SizeToContents()
 			ScrSliderZD:SetDark(true)
@@ -200,7 +201,7 @@ if ARCBank then
 				ATMThing.ATMType.Screen.z = value
 			end
 			local ScrSliderSD = vgui.Create( "DLabel", ScreenPlacement )
-			ScrSliderSD:SetText( "Screen Size" )
+			ScrSliderSD:SetText( ARCBank.Msgs.ATMCreator.ScreenSize )
 			ScrSliderSD:SetPos( 10, 80 )
 			ScrSliderSD:SizeToContents()
 			ScrSliderSD:SetDark(true)
@@ -216,7 +217,7 @@ if ARCBank then
 			end
 			
 			local ScrSliderPD = vgui.Create( "DLabel", ScreenPlacement )
-			ScrSliderPD:SetText( "Pitch Angle" )
+			ScrSliderPD:SetText( ARCBank.Msgs.ATMCreator.AngleP )
 			ScrSliderPD:SetPos( 10, 100 )
 			ScrSliderPD:SizeToContents()
 			ScrSliderPD:SetDark(true)
@@ -231,7 +232,7 @@ if ARCBank then
 				ATMThing.ATMType.ScreenAng.p = value
 			end
 			local ScrSliderYaD = vgui.Create( "DLabel", ScreenPlacement )
-			ScrSliderYaD:SetText( "Yaw Angle" )
+			ScrSliderYaD:SetText( ARCBank.Msgs.ATMCreator.AngleY )
 			ScrSliderYaD:SetPos( 10, 120)
 			ScrSliderYaD:SizeToContents()
 			ScrSliderYaD:SetDark(true)
@@ -246,7 +247,7 @@ if ARCBank then
 				ATMThing.ATMType.ScreenAng.y = value
 			end
 			local ScrSliderRD = vgui.Create( "DLabel", ScreenPlacement )
-			ScrSliderRD:SetText( "Roll Angle" )
+			ScrSliderRD:SetText( ARCBank.Msgs.ATMCreator.AngleR )
 			ScrSliderRD:SetPos( 10, 140 )
 			ScrSliderRD:SizeToContents()
 			ScrSliderRD:SetDark(true)
@@ -262,7 +263,7 @@ if ARCBank then
 			end
 			
 			local ScrSliderWD = vgui.Create( "DLabel", ScreenPlacement )
-			ScrSliderWD:SetText( "Screen Wide" )
+			ScrSliderWD:SetText( ARCBank.Msgs.ATMCreator.ScreenWidth )
 			ScrSliderWD:SetPos( 10, 160 )
 			ScrSliderWD:SizeToContents()
 			ScrSliderWD:SetDark(true)
@@ -282,8 +283,8 @@ if ARCBank then
 			PlaceFull:SetPos( 20, 190 )
 			PlaceFull:SetSize( 320, 20 )
 			PlaceFull.DoClick = function()
-				ATMThing.ATMType.FullScreen = vector_origin
-				ATMThing.ATMType.FullScreenAng = angle_zero
+				ATMThing.ATMType.FullScreen = ATMThing:WorldToLocal(LocalPlayer():EyePos())
+				ATMThing.ATMType.FullScreenAng = ATMThing:WorldToLocalAngles(LocalPlayer():EyeAngles())
 			end
 
 			
@@ -306,16 +307,16 @@ if ARCBank then
 			AList2:SetPos(10,10)
 			AList2:SetSize( 257, 20 )
 			if CurrentColour == 1 then
-				AList2:SetText( "Background Colour" )
+				AList2:SetText( ARCBank.Msgs.ATMCreator.BGColour )
 				Mixer:SetColor( ATMThing.ATMType.BackgroundColour )
 			elseif CurrentColour == 2 then
-				AList2:SetText( "Foreground Colour" )
+				AList2:SetText( ARCBank.Msgs.ATMCreator.FGColour )
 				Mixer:SetColor( ATMThing.ATMType.ForegroundColour )
 			end
 			
 			local DModeCheck = vgui.Create( "DCheckBoxLabel", ScreenColour )
 			DModeCheck:SetPos( 270, 12 )
-			DModeCheck:SetText( "Dark Mode" )
+			DModeCheck:SetText( ARCBank.Msgs.ATMCreator.DarkMode )
 			DModeCheck:SizeToContents()
 			DModeCheck:SetDark( 1 )
 			DModeCheck:SetValue( ARCLib.BoolToNumber(ATMThing.DarkMode) )
@@ -325,7 +326,7 @@ if ARCBank then
 			
 			local MenuCheck = vgui.Create( "DCheckBoxLabel", ScreenColour )
 			MenuCheck:SetPos( 270, 34 )
-			MenuCheck:SetText( "Show Menu" )
+			MenuCheck:SetText( ARCBank.Msgs.ATMCreator.ShowMenu )
 			MenuCheck:SizeToContents()
 			MenuCheck:SetDark( 1 )
 			MenuCheck:SetValue( ARCLib.BoolToNumber(ATMThing.Menu) )
@@ -335,7 +336,7 @@ if ARCBank then
 			
 			local DModeCheck = vgui.Create( "DCheckBoxLabel", ScreenColour )
 			DModeCheck:SetPos( 270, 56 )
-			DModeCheck:SetText( "Message box" )
+			DModeCheck:SetText( ARCBank.Msgs.ATMCreator.MessageBox )
 			DModeCheck:SizeToContents()
 			DModeCheck:SetDark( 1 )
 			DModeCheck:SetValue( ARCLib.BoolToNumber(ATMThing.MsgBox) )
@@ -344,7 +345,7 @@ if ARCBank then
 			end
 			local DModeCheck = vgui.Create( "DCheckBoxLabel", ScreenColour )
 			DModeCheck:SetPos( 270, 78 )
-			DModeCheck:SetText( "Hacked" )
+			DModeCheck:SetText( ARCBank.Msgs.ATMCreator.Hacked )
 			DModeCheck:SizeToContents()
 			DModeCheck:SetDark( 1 )
 			DModeCheck:SetValue( ARCLib.BoolToNumber(ATMThing.Hacked) )
@@ -352,8 +353,8 @@ if ARCBank then
 				ATMThing.Hacked = val
 			end
 			
-			AList2:AddChoice("Background Colour")
-			AList2:AddChoice("Foreground Colour")
+			AList2:AddChoice(ARCBank.Msgs.ATMCreator.BGColour)
+			AList2:AddChoice(ARCBank.Msgs.ATMCreator.FGColour)
 			function AList2:OnSelect(index,value,data)
 				CurrentColour = index
 				if CurrentColour == 1 then
@@ -363,7 +364,7 @@ if ARCBank then
 				end
 			end
 			local WelcomeTextureD = vgui.Create( "DLabel", ScreenColour )
-			WelcomeTextureD:SetText( "Welcome screen material (Press ENTER to apply)" )
+			WelcomeTextureD:SetText( ARCBank.Msgs.ATMCreator.WelScrMat )
 			WelcomeTextureD:SetPos( 10, 204 )
 			WelcomeTextureD:SizeToContents()
 			WelcomeTextureD:SetDark(true)
@@ -377,7 +378,7 @@ if ARCBank then
 			
 			local DepositStartSound = vgui.Create( "DButton",ScreenColour)
 			DepositStartSound:SetPos( 10, 250 )
-			DepositStartSound:SetText( "Hacked welcome screen" )
+			DepositStartSound:SetText( ARCBank.Msgs.ATMCreator.HckWelScr )
 			DepositStartSound:SetSize( 257, 20 )
 			DepositStartSound.DoClick = function()
 				AddRemoveSounds("HackedWelcomeScreen")
@@ -389,12 +390,12 @@ if ARCBank then
 			TouchScreenList:SetPos(10,10)
 			TouchScreenList:SetSize( 230, 20 )
 			if ATMThing.ATMType.UseTouchScreen then
-				TouchScreenList:SetText( "Interface type: Touchscreen" )
+				TouchScreenList:SetText( ARCBank.Msgs.ATMCreator.IntrTouch )
 			else
-				TouchScreenList:SetText( "Interface type: Buttons" )
+				TouchScreenList:SetText( ARCBank.Msgs.ATMCreator.IntrButt )
 			end
-			TouchScreenList:AddChoice("Interface type: Buttons")
-			TouchScreenList:AddChoice("Interface type: Touchscreen")
+			TouchScreenList:AddChoice(ARCBank.Msgs.ATMCreator.IntrButt)
+			TouchScreenList:AddChoice(ARCBank.Msgs.ATMCreator.IntrTouch)
 			
 			function TouchScreenList:OnSelect(index,value,data)
 				ATMThing.ATMType.UseTouchScreen = index == 2
@@ -404,12 +405,12 @@ if ARCBank then
 			ButtonList:SetSize( 340, 20 )
 			
 			for i = 0,23 do
-				ButtonList:AddChoice("Button #"..i)
+				ButtonList:AddChoice(ARCLib.PlaceholderReplace(ARCBank.Msgs.ATMCreator.Butt,{NUM=tostring(i)}))
 			end
-			ButtonList:AddChoice("Money Hit Box")
+			ButtonList:AddChoice(ARCBank.Msgs.ATMCreator.MonHit)
 			
 			local HitBoxPD = vgui.Create( "DLabel", ButtonsPlacement )
-			HitBoxPD:SetText( "Pitch Angle" )
+			HitBoxPD:SetText( ARCBank.Msgs.ATMCreator.AngleP )
 			HitBoxPD:SetPos( 10, 190 )
 			HitBoxPD:SizeToContents()
 			HitBoxPD:SetDark(true)
@@ -424,7 +425,7 @@ if ARCBank then
 				ATMThing.ATMType.MoneyHitBoxAng.p = value
 			end
 			local HitBoxYaD = vgui.Create( "DLabel", ButtonsPlacement )
-			HitBoxYaD:SetText( "Yaw Angle" )
+			HitBoxYaD:SetText( ARCBank.Msgs.ATMCreator.AngleY )
 			HitBoxYaD:SetPos( 10, 210 )
 			HitBoxYaD:SizeToContents()
 			HitBoxYaD:SetDark(true)
@@ -439,7 +440,7 @@ if ARCBank then
 				ATMThing.ATMType.MoneyHitBoxAng.y = value
 			end
 			local HitBoxRD = vgui.Create( "DLabel", ButtonsPlacement )
-			HitBoxRD:SetText( "Roll Angle" )
+			HitBoxRD:SetText( ARCBank.Msgs.ATMCreator.AngleR )
 			HitBoxRD:SetPos( 10, 230 )
 			HitBoxRD:SizeToContents()
 			HitBoxRD:SetDark(true)
@@ -455,7 +456,7 @@ if ARCBank then
 			end
 			
 			local HitBoxXD = vgui.Create( "DLabel", ButtonsPlacement )
-			HitBoxXD:SetText( "Money Length" )
+			HitBoxXD:SetText( ARCBank.Msgs.ATMCreator.MonL )
 			HitBoxXD:SetPos( 10, 250 )
 			HitBoxXD:SizeToContents()
 			HitBoxXD:SetDark(true)
@@ -470,7 +471,7 @@ if ARCBank then
 				ATMThing.ATMType.MoneyHitBoxSize.x = value
 			end
 			local HitBoxYD = vgui.Create( "DLabel", ButtonsPlacement )
-			HitBoxYD:SetText( "Money Width" )
+			HitBoxYD:SetText( ARCBank.Msgs.ATMCreator.MonW )
 			HitBoxYD:SetPos( 10, 270 )
 			HitBoxYD:SizeToContents()
 			HitBoxYD:SetDark(true)
@@ -485,7 +486,7 @@ if ARCBank then
 				ATMThing.ATMType.MoneyHitBoxSize.y = value
 			end
 			local HitBoxZD = vgui.Create( "DLabel", ButtonsPlacement )
-			HitBoxZD:SetText( "Money Height" )
+			HitBoxZD:SetText( ARCBank.Msgs.ATMCreator.MonH )
 			HitBoxZD:SetPos( 10, 290 )
 			HitBoxZD:SizeToContents()
 			HitBoxZD:SetDark(true)
@@ -502,7 +503,7 @@ if ARCBank then
 			
 			local IgnrZCheck = vgui.Create( "DCheckBoxLabel", ButtonsPlacement )
 			IgnrZCheck:SetPos( 250, 12 )
-			IgnrZCheck:SetText( "ATM Preview" )
+			IgnrZCheck:SetText( ARCBank.Msgs.ATMCreator.ATMPre )
 			IgnrZCheck:SizeToContents()
 			IgnrZCheck:SetDark( 1 )
 			IgnrZCheck:SetValue( ARCLib.BoolToNumber(ATMThing.SpriteNoZ) )
@@ -510,7 +511,7 @@ if ARCBank then
 				ATMThing.SpriteNoZ = val
 			end
 			local ButtonSliderXD = vgui.Create( "DLabel", ButtonsPlacement )
-			ButtonSliderXD:SetText( "X Position" )
+			ButtonSliderXD:SetText( ARCBank.Msgs.ATMCreator.PositionX )
 			ButtonSliderXD:SetPos( 10, 70 )
 			ButtonSliderXD:SizeToContents()
 			ButtonSliderXD:SetDark(true)
@@ -529,7 +530,7 @@ if ARCBank then
 				end
 			end
 			local ButtonSliderYD = vgui.Create( "DLabel", ButtonsPlacement )
-			ButtonSliderYD:SetText( "Y Position" )
+			ButtonSliderYD:SetText( ARCBank.Msgs.ATMCreator.PositionY )
 			ButtonSliderYD:SetPos( 10, 90 )
 			ButtonSliderYD:SizeToContents()
 			ButtonSliderYD:SetDark(true)
@@ -549,7 +550,7 @@ if ARCBank then
 				end
 			end
 			local ButtonSliderZD = vgui.Create( "DLabel", ButtonsPlacement )
-			ButtonSliderZD:SetText( "Z Position" )
+			ButtonSliderZD:SetText( ARCBank.Msgs.ATMCreator.PositionZ )
 			ButtonSliderZD:SetPos( 10, 110 )
 			ButtonSliderZD:SizeToContents()
 			ButtonSliderZD:SetDark(true)
@@ -576,7 +577,7 @@ if ARCBank then
 				HitBoxY:SetVisible(false)
 				HitBoxZD:SetVisible(false)
 				HitBoxZ:SetVisible(false)
-				ButtonList:SetText( "Button #"..ATMThing.SelectedButton )
+				ButtonList:SetText(ARCLib.PlaceholderReplace(ARCBank.Msgs.ATMCreator.Butt,{NUM=tostring(ATMThing.SelectedButton)}))
 			else
 				ButtonSliderX:SetValue(ATMThing.ATMType.MoneyHitBoxPos.x)
 				ButtonSliderY:SetValue(ATMThing.ATMType.MoneyHitBoxPos.y)
@@ -593,7 +594,7 @@ if ARCBank then
 				HitBoxY:SetVisible(true)
 				HitBoxZD:SetVisible(true)
 				HitBoxZ:SetVisible(true)
-				ButtonList:SetText( "Money Hit Box")
+				ButtonList:SetText( ARCBank.Msgs.ATMCreator.MonHit )
 			end
 			function ButtonSliderZ:OnValueChanged( value )
 				if ATMThing.SelectedButton < 24 then
@@ -652,13 +653,13 @@ if ARCBank then
 			
 			local ScrRef = vgui.Create( "DButton",ButtonsPlacement)
 			ScrRef:SetPos( 10, 160 )
-			ScrRef:SetText( "Screen Reference" )
+			ScrRef:SetText( ARCBank.Msgs.ATMCreator.ScreenRef )
 			ScrRef:SetSize( 340, 20 )
 			ScrRef.DoClick = function()
 				local ButtonImgPanel = vgui.Create( "DFrame" )
 				ButtonImgPanel:SetPos( ScrW()/2 - 266/2, ScrH()/2 - 547 / 2 )
 				ButtonImgPanel:SetSize( 266, 547)
-				ButtonImgPanel:SetTitle( "ATM Buttons" )
+				ButtonImgPanel:SetTitle( ARCBank.Msgs.ATMCreator.ATMButtons )
 				ButtonImgPanel:SetVisible( true )
 				ButtonImgPanel:SetDraggable( true )
 				ButtonImgPanel:ShowCloseButton( true )
@@ -689,7 +690,7 @@ if ARCBank then
 					SettingsContainer:MakePopup()
 					local SkinL = vgui.Create( "DLabel", SettingsContainer )
 					SkinL:SetPos( 10, 35 ) -- Set the position of the label
-					SkinL:SetText( "Skin to switch to:" )
+					SkinL:SetText( ARCBank.Msgs.ATMCreator.SkinSwitch )
 					SkinL:SizeToContents()
 					local SkinN = vgui.Create("DNumberWang",SettingsContainer)
 					SkinN:SetPos(120, 30)
@@ -709,7 +710,7 @@ if ARCBank then
 					--SkinL:SetDark(true)
 					local ModelL = vgui.Create( "DLabel", SettingsContainer )
 					ModelL:SetPos( 10, 65 ) -- Set the position of the label
-					ModelL:SetText( "Change model to:" )
+					ModelL:SetText( ARCBank.Msgs.ATMCreator.ModelSwitch )
 					ModelL:SizeToContents()
 				
 					local ModelIn = vgui.Create( "DTextEntry", SettingsContainer )	-- create the form as a child of frame
@@ -730,7 +731,7 @@ if ARCBank then
 					--ModelL:SetDark(true)
 					local AnimL = vgui.Create( "DLabel", SettingsContainer )
 					AnimL:SetPos( 10, 95 ) -- Set the position of the label
-					AnimL:SetText( "Animation Name:" )
+					AnimL:SetText( ARCBank.Msgs.ATMCreator.AnimName )
 					AnimL:SizeToContents()
 					local AnimIn = vgui.Create( "DTextEntry", SettingsContainer )	-- create the form as a child of frame
 					AnimIn:SetPos( 120, 90 )
@@ -743,7 +744,7 @@ if ARCBank then
 					--AnimL:SetDark(true)
 					local AnimationLength = vgui.Create( "DLabel", SettingsContainer )
 					AnimationLength:SetPos( 10, 125 ) -- Set the position of the label
-					AnimationLength:SetText( "Animation Length:" )
+					AnimationLength:SetText( ARCBank.Msgs.ATMCreator.AnimLen )
 					AnimationLength:SizeToContents()
 					local AnimationLenIn = vgui.Create("DNumberWang",SettingsContainer)
 					AnimationLenIn:SetPos(120, 120)
@@ -767,7 +768,7 @@ if ARCBank then
 					
 					local AnimL = vgui.Create( "DLabel", SettingsContainer )
 					AnimL:SetPos( 10, 35 ) -- Set the position of the label
-					AnimL:SetText( "Animation Name:" )
+					AnimL:SetText( ARCBank.Msgs.ATMCreator.AnimName )
 					AnimL:SizeToContents()
 					local AnimIn = vgui.Create( "DTextEntry", SettingsContainer )	-- create the form as a child of frame
 					AnimIn:SetPos( 120, 30 )
@@ -780,7 +781,7 @@ if ARCBank then
 					--AnimL:SetDark(true)
 					local AnimationLength = vgui.Create( "DLabel", SettingsContainer )
 					AnimationLength:SetPos( 10, 65 ) -- Set the position of the label
-					AnimationLength:SetText( "Animation Length:" )
+					AnimationLength:SetText( ARCBank.Msgs.ATMCreator.AnimLen )
 					AnimationLength:SizeToContents()
 					local AnimationLenIn = vgui.Create("DNumberWang",SettingsContainer)
 					AnimationLenIn:SetPos(120, 60)
@@ -795,7 +796,7 @@ if ARCBank then
 					
 					local UseModelCheck = vgui.Create( "DCheckBoxLabel", SettingsContainer )
 					UseModelCheck:SetPos( 10, 95 )
-					UseModelCheck:SetText( "Use model (Disables the options below)" )
+					UseModelCheck:SetText( ARCBank.Msgs.ATMCreator.UseModel )
 					UseModelCheck:SizeToContents()
 					--UseModelCheck:SetDark( 1 )
 					
@@ -818,7 +819,7 @@ if ARCBank then
 						ModelIn.OnEnter = function(self)
 							ATMThing.ATMType.MoneyModel = self:GetValue()
 						end
-						ModelL:SetText( "Money Model:" )
+						ModelL:SetText( ARCBank.Msgs.ATMCreator.MoneyModel )
 						ModelL:SizeToContents()
 						
 					else
@@ -830,13 +831,13 @@ if ARCBank then
 						ModelIn.OnEnter = function(self)
 							ATMThing.ATMType.CardModel = self:GetValue()
 						end
-						ModelL:SetText( "Card Model:" )
+						ModelL:SetText( ARCBank.Msgs.ATMCreator.CardModel )
 						ModelL:SizeToContents()
 					end
 					
 					
 					local ModelAnimXD = vgui.Create( "DLabel", SettingsContainer )
-					ModelAnimXD:SetText( "X Position" )
+					ModelAnimXD:SetText( ARCBank.Msgs.ATMCreator.PositionX )
 					ModelAnimXD:SetPos( 10, 150 )
 					ModelAnimXD:SizeToContents()
 					local ModelAnimX = vgui.Create( "Slider", SettingsContainer )
@@ -852,7 +853,7 @@ if ARCBank then
 					
 					
 					local ModelAnimYD = vgui.Create( "DLabel", SettingsContainer )
-					ModelAnimYD:SetText( "Y Position" )
+					ModelAnimYD:SetText( ARCBank.Msgs.ATMCreator.PositionY )
 					ModelAnimYD:SetPos( 10, 170 )
 					ModelAnimYD:SizeToContents()
 					local ModelAnimY = vgui.Create( "Slider", SettingsContainer )
@@ -867,7 +868,7 @@ if ARCBank then
 					end
 					
 					local ModelAnimZD = vgui.Create( "DLabel", SettingsContainer )
-					ModelAnimZD:SetText( "Z Position" )
+					ModelAnimZD:SetText( ARCBank.Msgs.ATMCreator.PositionZ )
 					ModelAnimZD:SetPos( 10, 190 )
 					ModelAnimZD:SizeToContents()
 					local ModelAnimZ = vgui.Create( "Slider", SettingsContainer )
@@ -885,7 +886,7 @@ if ARCBank then
 					
 
 					local ModelAnimPD = vgui.Create( "DLabel", SettingsContainer )
-					ModelAnimPD:SetText( "Pitch Angle" )
+					ModelAnimPD:SetText( ARCBank.Msgs.ATMCreator.AngleP )
 					ModelAnimPD:SetPos( 10, 210 )
 					ModelAnimPD:SizeToContents()
 					local ModelAnimP = vgui.Create( "Slider", SettingsContainer )
@@ -901,7 +902,7 @@ if ARCBank then
 					
 					
 					local ModelAnimYaD = vgui.Create( "DLabel", SettingsContainer )
-					ModelAnimYaD:SetText( "Yaw Angle" )
+					ModelAnimYaD:SetText( ARCBank.Msgs.ATMCreator.AngleY )
 					ModelAnimYaD:SetPos( 10, 230 )
 					ModelAnimYaD:SizeToContents()
 					local ModelAnimYa = vgui.Create( "Slider", SettingsContainer )
@@ -916,7 +917,7 @@ if ARCBank then
 					end
 					
 					local ModelAnimRD = vgui.Create( "DLabel", SettingsContainer )
-					ModelAnimRD:SetText( "Roll Angle" )
+					ModelAnimRD:SetText( ARCBank.Msgs.ATMCreator.AngleR )
 					ModelAnimRD:SetPos( 10, 250 )
 					ModelAnimRD:SizeToContents()
 					local ModelAnimR = vgui.Create( "Slider", SettingsContainer )
@@ -932,7 +933,7 @@ if ARCBank then
 					
 					
 					local ModelAnimVXD = vgui.Create( "DLabel", SettingsContainer )
-					ModelAnimVXD:SetText( "Speed Forward" )
+					ModelAnimVXD:SetText( ARCBank.Msgs.ATMCreator.SpeedF )
 					ModelAnimVXD:SetPos( 10, 270 )
 					ModelAnimVXD:SizeToContents()
 					local ModelAnimVX = vgui.Create( "Slider", SettingsContainer )
@@ -948,7 +949,7 @@ if ARCBank then
 					
 					
 					local ModelAnimVYD = vgui.Create( "DLabel", SettingsContainer )
-					ModelAnimVYD:SetText( "Speed Right" )
+					ModelAnimVYD:SetText( ARCBank.Msgs.ATMCreator.SpeedR )
 					ModelAnimVYD:SetPos( 10, 290 )
 					ModelAnimVYD:SizeToContents()
 					local ModelAnimVY = vgui.Create( "Slider", SettingsContainer )
@@ -963,7 +964,7 @@ if ARCBank then
 					end
 					
 					local ModelAnimVZD = vgui.Create( "DLabel", SettingsContainer )
-					ModelAnimVZD:SetText( "Speed Up" )
+					ModelAnimVZD:SetText( ARCBank.Msgs.ATMCreator.SpeedU )
 					ModelAnimVZD:SetPos( 10, 310 )
 					ModelAnimVZD:SizeToContents()
 					local ModelAnimVZ = vgui.Create( "Slider", SettingsContainer )
@@ -982,7 +983,7 @@ if ARCBank then
 			
 			local DepositStartSound = vgui.Create( "DButton",MoneyAnimD)
 			DepositStartSound:SetPos( 10, 10 )
-			DepositStartSound:SetText( "Play Deposit Starting Sound (Click to here to change sound)" )
+			DepositStartSound:SetText( ARCBank.Msgs.ATMCreator.DepostStartSound )
 			DepositStartSound:SetSize( 340, 20 )
 			DepositStartSound.DoClick = function()
 				AddRemoveSounds("DepositStartSound")
@@ -990,7 +991,7 @@ if ARCBank then
 			
 			local Pause1L = vgui.Create( "DLabel", MoneyAnimD )
 			Pause1L:SetPos( 10, 44 ) -- Set the position of the label
-			Pause1L:SetText( "Pause for the following amount of seconds:" )
+			Pause1L:SetText( ARCBank.Msgs.ATMCreator.PauseSeconds )
 			Pause1L:SizeToContents()
 			Pause1L:SetDark(true)
 			local Pause1 = vgui.Create("DNumberWang",MoneyAnimD)
@@ -1005,7 +1006,7 @@ if ARCBank then
 			
 			local DepositOpenAnimation = vgui.Create( "DButton",MoneyAnimD)
 			DepositOpenAnimation:SetPos( 10, 70 )
-			DepositOpenAnimation:SetText( "ATM Open Animation (Click to here to change animation)" )
+			DepositOpenAnimation:SetText( ARCBank.Msgs.ATMCreator.ATMOpenAnim )
 			DepositOpenAnimation:SetSize( 340, 20 )
 			DepositOpenAnimation.DoClick = function()
 				EditAnimation("OpenAnimation")
@@ -1013,7 +1014,7 @@ if ARCBank then
 			
 			local Pause2L = vgui.Create( "DLabel", MoneyAnimD )
 			Pause2L:SetPos( 10, 104 ) -- Set the position of the label
-			Pause2L:SetText( "Pause for the following amount of seconds:" )
+			Pause2L:SetText( ARCBank.Msgs.ATMCreator.PauseSeconds )
 			Pause2L:SizeToContents()
 			Pause2L:SetDark(true)
 			local Pause2 = vgui.Create("DNumberWang",MoneyAnimD)
@@ -1028,7 +1029,7 @@ if ARCBank then
 			
 			local DepositStartSound = vgui.Create( "DButton",MoneyAnimD)
 			DepositStartSound:SetPos( 10, 130 )
-			DepositStartSound:SetText( "Play waiting for deposit sound loop (Click here to change sound)" )
+			DepositStartSound:SetText( ARCBank.Msgs.ATMCreator.DepositSoundLoop )
 			DepositStartSound:SetSize( 340, 20 )
 			DepositStartSound.DoClick = function()
 				AddRemoveSounds("DepositLoopSound")
@@ -1038,19 +1039,19 @@ if ARCBank then
 			
 			local FailL = vgui.Create( "DLabel", MoneyAnimD )
 			FailL:SetPos( 185, 164 ) -- Set the position of the label
-			FailL:SetText( "***If the deposit fails***" )
+			FailL:SetText( ARCBank.Msgs.ATMCreator.IfDepostFail )
 			FailL:SizeToContents()
 			FailL:SetDark(true)
 			local DepositSoundFail = vgui.Create( "DButton",MoneyAnimD)
 			DepositSoundFail:SetPos( 185, 190 )
-			DepositSoundFail:SetText( "Play deposit failed sound" )
+			DepositSoundFail:SetText( ARCBank.Msgs.ATMCreator.DepositFailedSound )
 			DepositSoundFail:SetSize( 165, 20 )
 			DepositSoundFail.DoClick = function()
 				AddRemoveSounds("DepositFailSound")
 			end
 			local Pause3FL = vgui.Create( "DLabel", MoneyAnimD )
 			Pause3FL:SetPos( 185, 224 ) -- Set the position of the label
-			Pause3FL:SetText( "Pause (seconds):" )
+			Pause3FL:SetText( ARCBank.Msgs.ATMCreator.PauseSecondsShort )
 			Pause3FL:SizeToContents()
 			Pause3FL:SetDark(true)
 			local Pause3F = vgui.Create("DNumberWang",MoneyAnimD)
@@ -1066,12 +1067,12 @@ if ARCBank then
 			
 			local SuccL = vgui.Create( "DLabel", MoneyAnimD )
 			SuccL:SetPos( 10, 164 ) -- Set the position of the label
-			SuccL:SetText( "***If the deposit succeeds***" )
+			SuccL:SetText( ARCBank.Msgs.ATMCreator.IfDepostSucceeds )
 			SuccL:SizeToContents()
 			SuccL:SetDark(true)
 			local DepositSound = vgui.Create( "DButton",MoneyAnimD)
 			DepositSound:SetPos( 10, 190 )
-			DepositSound:SetText( "Play deposit sound" )
+			DepositSound:SetText( ARCBank.Msgs.ATMCreator.DepositSound )
 			DepositSound:SetSize( 165, 20 )
 			DepositSound.DoClick = function()
 				AddRemoveSounds("DepositDoneSound")
@@ -1079,14 +1080,14 @@ if ARCBank then
 			
 			local DepositSound = vgui.Create( "DButton",MoneyAnimD)
 			DepositSound:SetPos( 10, 220 )
-			DepositSound:SetText( "Deposit animation" )
+			DepositSound:SetText( ARCBank.Msgs.ATMCreator.DepostAnimaion )
 			DepositSound:SetSize( 165, 20 )
 			DepositSound.DoClick = function()
 				EditAnimation("DepositAnimation")
 			end
 			local Pause3SL = vgui.Create( "DLabel", MoneyAnimD )
 			Pause3SL:SetPos( 10, 254 ) -- Set the position of the label
-			Pause3SL:SetText( "Pause (seconds):" )
+			Pause3SL:SetText( ARCBank.Msgs.ATMCreator.PauseSecondsShort )
 			Pause3SL:SizeToContents()
 			Pause3SL:SetDark(true)
 			local Pause3S = vgui.Create("DNumberWang",MoneyAnimD)
@@ -1100,7 +1101,7 @@ if ARCBank then
 			end
 			local DepositAnimation = vgui.Create( "DButton",MoneyAnimD)
 			DepositAnimation:SetPos( 10, 280 )
-			DepositAnimation:SetText( "ATM Close Animation (Click to here to change animation)" )
+			DepositAnimation:SetText( ARCBank.Msgs.ATMCreator.CloseAnimation )
 			DepositAnimation:SetSize( 340, 20 )
 			DepositAnimation.DoClick = function()
 				EditAnimation("CloseAnimation")
@@ -1109,16 +1110,16 @@ if ARCBank then
 			
 			local TestDeposit = vgui.Create( "DButton",MoneyAnimD)
 			TestDeposit:SetPos( 10, 310 )
-			TestDeposit:SetText( "Test Deposit Animation" )
+			TestDeposit:SetText( ARCBank.Msgs.ATMCreator.AnimTest )
 			TestDeposit:SetSize( 340, 20 )
 			TestDeposit.DoClick = function()
-				Derma_Query( "Should the deposit fail?", "Animation Test", "Yes", function()
+				Derma_Query( ARCBank.Msgs.ATMCreator.DepositFailQuestion, ARCBank.Msgs.ATMCreator.AnimTest, ARCBank.Msgs.ATMMsgs.Yes, function()
 					net.Start("ARCBank ATMCreate Test")
 					--net.WriteEntity(ATMThing) I almost trusted the client, lel
 					net.WriteBit(false)
 					net.WriteBit(true)
 					net.SendToServer()
-				end, "No", function() 
+				end, ARCBank.Msgs.ATMMsgs.No, function() 
 					net.Start("ARCBank ATMCreate Test")
 					--net.WriteEntity(ATMThing) I almost trusted the client, lel
 					net.WriteBit(false)
@@ -1131,7 +1132,7 @@ if ARCBank then
 			
 			local WithdrawStartSound = vgui.Create( "DButton",MoneyAnimW)
 			WithdrawStartSound:SetPos( 10, 10 )
-			WithdrawStartSound:SetText( "Play Withdraw Starting Sound (Click to here to change sound)" )
+			WithdrawStartSound:SetText( ARCBank.Msgs.ATMCreator.WithdrawStartSound )
 			WithdrawStartSound:SetSize( 340, 20 )
 			WithdrawStartSound.DoClick = function()
 				AddRemoveSounds("WithdrawSound")
@@ -1139,7 +1140,7 @@ if ARCBank then
 			
 			local WPause1L = vgui.Create( "DLabel", MoneyAnimW )
 			WPause1L:SetPos( 10, 44 ) -- Set the position of the label
-			WPause1L:SetText( "Pause for the following amount of seconds:" )
+			WPause1L:SetText( ARCBank.Msgs.ATMCreator.PauseSeconds )
 			WPause1L:SizeToContents()
 			WPause1L:SetDark(true)
 			local WPause1 = vgui.Create("DNumberWang",MoneyAnimW)
@@ -1154,7 +1155,7 @@ if ARCBank then
 			
 			local WithdrawOpenAnimation = vgui.Create( "DButton",MoneyAnimW)
 			WithdrawOpenAnimation:SetPos( 10, 70 )
-			WithdrawOpenAnimation:SetText( "ATM Open Animation (Click to here to change animation)" )
+			WithdrawOpenAnimation:SetText( ARCBank.Msgs.ATMCreator.ATMOpenAnim )
 			WithdrawOpenAnimation:SetSize( 340, 20 )
 			WithdrawOpenAnimation.DoClick = function()
 				EditAnimation("OpenAnimation")
@@ -1162,7 +1163,7 @@ if ARCBank then
 			
 			local WPause2L = vgui.Create( "DLabel", MoneyAnimW )
 			WPause2L:SetPos( 10, 104 ) -- Set the position of the label
-			WPause2L:SetText( "Pause for the following amount of seconds:" )
+			WPause2L:SetText( ARCBank.Msgs.ATMCreator.PauseSeconds )
 			WPause2L:SizeToContents()
 			WPause2L:SetDark(true)
 			local WPause2L = vgui.Create("DNumberWang",MoneyAnimW)
@@ -1177,7 +1178,7 @@ if ARCBank then
 			
 			local WithdrawAnim = vgui.Create( "DButton",MoneyAnimW)
 			WithdrawAnim:SetPos( 10, 130 )
-			WithdrawAnim:SetText( "Withdraw animation (Click to here to change animation)" )
+			WithdrawAnim:SetText( ARCBank.Msgs.ATMCreator.WithdrawAnimation )
 			WithdrawAnim:SetSize( 340, 20 )
 			WithdrawAnim.DoClick = function()
 				EditAnimation("WithdrawAnimation")
@@ -1185,13 +1186,13 @@ if ARCBank then
 			
 			local WaitL = vgui.Create( "DLabel", MoneyAnimW )
 			WaitL:SetPos( 10, 164 ) -- Set the position of the label
-			WaitL:SetText( "***Wait until user takes out the cash***" )
+			WaitL:SetText( ARCBank.Msgs.ATMCreator.WaitUser )
 			WaitL:SizeToContents()
 			WaitL:SetDark(true)
 			
 			local WithCloseAnimation = vgui.Create( "DButton",MoneyAnimW)
 			WithCloseAnimation:SetPos( 10, 190 )
-			WithCloseAnimation:SetText( "ATM Close Animation (Click to here to change animation)" )
+			WithCloseAnimation:SetText( ARCBank.Msgs.ATMCreator.CloseAnimation )
 			WithCloseAnimation:SetSize( 340, 20 )
 			WithCloseAnimation.DoClick = function()
 				EditAnimation("CloseAnimation")
@@ -1199,7 +1200,7 @@ if ARCBank then
 			
 			local TestWithdraw = vgui.Create( "DButton",MoneyAnimW)
 			TestWithdraw:SetPos( 10, 310 )
-			TestWithdraw:SetText( "Test Withdraw Animation" )
+			TestWithdraw:SetText( ARCBank.Msgs.ATMCreator.AnimTest )
 			TestWithdraw:SetSize( 340, 20 )
 			TestWithdraw.DoClick = function()
 				net.Start("ARCBank ATMCreate Test")
@@ -1213,7 +1214,7 @@ if ARCBank then
 			
 			
 			local MLSliderXD = vgui.Create( "DLabel", MoneyLight )
-			MLSliderXD:SetText( "X Position" )
+			MLSliderXD:SetText( ARCBank.Msgs.ATMCreator.PositionX )
 			MLSliderXD:SetPos( 10, 20 )
 			MLSliderXD:SizeToContents()
 			MLSliderXD:SetDark(true)
@@ -1228,7 +1229,7 @@ if ARCBank then
 				ATMThing.ATMType.Moneylight.x = value
 			end
 			local MLSliderYD = vgui.Create( "DLabel", MoneyLight )
-			MLSliderYD:SetText( "Y Position" )
+			MLSliderYD:SetText( ARCBank.Msgs.ATMCreator.PositionY )
 			MLSliderYD:SetPos( 10, 40 )
 			MLSliderYD:SizeToContents()
 			MLSliderYD:SetDark(true)
@@ -1243,7 +1244,7 @@ if ARCBank then
 				ATMThing.ATMType.Moneylight.y = value
 			end
 			local MLSliderZD = vgui.Create( "DLabel", MoneyLight )
-			MLSliderZD:SetText( "Z Position" )
+			MLSliderZD:SetText( ARCBank.Msgs.ATMCreator.PositionZ )
 			MLSliderZD:SetPos( 10, 60 )
 			MLSliderZD:SizeToContents()
 			MLSliderZD:SetDark(true)
@@ -1258,7 +1259,7 @@ if ARCBank then
 				ATMThing.ATMType.Moneylight.z = value
 			end
 			local MLSliderSD = vgui.Create( "DLabel", MoneyLight )
-			MLSliderSD:SetText( "Size" )
+			MLSliderSD:SetText( ARCBank.Msgs.ATMCreator.ScreenSize )
 			MLSliderSD:SetPos( 10, 80 )
 			MLSliderSD:SizeToContents()
 			MLSliderSD:SetDark(true)
@@ -1274,7 +1275,7 @@ if ARCBank then
 			end
 			
 			local MLSliderPD = vgui.Create( "DLabel", MoneyLight )
-			MLSliderPD:SetText( "Pitch Angle" )
+			MLSliderPD:SetText( ARCBank.Msgs.ATMCreator.AngleP )
 			MLSliderPD:SetPos( 10, 100 )
 			MLSliderPD:SizeToContents()
 			MLSliderPD:SetDark(true)
@@ -1289,7 +1290,7 @@ if ARCBank then
 				ATMThing.ATMType.MoneylightAng.p = value
 			end
 			local MLSliderYaD = vgui.Create( "DLabel", MoneyLight )
-			MLSliderYaD:SetText( "Yaw Angle" )
+			MLSliderYaD:SetText( ARCBank.Msgs.ATMCreator.AngleY )
 			MLSliderYaD:SetPos( 10, 120)
 			MLSliderYaD:SizeToContents()
 			MLSliderYaD:SetDark(true)
@@ -1304,7 +1305,7 @@ if ARCBank then
 				ATMThing.ATMType.MoneylightAng.y = value
 			end
 			local MLSliderRD = vgui.Create( "DLabel", MoneyLight )
-			MLSliderRD:SetText( "Roll Angle" )
+			MLSliderRD:SetText( ARCBank.Msgs.ATMCreator.AngleR )
 			MLSliderRD:SetPos( 10, 140 )
 			MLSliderRD:SizeToContents()
 			MLSliderRD:SetDark(true)
@@ -1320,7 +1321,7 @@ if ARCBank then
 			end
 			
 			local MLSliderWD = vgui.Create( "DLabel", MoneyLight )
-			MLSliderWD:SetText( "Width" )
+			MLSliderWD:SetText( ARCBank.Msgs.ATMCreator.ScreenWide )
 			MLSliderWD:SetPos( 10, 160 )
 			MLSliderWD:SizeToContents()
 			MLSliderWD:SetDark(true)
@@ -1336,7 +1337,7 @@ if ARCBank then
 			end
 			
 			local MLSliderHD = vgui.Create( "DLabel", MoneyLight )
-			MLSliderHD:SetText( "Height" )
+			MLSliderHD:SetText( ARCBank.Msgs.ATMCreator.ScreenHeight )
 			MLSliderHD:SetPos( 10, 180 )
 			MLSliderHD:SizeToContents()
 			MLSliderHD:SetDark(true)
@@ -1353,7 +1354,7 @@ if ARCBank then
 			
 			local MLFill = vgui.Create( "DCheckBoxLabel", MoneyLight )
 			MLFill:SetPos( 10, 205 )
-			MLFill:SetText( "Fill" )
+			MLFill:SetText( ARCBank.Msgs.ATMCreator.Fill )
 			MLFill:SizeToContents()
 			MLFill:SetDark( 1 )
 			MLFill:SetValue( ARCLib.BoolToNumber(ATMThing.ATMType.MoneylightFill) )
@@ -1363,7 +1364,7 @@ if ARCBank then
 			
 			local MLUse = vgui.Create( "DCheckBoxLabel", MoneyLight )
 			MLUse:SetPos( 100, 205 )
-			MLUse:SetText( "Use Light" )
+			MLUse:SetText( ARCBank.Msgs.ATMCreator.UseLight )
 			MLUse:SizeToContents()
 			MLUse:SetDark( 1 )
 			MLUse:SetValue( ARCLib.BoolToNumber(ATMThing.ATMType.UseMoneylight) )
@@ -1373,7 +1374,7 @@ if ARCBank then
 			
 			local MLSkinL = vgui.Create( "DLabel", MoneyLight )
 			MLSkinL:SetPos( 210, 205 ) -- Set the position of the label
-			MLSkinL:SetText( "Skin to switch to:" )
+			MLSkinL:SetText( ARCBank.Msgs.ATMCreator.SkinSwitch )
 			MLSkinL:SizeToContents()
 			MLSkinL:SetDark( 1 )
 			local MLSkin = vgui.Create("DNumberWang",MoneyLight)
@@ -1399,7 +1400,7 @@ if ARCBank then
 			
 			local CardInsertAnimB = vgui.Create( "DButton",CardAnim)
 			CardInsertAnimB:SetPos( 10, 10 )
-			CardInsertAnimB:SetText( "Edit card insert animation" )
+			CardInsertAnimB:SetText( ARCBank.Msgs.ATMCreator.EditCardInAnim )
 			CardInsertAnimB:SetSize( 340, 20 )
 			CardInsertAnimB.DoClick = function()
 				EditAnimation("CardInsertAnimation")
@@ -1407,7 +1408,7 @@ if ARCBank then
 			
 			local CardInsertSnd = vgui.Create( "DButton",CardAnim)
 			CardInsertSnd:SetPos( 10, 40 )
-			CardInsertSnd:SetText( "Edit card insert sound" )
+			CardInsertSnd:SetText( ARCBank.Msgs.ATMCreator.EditCardInAnim )
 			CardInsertSnd:SetSize( 340, 20 )
 			CardInsertSnd.DoClick = function()
 				AddRemoveSounds("InsertCardSound")
@@ -1416,7 +1417,7 @@ if ARCBank then
 			
 			local CardInsertAnimBT = vgui.Create( "DButton",CardAnim)
 			CardInsertAnimBT:SetPos( 10, 70 )
-			CardInsertAnimBT:SetText( "Test card insert animation" )
+			CardInsertAnimBT:SetText( ARCBank.Msgs.ATMCreator.TestCardInAnim  )
 			CardInsertAnimBT:SetSize( 340, 20 )
 			CardInsertAnimBT.DoClick = function()
 				--EditAnimation("CardInsertAnimation")
@@ -1426,21 +1427,21 @@ if ARCBank then
 			end
 			local CardRemoveAnimB = vgui.Create( "DButton",CardAnim)
 			CardRemoveAnimB:SetPos( 10, 100 )
-			CardRemoveAnimB:SetText( "Edit card remove animation" )
+			CardRemoveAnimB:SetText( ARCBank.Msgs.ATMCreator.EditCardOutAnim)
 			CardRemoveAnimB:SetSize( 340, 20 )
 			CardRemoveAnimB.DoClick = function()
 				EditAnimation("CardRemoveAnimation")
 			end
 			local CardRemoveSnd = vgui.Create( "DButton",CardAnim)
 			CardRemoveSnd:SetPos( 10, 130 )
-			CardRemoveSnd:SetText( "Edit card withdraw sound" )
+			CardRemoveSnd:SetText( ARCBank.Msgs.ATMCreator.EditCardOutSound )
 			CardRemoveSnd:SetSize( 340, 20 )
 			CardRemoveSnd.DoClick = function()
 				AddRemoveSounds("WithdrawCardSound")
 			end
 			local CardRemoveAnimBT = vgui.Create( "DButton",CardAnim)
 			CardRemoveAnimBT:SetPos( 10, 160 )
-			CardRemoveAnimBT:SetText( "Test card remove animation" )
+			CardRemoveAnimBT:SetText( ARCBank.Msgs.ATMCreator.TestCardOutAnim )
 			CardRemoveAnimBT:SetSize( 340, 20 )
 			CardRemoveAnimBT.DoClick = function()
 				net.Start("ARCBank ATMCreate Test Card")
@@ -1453,7 +1454,7 @@ if ARCBank then
 			local CardLightPanel = vgui.Create( "DPanel")
 			local ScrLSliderXD = vgui.Create( "DLabel", CardLightPanel )
 			ScrLSliderXD:SetParent(CardLightPanel)
-			ScrLSliderXD:SetText( "X Position" )
+			ScrLSliderXD:SetText( ARCBank.Msgs.ATMCreator.PositionX )
 			ScrLSliderXD:SetPos( 10, 20 )
 			ScrLSliderXD:SizeToContents()
 			ScrLSliderXD:SetDark(true)
@@ -1468,7 +1469,7 @@ if ARCBank then
 				ATMThing.ATMType.Cardlight.x = value
 			end
 			local ScrLSliderYD = vgui.Create( "DLabel", CardLightPanel )
-			ScrLSliderYD:SetText( "Y Position" )
+			ScrLSliderYD:SetText( ARCBank.Msgs.ATMCreator.PositionY )
 			ScrLSliderYD:SetPos( 10, 40 )
 			ScrLSliderYD:SizeToContents()
 			ScrLSliderYD:SetDark(true)
@@ -1483,7 +1484,7 @@ if ARCBank then
 				ATMThing.ATMType.Cardlight.y = value
 			end
 			local ScrLSliderZD = vgui.Create( "DLabel", CardLightPanel )
-			ScrLSliderZD:SetText( "Z Position" )
+			ScrLSliderZD:SetText( ARCBank.Msgs.ATMCreator.PositionZ )
 			ScrLSliderZD:SetPos( 10, 60 )
 			ScrLSliderZD:SizeToContents()
 			ScrLSliderZD:SetDark(true)
@@ -1498,7 +1499,7 @@ if ARCBank then
 				ATMThing.ATMType.Cardlight.z = value
 			end
 			local ScrLSliderSD = vgui.Create( "DLabel", CardLightPanel )
-			ScrLSliderSD:SetText( "Size" )
+			ScrLSliderSD:SetText( ARCBank.Msgs.ATMCreator.ScreenSize )
 			ScrLSliderSD:SetPos( 10, 80 )
 			ScrLSliderSD:SizeToContents()
 			ScrLSliderSD:SetDark(true)
@@ -1514,7 +1515,7 @@ if ARCBank then
 			end
 			
 			local ScrLSliderPD = vgui.Create( "DLabel", CardLightPanel )
-			ScrLSliderPD:SetText( "Pitch Angle" )
+			ScrLSliderPD:SetText( ARCBank.Msgs.ATMCreator.AngleP )
 			ScrLSliderPD:SetPos( 10, 100 )
 			ScrLSliderPD:SizeToContents()
 			ScrLSliderPD:SetDark(true)
@@ -1529,7 +1530,7 @@ if ARCBank then
 				ATMThing.ATMType.CardlightAng.p = value
 			end
 			local ScrLSliderYaD = vgui.Create( "DLabel", CardLightPanel )
-			ScrLSliderYaD:SetText( "Yaw Angle" )
+			ScrLSliderYaD:SetText( ARCBank.Msgs.ATMCreator.AngleY )
 			ScrLSliderYaD:SetPos( 10, 120)
 			ScrLSliderYaD:SizeToContents()
 			ScrLSliderYaD:SetDark(true)
@@ -1544,7 +1545,7 @@ if ARCBank then
 				ATMThing.ATMType.CardlightAng.y = value
 			end
 			local ScrLSliderRD = vgui.Create( "DLabel", CardLightPanel )
-			ScrLSliderRD:SetText( "Roll Angle" )
+			ScrLSliderRD:SetText( ARCBank.Msgs.ATMCreator.AngleR )
 			ScrLSliderRD:SetPos( 10, 140 )
 			ScrLSliderRD:SizeToContents()
 			ScrLSliderRD:SetDark(true)
@@ -1560,7 +1561,7 @@ if ARCBank then
 			end
 			
 			local ScrLSliderWD = vgui.Create( "DLabel", CardLightPanel )
-			ScrLSliderWD:SetText( "Width" )
+			ScrLSliderWD:SetText( ARCBank.Msgs.ATMCreator.ScreenWide )
 			ScrLSliderWD:SetPos( 10, 160 )
 			ScrLSliderWD:SizeToContents()
 			ScrLSliderWD:SetDark(true)
@@ -1576,7 +1577,7 @@ if ARCBank then
 			end
 			
 			local ScrLSliderHD = vgui.Create( "DLabel", CardLightPanel )
-			ScrLSliderHD:SetText( "Height" )
+			ScrLSliderHD:SetText( ARCBank.Msgs.ATMCreator.ScreenHeight )
 			ScrLSliderHD:SetPos( 10, 180 )
 			ScrLSliderHD:SizeToContents()
 			ScrLSliderHD:SetDark(true)
@@ -1592,7 +1593,7 @@ if ARCBank then
 			end
 			local ScrLFill = vgui.Create( "DCheckBoxLabel", CardLightPanel )
 			ScrLFill:SetPos( 10, 200 )
-			ScrLFill:SetText( "Fill" )
+			ScrLFill:SetText( ARCBank.Msgs.ATMCreator.Fill )
 			ScrLFill:SizeToContents()
 			ScrLFill:SetDark( 1 )
 			ScrLFill:SetValue( ARCLib.BoolToNumber(ATMThing.ATMType.CardlightFill) )
@@ -1601,7 +1602,7 @@ if ARCBank then
 			end
 			local ScrLUse = vgui.Create( "DCheckBoxLabel", CardLightPanel )
 			ScrLUse:SetPos( 185, 200 )
-			ScrLUse:SetText( "Use Light" )
+			ScrLUse:SetText( ARCBank.Msgs.ATMCreator.UseLight )
 			ScrLUse:SizeToContents()
 			ScrLUse:SetDark( 1 )
 			ScrLUse:SetValue( ARCLib.BoolToNumber(ATMThing.ATMType.UseCardlight) )
@@ -1624,21 +1625,21 @@ if ARCBank then
 
 			local Snd1 = vgui.Create( "DButton",Sounds)
 			Snd1:SetPos( 10, 10 )
-			Snd1:SetText( "ATM Close sound" )
+			Snd1:SetText( ARCBank.Msgs.ATMCreator.ATMCloseSound )
 			Snd1:SetSize( 340, 20 )
 			Snd1.DoClick = function()
 				AddRemoveSounds("CloseSound")
 			end
 			local Snd2 = vgui.Create( "DButton",Sounds)
 			Snd2:SetPos( 10, 40 )
-			Snd2:SetText( "Button press sound (client side)" )
+			Snd2:SetText( ARCBank.Msgs.ATMCreator.BtnPrsClnt )
 			Snd2:SetSize( 340, 20 )
 			Snd2.DoClick = function()
 				AddRemoveSounds("ClientPressSound")
 			end
 			local Snd3 = vgui.Create( "DButton",Sounds)
 			Snd3:SetPos( 10, 70 )
-			Snd3:SetText( "Button press sound (server side)" )
+			Snd3:SetText( ARCBank.Msgs.ATMCreator.BtnPrsServ )
 			Snd3:SetSize( 340, 20 )
 			Snd3.DoClick = function()
 				AddRemoveSounds("PressSound")
@@ -1646,7 +1647,7 @@ if ARCBank then
 			
 			local Snd4 = vgui.Create( "DButton",Sounds)
 			Snd4:SetPos( 10, 100 )
-			Snd4:SetText( "Request money sound" )
+			Snd4:SetText( ARCBank.Msgs.ATMCreator.BeepSound )
 			Snd4:SetSize( 340, 20 )
 			Snd4.DoClick = function()
 				AddRemoveSounds("WaitSound")
@@ -1654,7 +1655,7 @@ if ARCBank then
 			
 			local Snd5 = vgui.Create( "DButton",Sounds)
 			Snd5:SetPos( 10, 130 )
-			Snd5:SetText( "Error sound" )
+			Snd5:SetText( ARCBank.Msgs.ATMCreator.ErrSound )
 			Snd5:SetSize( 340, 20 )
 			Snd5.DoClick = function()
 				AddRemoveSounds("ErrorSound")
@@ -1662,21 +1663,21 @@ if ARCBank then
 			
 			local Snd6 = vgui.Create( "DButton",Sounds)
 			Snd6:SetPos( 10, 160 )
-			Snd6:SetText( "Invalid selection sound" )
+			Snd6:SetText( ARCBank.Msgs.ATMCreator.BeepNoSound )
 			Snd6:SetSize( 340, 20 )
 			Snd6.DoClick = function()
 				AddRemoveSounds("PressNoSound")
 			end
 			
-			PropertySheet:AddSheet( "Screen Placement", ScreenPlacement, "icon16/monitor_go.png", false, false, "Configure the placement of the screen." )
-			PropertySheet:AddSheet( "Screen Display", ScreenColour, "icon16/palette.png", false, false, "Configure the screen display" )
-			PropertySheet:AddSheet( "Buttons Placement", ButtonsPlacement, "icon16/cog_edit.png", false, false, "Place the buttons on the ATM" )
-			PropertySheet:AddSheet( "Deposit animation", MoneyAnimD, "icon16/money_add.png", false, false, "Configure the money dispensing animation" )
-			PropertySheet:AddSheet( "Withdraw animation", MoneyAnimW, "icon16/money_delete.png", false, false, "Configure the money withdraw animation" )
-			PropertySheet:AddSheet( "Money light", MoneyLight, "icon16/lightbulb.png", false, false, "Configure the money light" )
-			PropertySheet:AddSheet( "Card animation", CardAnim, "icon16/creditcards.png", false, false, "Configure the card animation" )
-			PropertySheet:AddSheet( "Card light", CardLightPanel, "icon16/lightbulb.png", false, false, "Configure the card light" )
-			PropertySheet:AddSheet( "Other Sounds", Sounds, "icon16/sound.png", false, false, "Edit more interface sounds" )
+			PropertySheet:AddSheet( "Screen Placement", ScreenPlacement, "icon16/monitor_go.png", false, false, ARCBank.Msgs.ATMCreator.TooltipScreenPos )
+			PropertySheet:AddSheet( "Screen Display", ScreenColour, "icon16/palette.png", false, false, ARCBank.Msgs.ATMCreator.TooltipScreenCol )
+			PropertySheet:AddSheet( "Buttons Placement", ButtonsPlacement, "icon16/cog_edit.png", false, false, ARCBank.Msgs.ATMCreator.TooltipButtPos )
+			PropertySheet:AddSheet( "Deposit animation", MoneyAnimD, "icon16/money_add.png", false, false, ARCBank.Msgs.ATMCreator.TooltipMoneyIn )
+			PropertySheet:AddSheet( "Withdraw animation", MoneyAnimW, "icon16/money_delete.png", false, false, ARCBank.Msgs.ATMCreator.TooltipMoneyOut )
+			PropertySheet:AddSheet( "Money light", MoneyLight, "icon16/lightbulb.png", false, false, ARCBank.Msgs.ATMCreator.TooltipMoneyLight )
+			PropertySheet:AddSheet( "Card animation", CardAnim, "icon16/creditcards.png", false, false, ARCBank.Msgs.ATMCreator.TooltipCardAnim )
+			PropertySheet:AddSheet( "Card light", CardLightPanel, "icon16/lightbulb.png", false, false, ARCBank.Msgs.ATMCreator.TooltipCardLight )
+			PropertySheet:AddSheet( "Other Sounds", Sounds, "icon16/sound.png", false, false, ARCBank.Msgs.ATMCreator.TooltipSound )
 			
 			--gui.EnableScreenClicker( true ) 
 		end
