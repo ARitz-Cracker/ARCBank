@@ -157,7 +157,7 @@ net.Receive( "ARCCHIPMACHINE_MENU_OWNER", function(length,ply)
 	ent.ToAccount = account
 	ent.EnteredAmount = amount
 	ent.DemandingMoney = true
-	ent:SetScreenMsg("Cr "..tostring(amount),ARCBank.Msgs.CardMsgs.InsertCard)
+	ent:SetScreenMsg(ARCBank.Settings["money_symbol"]..tostring(amount),ARCBank.Msgs.CardMsgs.InsertCard)
 	ent.Reason = re
 end)
 net.Receive( "ARCCHIPMACHINE_MENU_CUSTOMER", function(length,ply)

@@ -87,14 +87,14 @@ function ARCBank.SettingsReset() --DO NOT EDIT THIS!!!!
 	ARCBank.Settings["atm_holo"] = false --DO NOT EDIT THIS!!!!
 	ARCBank.Settings["atm_hack_noob_chat"] = true --DO NOT EDIT THIS!!!!
 	
-	ARCBank.Settings["language"] = "en" --DO NOT EDIT THIS!!!!
+	ARCBank.Settings["language"] = "en_ca" --DO NOT EDIT THIS!!!!
 	
 	
 	ARCBank.Settings["use_bank_for_payday"] = true --DO NOT EDIT THIS!!!!
 	ARCBank.Settings["atm_holo"] = true --DO NOT EDIT THIS!!!!
 	ARCBank.Settings["atm_holo_rotate"] = true --DO NOT EDIT THIS!!!!
 	ARCBank.Settings["atm_holo_text"] = "$$ ATM $$" --DO NOT EDIT THIS!!!!
-	ARCBank.Settings["group_account_limit"] = 4 --DO NOT EDIT THIS!!!!
+	ARCBank.Settings["account_group_limit"] = 4 --DO NOT EDIT THIS!!!!
 	
 	ARCBank.Settings["death_money_remove"] = 100
 	ARCBank.Settings["death_money_drop"] = 70

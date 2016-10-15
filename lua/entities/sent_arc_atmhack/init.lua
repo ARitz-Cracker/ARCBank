@@ -167,7 +167,7 @@ function ENT:OnTakeDamage(dmg)
 			else
 				attname "UNKNOWN"
 			end
-			if IsValid(self.Hacker) && dmg:GetAttacker() != self.Hacker && self.Hacker:IsPlayer() then 
+			if IsValid(self.Hacker) && dmg:GetAttacker() != self.Hacker && self.Hacker:IsPlayer() && !self.Broken && !self.GottaStop then 
 				self.Hacker:ConCommand("say "..string.Replace( ARCBank.Msgs.UserMsgs.HackIdiot, "%HERO%", tostring(attname) ) )
 				ARCLib.NotifyBroadcast(string.Replace( string.Replace( ARCBank.Msgs.UserMsgs.HackHero, "%IDIOT%",tostring(self.Hacker:Nick())), "%HERO%", tostring(attname) ),NOTIFY_GENERIC,15,true)
 			end
@@ -282,7 +282,7 @@ function ENT:Think()
 			self:GetParent()._HackAttached = false
 			local detachtime = 3
 			if(self.OurHealth <= 0) then
-				detachtime = 0.1
+				detachtime = 0.5
 			end
 			timer.Simple(detachtime,function()
 				if !IsValid(self) || !IsValid(self:GetParent()) then return end

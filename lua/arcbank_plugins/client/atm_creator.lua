@@ -1669,15 +1669,15 @@ if ARCBank then
 				AddRemoveSounds("PressNoSound")
 			end
 			
-			PropertySheet:AddSheet( "Screen Placement", ScreenPlacement, "icon16/monitor_go.png", false, false, ARCBank.Msgs.ATMCreator.TooltipScreenPos )
-			PropertySheet:AddSheet( "Screen Display", ScreenColour, "icon16/palette.png", false, false, ARCBank.Msgs.ATMCreator.TooltipScreenCol )
-			PropertySheet:AddSheet( "Buttons Placement", ButtonsPlacement, "icon16/cog_edit.png", false, false, ARCBank.Msgs.ATMCreator.TooltipButtPos )
-			PropertySheet:AddSheet( "Deposit animation", MoneyAnimD, "icon16/money_add.png", false, false, ARCBank.Msgs.ATMCreator.TooltipMoneyIn )
-			PropertySheet:AddSheet( "Withdraw animation", MoneyAnimW, "icon16/money_delete.png", false, false, ARCBank.Msgs.ATMCreator.TooltipMoneyOut )
-			PropertySheet:AddSheet( "Money light", MoneyLight, "icon16/lightbulb.png", false, false, ARCBank.Msgs.ATMCreator.TooltipMoneyLight )
-			PropertySheet:AddSheet( "Card animation", CardAnim, "icon16/creditcards.png", false, false, ARCBank.Msgs.ATMCreator.TooltipCardAnim )
-			PropertySheet:AddSheet( "Card light", CardLightPanel, "icon16/lightbulb.png", false, false, ARCBank.Msgs.ATMCreator.TooltipCardLight )
-			PropertySheet:AddSheet( "Other Sounds", Sounds, "icon16/sound.png", false, false, ARCBank.Msgs.ATMCreator.TooltipSound )
+			PropertySheet:AddSheet( ARCBank.Msgs.ATMCreator.ScreenPlacement, ScreenPlacement, "icon16/monitor_go.png", false, false, ARCBank.Msgs.ATMCreator.TooltipScreenPos )
+			PropertySheet:AddSheet( ARCBank.Msgs.ATMCreator.ScreenDisplay, ScreenColour, "icon16/palette.png", false, false, ARCBank.Msgs.ATMCreator.TooltipScreenCol )
+			PropertySheet:AddSheet( ARCBank.Msgs.ATMCreator.ButtonsPlacement, ButtonsPlacement, "icon16/cog_edit.png", false, false, ARCBank.Msgs.ATMCreator.TooltipButtPos )
+			PropertySheet:AddSheet( ARCBank.Msgs.ATMCreator.DepositAnim, MoneyAnimD, "icon16/money_add.png", false, false, ARCBank.Msgs.ATMCreator.TooltipMoneyIn )
+			PropertySheet:AddSheet( ARCBank.Msgs.ATMCreator.WithdrawAnim, MoneyAnimW, "icon16/money_delete.png", false, false, ARCBank.Msgs.ATMCreator.TooltipMoneyOut )
+			PropertySheet:AddSheet( ARCBank.Msgs.ATMCreator.MoneyLight, MoneyLight, "icon16/lightbulb.png", false, false, ARCBank.Msgs.ATMCreator.TooltipMoneyLight )
+			PropertySheet:AddSheet( ARCBank.Msgs.ATMCreator.CardAnim, CardAnim, "icon16/creditcards.png", false, false, ARCBank.Msgs.ATMCreator.TooltipCardAnim )
+			PropertySheet:AddSheet( ARCBank.Msgs.ATMCreator.CardLight, CardLightPanel, "icon16/lightbulb.png", false, false, ARCBank.Msgs.ATMCreator.TooltipCardLight )
+			PropertySheet:AddSheet( ARCBank.Msgs.ATMCreator.SoundsOther, Sounds, "icon16/sound.png", false, false, ARCBank.Msgs.ATMCreator.TooltipSound )
 			
 			--gui.EnableScreenClicker( true ) 
 		end
