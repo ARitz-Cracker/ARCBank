@@ -740,6 +740,9 @@ net.Receive( "arcbank_comm_secret", function(length,ply)
 				welddummeh:GetPhysicsObject():AddAngleVelocity(OldAVel)
 				if arg == 1 || arg == 3 then
 					welddummeh.MapEnt = {oldpos,oldang}
+				elseif !table.HasValue(ARCBank.Settings.admins,string.lower(ply:GetUserGroup())) then
+					ARCBank.MsgCL(ply,"This was meant to be harmless fun, but it's getting a little abused. The ATM will return to its original location once it's done flying.")
+					welddummeh.MapEnt = {oldpos,oldang}
 				end
 				if arg == 2 || arg == 3 then
 					welddummeh.Random = true

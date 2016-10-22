@@ -824,7 +824,6 @@ if ARCBank then
 						
 					else
 						function UseModelCheck:OnChange( val )
-							UseModelCheck:SetValue( ARCLib.BoolToNumber(ATMThing.ATMType.UseCardModel) )
 							ATMThing.ATMType.UseCardModel = val
 						end
 						ModelIn:SetValue(ATMThing.ATMType.CardModel)

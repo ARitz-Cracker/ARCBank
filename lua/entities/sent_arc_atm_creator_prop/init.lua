@@ -20,6 +20,7 @@ function ENT:Initialize()
 	self.MonehDelay = CurTime()
 	self.UseDelay = CurTime() + 1
 	self.RemoveTime = CurTime() + 5
+	self:SetUseType(SIMPLE_USE)
 end
 function ENT:SpawnFunction( ply, tr )
 	ARCLib.NotifyPlayer(ply,"Plz no spawn plz thx plz",NOTIFY_ERROR,5,true)

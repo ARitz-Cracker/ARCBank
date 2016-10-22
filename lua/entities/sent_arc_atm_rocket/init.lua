@@ -42,16 +42,17 @@ function ENT:Think()
 	if self.NextBeep < 0.00000001 then
 		if self.StopTime > CurTime() then
 			if self.Waiting then
+				self.phys:Wake()
 				self.RocketSound = CreateSound( self, "^thrusters/rocket04.wav" ) 
 				self.Waiting = false
 				self.RocketSound:PlayEx(2, 100)
+				self.RocketSound:SetSoundLevel( 180 ) 
 			end
-			self.phys:ApplyForceCenter(self:GetUp()*32812) 
 			for i = -7,8 do
 				local relpoint = Vector(((i-1)%4)*2,math.ceil(i/4)*2,0)
 				local vPoint = self:LocalToWorld(Vector(-17,-3,-46)+relpoint)
 				local effectdata = EffectData()
-				effectdata:SetStart( vPoint ) // not sure if ( we need a start and origin ( endpoint ) for this effect, but whatever
+				effectdata:SetStart( vPoint ) -- not sure if ( we need a start and origin ( endpoint ) for this effect, but whatever
 				effectdata:SetOrigin( vPoint )
 				effectdata:SetScale( 0.1 )
 				util.Effect( "MuzzleEffect", effectdata )
@@ -76,47 +77,7 @@ function ENT:Think()
 				self.RocketSound:Stop()
 			end
 			if self.ATMTime < CurTime() then
-				if self.MapEnt then
-					local effectdata = EffectData()
-					effectdata:SetEntity( self )
-					util.Effect( "entity_remove", effectdata )
-					self:EmitSound("Airboat.FireGunRevDown")
-					timer.Simple(0.01,function()
-						self:Remove()
-					end)
-				else
-					self:Remove()
-				end
-				local OldVel = self.phys:GetVelocity()	
-				local OldAVel = self.phys:GetAngleVelocity()
-				local oldpos = self:GetPos()
-				local oldang = self:GetAngles()
-				
-				local welddummeh = ents.Create ("sent_arc_atm");
-				if self.MapEnt then
-					welddummeh:SetPos(self.MapEnt[1]);
-					welddummeh:SetAngles(self.MapEnt[2])
-					welddummeh:Spawn()
-					--dummeh:SetColor( Color(0,0,0,0) )
-					welddummeh.ARCBank_MapEntity = true
-					local phys = welddummeh:GetPhysicsObject()
-					if IsValid(phys) then
-						phys:EnableMotion( false )
-					end
-					timer.Simple(0.01,function()
-						local effectdata = EffectData()
-						effectdata:SetEntity( welddummeh )
-						util.Effect( "propspawn", effectdata )
-					end)
-				else
-					welddummeh:SetPos(oldpos);
-					welddummeh:SetAngles(oldang)
-					welddummeh:Spawn()
-					--dummeh:SetColor( Color(0,0,0,0) )
-					welddummeh:GetPhysicsObject():SetVelocityInstantaneous(OldVel)
-					welddummeh:GetPhysicsObject():AddAngleVelocity(OldAVel)
-				end
-				
+				self:Remove()
 			end
 		end
 	else
@@ -130,10 +91,53 @@ function ENT:Think()
 	end
 end
 
+function ENT:PhysicsUpdate( phys )
+	if self.StopTime > CurTime() && self.NextBeep < 0.00000001 then
+		self.phys:ApplyForceCenter(self:GetUp()*phys:GetMass()*15) 
+	end
+end
+
 function ENT:OnRemove()
 	if self.RocketSound then
 		self.RocketSound:Stop()
 	end
+	if self.MapEnt then
+		local effectdata = EffectData()
+		effectdata:SetEntity( self )
+		util.Effect( "entity_remove", effectdata )
+		self:EmitSound("Airboat.FireGunRevDown")
+		timer.Simple(0.01,function()
+			self:Remove()
+		end)
+	end
+	local OldVel = self.phys:GetVelocity()	
+	local OldAVel = self.phys:GetAngleVelocity()
+	local oldpos = self:GetPos()
+	local oldang = self:GetAngles()
+	
+	local welddummeh = ents.Create ("sent_arc_atm");
+	if self.MapEnt then
+		welddummeh:SetPos(self.MapEnt[1]);
+		welddummeh:SetAngles(self.MapEnt[2])
+		welddummeh:Spawn()
+		--dummeh:SetColor( Color(0,0,0,0) )
+		welddummeh.ARCBank_MapEntity = true
+		local phys = welddummeh:GetPhysicsObject()
+		if IsValid(phys) then
+			phys:EnableMotion( false )
+		end
+		timer.Simple(0.01,function()
+			local effectdata = EffectData()
+			effectdata:SetEntity( welddummeh )
+			util.Effect( "propspawn", effectdata )
+		end)
+	else
+		welddummeh:SetPos(oldpos);
+		welddummeh:SetAngles(oldang)
+		welddummeh:Spawn()
+		--dummeh:SetColor( Color(0,0,0,0) )
+		welddummeh:GetPhysicsObject():SetVelocityInstantaneous(OldVel)
+		welddummeh:GetPhysicsObject():AddAngleVelocity(OldAVel)
+	end
 end
-
 

@@ -8,5 +8,5 @@ ENT.Contact    		= ""
 ENT.Purpose 		= ""
 ENT.Instructions 	= ""
 
-ENT.Spawnable = false;
+ENT.Spawnable = true;
 ENT.AdminOnly = true

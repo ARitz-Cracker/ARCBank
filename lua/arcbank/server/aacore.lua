@@ -2,10 +2,10 @@
 
 -- This file is under copyright, and is bound to the agreement stated in the EULA.
 -- Any 3rd party content has been used as either public domain or with permission.
--- © Copyright 2014,2015 Aritz Beobide-Cardinal All rights reserved.
+-- © Copyright 2014-2016 Aritz Beobide-Cardinal All rights reserved.
 
 -- You know, I hate it that I have to use a billion callback functions now that SQL was implimented.
-
+-- An entire rework of the account system is due at v1.3.7
 ARCBank.LogFileWritten = false
 ARCBank.LogFile = ""
 ARCBank.Loaded = false
@@ -904,11 +904,6 @@ function ARCBank.GetAllAccountsUnordered(usesql,callback)
 	if usesql then
 		ARCBank.MySQL.Query("SELECT * FROM arcbank_group_account",function(didwork,data)
 			if didwork then -- Even I cry when I read the next few lines of code... although not as much
-			
-			
-			
-			
-
 				ARCBank.MySQL.Query("SELECT * FROM arcbank_account_members;",function(ddidwork,ddata)
 					if ddidwork then
 						for _,accountdata in pairs(data) do
@@ -1290,17 +1285,6 @@ function ARCBank.Load()
 			ARCBank.Msg("A player must be online before continuing...")
 		end
 		timer.Simple(1,function()
-	--[[
-		http.Fetch( "http://dl.dropboxusercontent.com/u/%%ID%%/ADDONS/arcbank/CurrentVer.txt",
-		function( body, len, headers, code )
-			-- The first argument is the HTML we asked for.
-			ARCBank.Msg("HTTP: "..body)
-		end,
-		function( error )
-			ARCBank.Msg("WARNING! Failed to get update version. ("..error..")")
-		end
-		);
-		]]
 
 		ARCBank.Msg("Post-loading ARCBank...")
 		if game.SinglePlayer() then
@@ -1318,11 +1302,6 @@ function ARCBank.Load()
 			ARCBank.Msg("LOADING FALIURE!")
 			return
 		end
-		--if !file.Exists(ARCBank.Dir.."/_about_atm.txt","DATA") then
-			--ARCBank.Msg("Copied atm about file")
-			file.Write(ARCBank.Dir.."/_about_atm.txt", file.Read( "arcbank/data/about_atm.lua", "LUA" ) )
-		--end
-		--		 = false
 		if file.Exists(ARCBank.Dir.."/__data.txt","DATA") then
 			ARCBank.Disk = util.JSONToTable(file.Read( ARCBank.Dir.."/__data.txt","DATA" ))
 			if (!ARCBank.Disk) then
@@ -1339,354 +1318,341 @@ function ARCBank.Load()
 		else
 			ARCBank.Msg("WARNING! THE SYSTEM DIDN'T SHUT DOWN PROPERLY! EXPECT CORRUPTED ACCOUNTS!")
 		end
-		ARCLib.AddonLoadSettings("ARCBank",{atm_language = "language", hack_max = "atm_hack_max", hack_min = "atm_hack_min", standard_interest = "interest_1_standard", bronze_interest = "interest_2_bronze", silver_interest = "interest_3_silver", gold_interest = "interest_4_gold", group_standard_interest = "interest_6_group_standard", group_premium_interest = "interest_7_group_premium", standard_requirement = "usergroup_1_standard", bronze_requirement = "usergroup_2_bronze", silver_requirement = "usergroup_3_silver", gold_requirement = "usergroup_4_gold", group_standard_requirement = "usergroup_6_group_standard", group_premium_requirement = "usergroup_7_group_premium", everything_requirement = "usergroup_all", starting_cash = "account_starting_cash", debt_limit = "account_debt_limit", starting_cash = "account_starting_cash", group_account_limit = "account_group_limit",perpetual_debt = "interest_perpetual_debt"})
-
-		if !file.IsDir( ARCBank.Dir.."/languages","DATA" ) then
-			ARCBank.Msg("Created Folder: "..ARCBank.Dir.."/languages")
-			file.CreateDir(ARCBank.Dir.."/languages")
-		end	
-		if ARCBank.DefaultLangs then
-			ARCBank.Msg("Writing default language files...")
-			file.Write(ARCBank.Dir.."/languages/spa.txt", ARCBank.DefaultLangs.spa )
-			file.Write(ARCBank.Dir.."/languages/sp.txt", ARCBank.DefaultLangs.spa )
-			file.Write(ARCBank.Dir.."/languages/en.txt", ARCBank.DefaultLangs.en )
-			file.Write(ARCBank.Dir.."/languages/ger.txt", ARCBank.DefaultLangs.ger )
-			file.Write(ARCBank.Dir.."/languages/pt_br.txt", ARCBank.DefaultLangs.pt_br )
-			file.Write(ARCBank.Dir.."/languages/fr.txt", ARCBank.DefaultLangs.fr )
-			file.Write(ARCBank.Dir.."/languages/1337.txt", ARCBank.DefaultLangs.leet )
-			file.Write(ARCBank.Dir.."/languages/ru.txt", ARCBank.DefaultLangs.ru )
-			ARCBank.DefaultLangs = nil
-		end
-		ARCLib.SetAddonLanguage("ARCBank")
-		if !file.IsDir( ARCBank.Dir.."/accounts","DATA" ) then
-			ARCBank.Msg("Created Folder: "..ARCBank.Dir.."/accounts")
-			file.CreateDir(ARCBank.Dir.."/accounts")
-		end
-		if !file.IsDir( ARCBank.Dir.."/accounts/group","DATA" ) then
-			ARCBank.Msg("Created Folder: "..ARCBank.Dir.."/accounts/group")
-			file.CreateDir(ARCBank.Dir.."/accounts/group")
-		end
-		if !file.IsDir( ARCBank.Dir.."/accounts/personal","DATA" ) then
-			ARCBank.Msg("Created Folder: "..ARCBank.Dir.."/accounts/personal")
-			file.CreateDir(ARCBank.Dir.."/accounts/personal")
-		end
-		if !file.IsDir( ARCBank.Dir.."/accounts/group/logs","DATA" ) then
-			ARCBank.Msg("Created Folder: "..ARCBank.Dir.."/accounts/group/logs")
-			file.CreateDir(ARCBank.Dir.."/accounts/group/logs")
-		end
-		if !file.IsDir( ARCBank.Dir.."/accounts/personal/logs","DATA" ) then
-			ARCBank.Msg("Created Folder: "..ARCBank.Dir.."/accounts/personal/logs")
-			file.CreateDir(ARCBank.Dir.."/accounts/personal/logs")
-		end
-		if !file.IsDir( ARCBank.Dir.."/saved_atms","DATA" ) then
-			ARCBank.Msg("Created Folder: "..ARCBank.Dir.."/saved_atms")
-			file.CreateDir(ARCBank.Dir.."/saved_atms")
-		end
-		if !file.IsDir( ARCBank.Dir.."/custom_atms","DATA" ) then
-			ARCBank.Msg("Created Folder: "..ARCBank.Dir.."/custom_atms")
-			file.CreateDir(ARCBank.Dir.."/custom_atms")
-		end
-		
-		if !file.IsDir( ARCBank.Dir.."/accounts_unused","DATA" ) then
-			ARCBank.Msg("Created Folder: "..ARCBank.Dir.."/accounts_unused")
-			file.CreateDir(ARCBank.Dir.."/accounts_unused")
-		end
-		if !file.IsDir( ARCBank.Dir.."/accounts_unused/group","DATA" ) then
-			ARCBank.Msg("Created Folder: "..ARCBank.Dir.."/accounts_unused/group")
-			file.CreateDir(ARCBank.Dir.."/accounts_unused/group")
-		end
-		if !file.IsDir( ARCBank.Dir.."/accounts_unused/personal","DATA" ) then
-			ARCBank.Msg("Created Folder: "..ARCBank.Dir.."/accounts_unused/personal")
-			file.CreateDir(ARCBank.Dir.."/accounts_unused/personal")
-		end
-		
-		if ARCBank.DefaultATM then
-			file.Write(ARCBank.Dir.."/custom_atms/default.txt", ARCBank.DefaultATM )
-			ARCBank.DefaultATM = nil
-		end
-		
-		local files,dirs = file.Find(ARCBank.Dir.."/custom_atms/*.txt","DATA")
-		
-		for i=1,#files do
-			local tab = util.JSONToTable(file.Read(ARCBank.Dir.."/custom_atms/"..files[i],"DATA"))
-			if tab then
-				for i = 1,#tab.ErrorSound do
-					ARCLib.AddToSoundWhitelist("sent_arc_atm",tab.ErrorSound[i],65,100)
-				end
-				for i = 1,#tab.PressSound do
-					ARCLib.AddToSoundWhitelist("sent_arc_atm",tab.PressSound[i],65,100)
-				end
+		ARCLib.LoadDefaultLanguages("ARCBank","https://raw.githubusercontent.com/ARitz-Cracker/aritzcracker-addon-translations/master/default_arcbank_languages.json",function(langChoices)
+			ARCLib.AddonAddSettingMultichoice("ARCBank","language",langChoices)
+			ARCLib.AddonLoadSettings("ARCBank",{hack_max = "atm_hack_max", hack_min = "atm_hack_min", standard_interest = "interest_1_standard", bronze_interest = "interest_2_bronze", silver_interest = "interest_3_silver", gold_interest = "interest_4_gold", group_standard_interest = "interest_6_group_standard", group_premium_interest = "interest_7_group_premium", standard_requirement = "usergroup_1_standard", bronze_requirement = "usergroup_2_bronze", silver_requirement = "usergroup_3_silver", gold_requirement = "usergroup_4_gold", group_standard_requirement = "usergroup_6_group_standard", group_premium_requirement = "usergroup_7_group_premium", everything_requirement = "usergroup_all", starting_cash = "account_starting_cash", debt_limit = "account_debt_limit", starting_cash = "account_starting_cash", group_account_limit = "account_group_limit",perpetual_debt = "interest_perpetual_debt"})
+			ARCLib.SetAddonLanguage("ARCBank")
+			
+			if !file.IsDir( ARCBank.Dir.."/accounts","DATA" ) then
+				ARCBank.Msg("Created Folder: "..ARCBank.Dir.."/accounts")
+				file.CreateDir(ARCBank.Dir.."/accounts")
 			end
-
-		end
-		
-		ARCBank.LogFile = os.date(ARCBank.Dir.."/systemlog - %d %b %Y - "..tostring(os.date("%H")*60+os.date("%M"))..".log.txt")
-		file.Write(ARCBank.LogFile,"***ARCBank System Log***\r\n"..table.Random({"Oh my god. You're reading this!","WINDOWS LOVES TYPEWRITER COMMANTS IN TXT FILES","What you're refeering to as 'Linux' is in fact GNU/Linux.","... did you mess something up this time?"}).."\r\nDates are in DD-MM-YYYY\r\n")
-		ARCBank.LogFileWritten = true
-		ARCBank.Msg("Log File Created at "..ARCBank.LogFile)
-		
-		ARCBank.Msg("**STARTING FILESYSTEM CHECK!**")
-		if file.IsDir( ARCBank.Dir.."/group_account","DATA" ) || file.IsDir( ARCBank.Dir.."/personal_account","DATA" ) then
-			ARCBank.Msg("Filesystem from a pre-release version of ARCBank detected.")
-			ARCBank.Msg("Migrating data...")
-			local OldFolders = {ARCBank.Dir.."/personal_account/standard/",ARCBank.Dir.."/personal_account/bronze/",ARCBank.Dir.."/personal_account/silver/",ARCBank.Dir.."/personal_account/gold/","NOPE",ARCBank.Dir.."/group_account/standard/",ARCBank.Dir.."/group_account/premium/"}
-			for i = 1,4 do
-				for k,v in pairs(file.Find(OldFolders[i].."*.txt","DATA")) do
-					local oldaccountdata = util.JSONToTable(file.Read(OldFolders[i]..v,"DATA"))
-					if oldaccountdata then
-						if file.Exists(ARCBank.Dir.."/accounts/personal/"..v..".txt","DATA") then
-							ARCBank.Msg(string.Replace(v,".txt","").." is already in the new filesystem! Account will be removed.")
-						else
-							local newaccount = {}
-								newaccount.isgroup = false
-								newaccount.filename =  string.lower(string.Replace(v,".txt",""))
-								newaccount.name = oldaccountdata[1]
-								newaccount.money = oldaccountdata[4]
-								newaccount.rank = i
-							file.Write( ARCBank.Dir.."/accounts/personal/"..newaccount.filename..".txt", util.TableToJSON(newaccount) )
-							if file.Exists(ARCBank.Dir.."/accounts/personal/"..newaccount.filename..".txt","DATA") then
-								file.Write(ARCBank.Dir.."/accounts/personal/logs/"..newaccount.filename..".txt",file.Read(OldFolders[i].."logs/"..v,"DATA"))
-								file.Delete(OldFolders[i].."logs/"..v)
-								file.Delete(OldFolders[i]..v)
-								
-							else
-								ARCBank.Msg("Failed to transfer "..string.lower(string.Replace(v,".txt",""))..". account will be removed")
-							end
-						
-						end
-						
-						--ARCBank.WriteAccountFile(datatadada)
-						--
-						--ARCBank.AccountExists(ARCBank.GetAccountID(string.Replace(v,".txt" "")),false)
-					end
-				end
+			if !file.IsDir( ARCBank.Dir.."/accounts/group","DATA" ) then
+				ARCBank.Msg("Created Folder: "..ARCBank.Dir.."/accounts/group")
+				file.CreateDir(ARCBank.Dir.."/accounts/group")
+			end
+			if !file.IsDir( ARCBank.Dir.."/accounts/personal","DATA" ) then
+				ARCBank.Msg("Created Folder: "..ARCBank.Dir.."/accounts/personal")
+				file.CreateDir(ARCBank.Dir.."/accounts/personal")
+			end
+			if !file.IsDir( ARCBank.Dir.."/accounts/group/logs","DATA" ) then
+				ARCBank.Msg("Created Folder: "..ARCBank.Dir.."/accounts/group/logs")
+				file.CreateDir(ARCBank.Dir.."/accounts/group/logs")
+			end
+			if !file.IsDir( ARCBank.Dir.."/accounts/personal/logs","DATA" ) then
+				ARCBank.Msg("Created Folder: "..ARCBank.Dir.."/accounts/personal/logs")
+				file.CreateDir(ARCBank.Dir.."/accounts/personal/logs")
+			end
+			if !file.IsDir( ARCBank.Dir.."/saved_atms","DATA" ) then
+				ARCBank.Msg("Created Folder: "..ARCBank.Dir.."/saved_atms")
+				file.CreateDir(ARCBank.Dir.."/saved_atms")
+			end
+			if !file.IsDir( ARCBank.Dir.."/custom_atms","DATA" ) then
+				ARCBank.Msg("Created Folder: "..ARCBank.Dir.."/custom_atms")
+				file.CreateDir(ARCBank.Dir.."/custom_atms")
 			end
 			
+			if !file.IsDir( ARCBank.Dir.."/accounts_unused","DATA" ) then
+				ARCBank.Msg("Created Folder: "..ARCBank.Dir.."/accounts_unused")
+				file.CreateDir(ARCBank.Dir.."/accounts_unused")
+			end
+			if !file.IsDir( ARCBank.Dir.."/accounts_unused/group","DATA" ) then
+				ARCBank.Msg("Created Folder: "..ARCBank.Dir.."/accounts_unused/group")
+				file.CreateDir(ARCBank.Dir.."/accounts_unused/group")
+			end
+			if !file.IsDir( ARCBank.Dir.."/accounts_unused/personal","DATA" ) then
+				ARCBank.Msg("Created Folder: "..ARCBank.Dir.."/accounts_unused/personal")
+				file.CreateDir(ARCBank.Dir.."/accounts_unused/personal")
+			end
 			
-			for i = 6,7 do
-				for k,v in pairs(file.Find(OldFolders[i].."*.txt","DATA")) do
-					local oldaccountdata = util.JSONToTable(file.Read(OldFolders[i]..v,"DATA"))
-					if oldaccountdata then
-						if file.Exists(ARCBank.Dir.."/accounts/group/"..v..".txt","DATA") then
-						
-							ARCBank.Msg(string.Replace(v,".txt","").." is already in the new filesystem!")
-						else
-							local newaccount = {}
-								newaccount.isgroup = true
-								newaccount.filename = string.lower(string.Replace(v,".txt",""))
-								newaccount.name = oldaccountdata[1]
-								newaccount.owner = oldaccountdata[3]
-								newaccount.money = oldaccountdata[4]
-								newaccount.rank = i
-								newaccount.members = oldaccountdata.players
-							file.Write( ARCBank.Dir.."/accounts/group/"..newaccount.filename..".txt", util.TableToJSON(newaccount) )
-							if file.Exists(ARCBank.Dir.."/accounts/group/"..newaccount.filename..".txt","DATA") then
-								file.Write(ARCBank.Dir.."/accounts/group/logs/"..newaccount.filename..".txt",file.Read(OldFolders[i].."logs/"..v,"DATA"))
-								file.Delete(OldFolders[i].."logs/"..v)
-								file.Delete(OldFolders[i]..v)
+			if ARCBank.DefaultATM then
+				file.Write(ARCBank.Dir.."/custom_atms/default.txt", ARCBank.DefaultATM )
+				ARCBank.DefaultATM = nil
+			end
+			
+			local files,dirs = file.Find(ARCBank.Dir.."/custom_atms/*.txt","DATA")
+			
+			for i=1,#files do
+				local tab = util.JSONToTable(file.Read(ARCBank.Dir.."/custom_atms/"..files[i],"DATA"))
+				if tab then
+					for i = 1,#tab.ErrorSound do
+						ARCLib.AddToSoundWhitelist("sent_arc_atm",tab.ErrorSound[i],65,100)
+					end
+					for i = 1,#tab.PressSound do
+						ARCLib.AddToSoundWhitelist("sent_arc_atm",tab.PressSound[i],65,100)
+					end
+				end
+
+			end
+			
+			ARCBank.LogFile = os.date(ARCBank.Dir.."/systemlog - %d %b %Y - "..tostring(os.date("%H")*60+os.date("%M"))..".log.txt")
+			file.Write(ARCBank.LogFile,"***ARCBank System Log***\r\n"..table.Random({"Oh my god. You're reading this!","WINDOWS LOVES TYPEWRITER COMMANTS IN TXT FILES","What you're refeering to as 'Linux' is in fact GNU/Linux.","... did you mess something up this time?"}).."\r\nDates are in DD-MM-YYYY\r\n")
+			ARCBank.LogFileWritten = true
+			ARCBank.Msg("Log File Created at "..ARCBank.LogFile)
+			
+			ARCBank.Msg("**STARTING FILESYSTEM CHECK!**") -- I can't wait to remove this in v1.3.7 when I re-do the account system
+			if file.IsDir( ARCBank.Dir.."/group_account","DATA" ) || file.IsDir( ARCBank.Dir.."/personal_account","DATA" ) then
+				ARCBank.Msg("Filesystem from a pre-release version of ARCBank detected.")
+				ARCBank.Msg("Migrating data...")
+				local OldFolders = {ARCBank.Dir.."/personal_account/standard/",ARCBank.Dir.."/personal_account/bronze/",ARCBank.Dir.."/personal_account/silver/",ARCBank.Dir.."/personal_account/gold/","NOPE",ARCBank.Dir.."/group_account/standard/",ARCBank.Dir.."/group_account/premium/"}
+				for i = 1,4 do
+					for k,v in pairs(file.Find(OldFolders[i].."*.txt","DATA")) do
+						local oldaccountdata = util.JSONToTable(file.Read(OldFolders[i]..v,"DATA"))
+						if oldaccountdata then
+							if file.Exists(ARCBank.Dir.."/accounts/personal/"..v..".txt","DATA") then
+								ARCBank.Msg(string.Replace(v,".txt","").." is already in the new filesystem! Account will be removed.")
 							else
-								ARCBank.Msg("Failed to transfer ".. string.lower(string.Replace(v,".txt","")))
+								local newaccount = {}
+									newaccount.isgroup = false
+									newaccount.filename =  string.lower(string.Replace(v,".txt",""))
+									newaccount.name = oldaccountdata[1]
+									newaccount.money = oldaccountdata[4]
+									newaccount.rank = i
+								file.Write( ARCBank.Dir.."/accounts/personal/"..newaccount.filename..".txt", util.TableToJSON(newaccount) )
+								if file.Exists(ARCBank.Dir.."/accounts/personal/"..newaccount.filename..".txt","DATA") then
+									file.Write(ARCBank.Dir.."/accounts/personal/logs/"..newaccount.filename..".txt",file.Read(OldFolders[i].."logs/"..v,"DATA"))
+									file.Delete(OldFolders[i].."logs/"..v)
+									file.Delete(OldFolders[i]..v)
+									
+								else
+									ARCBank.Msg("Failed to transfer "..string.lower(string.Replace(v,".txt",""))..". account will be removed")
+								end
+							
 							end
+							
+							--ARCBank.WriteAccountFile(datatadada)
+							--
+							--ARCBank.AccountExists(ARCBank.GetAccountID(string.Replace(v,".txt" "")),false)
 						end
-						
-						--ARCBank.WriteAccountFile(datatadada)
-						--
-						--ARCBank.AccountExists(ARCBank.GetAccountID(string.Replace(v,".txt" "")),false)
 					end
 				end
-			end
-			ARCLib.DeleteAll(ARCBank.Dir.."/group_account")
-			ARCLib.DeleteAll(ARCBank.Dir.."/personal_account")
-		end
-		
-		local stime = SysTime()
-		local files, directories = file.Find( ARCBank.Dir.."/accounts/personal/*.txt","DATA" )
-		for _,v in pairs( files ) do
-			local accountdata = util.JSONToTable(file.Read( ARCBank.Dir.."/accounts/personal/"..v,"DATA"))
-			if !accountdata then
-				ARCBank.Msg("Corrupted account found. ("..v.."); Attempting to restore...")
-				local fixnum
-				local log = file.Read( ARCBank.Dir.."/accounts/personal/logs/"..v,"DATA")
 				
-				if log != "" then
 				
-					local nums = string.Explode( "(", log )
-					local i = #nums
-					while i > 0 do
-						local numss = string.Explode( ")", nums[i] )
-						fixnum = tonumber(numss[1])
-						--MsgN(numss[1])
-						if isnumber(fixnum) then
+				for i = 6,7 do
+					for k,v in pairs(file.Find(OldFolders[i].."*.txt","DATA")) do
+						local oldaccountdata = util.JSONToTable(file.Read(OldFolders[i]..v,"DATA"))
+						if oldaccountdata then
+							if file.Exists(ARCBank.Dir.."/accounts/group/"..v..".txt","DATA") then
 							
-							local newaccount = {}
-							newaccount.isgroup = false
-							newaccount.filename = string.Replace(v,".txt","")
-							newaccount.name = "[[RESTORED ACCOUNT]]"
-							newaccount.money = tostring(fixnum)
-							newaccount.rank = 1
+								ARCBank.Msg(string.Replace(v,".txt","").." is already in the new filesystem!")
+							else
+								local newaccount = {}
+									newaccount.isgroup = true
+									newaccount.filename = string.lower(string.Replace(v,".txt",""))
+									newaccount.name = oldaccountdata[1]
+									newaccount.owner = oldaccountdata[3]
+									newaccount.money = oldaccountdata[4]
+									newaccount.rank = i
+									newaccount.members = oldaccountdata.players
+								file.Write( ARCBank.Dir.."/accounts/group/"..newaccount.filename..".txt", util.TableToJSON(newaccount) )
+								if file.Exists(ARCBank.Dir.."/accounts/group/"..newaccount.filename..".txt","DATA") then
+									file.Write(ARCBank.Dir.."/accounts/group/logs/"..newaccount.filename..".txt",file.Read(OldFolders[i].."logs/"..v,"DATA"))
+									file.Delete(OldFolders[i].."logs/"..v)
+									file.Delete(OldFolders[i]..v)
+								else
+									ARCBank.Msg("Failed to transfer ".. string.lower(string.Replace(v,".txt","")))
+								end
+							end
 							
-							file.Write( ARCBank.Dir.."/accounts/personal/"..v, util.TableToJSON(newaccount) )
-							ARCBank.Msg(v.." - Account restored!")
-							i = -1
+							--ARCBank.WriteAccountFile(datatadada)
+							--
+							--ARCBank.AccountExists(ARCBank.GetAccountID(string.Replace(v,".txt" "")),false)
 						end
-						i = i - 1
 					end
-				
 				end
-				if !isnumber(fixnum) then
-					ARCBank.Msg("Failed to restore account - "..v.."; Removing.")
-					file.Delete(ARCBank.Dir.."/accounts/personal/"..v)
-					file.Append(ARCBank.Dir.."/accounts/personal/logs/"..v, os.date("%d-%m-%Y %H:%M:%S").." > This account was corrupt and restoration failed.\r\n")
-				end
-				
+				ARCLib.DeleteAll(ARCBank.Dir.."/group_account")
+				ARCLib.DeleteAll(ARCBank.Dir.."/personal_account")
 			end
-		end
-		
-		
-		local files, directories = file.Find( ARCBank.Dir.."/accounts/group/*.txt","DATA" )
-		for _,v in pairs( files ) do
-			local accountdata = util.JSONToTable(file.Read( ARCBank.Dir.."/accounts/group/"..v,"DATA"))
-			if !accountdata then
-				ARCBank.Msg("Corrupted account found. ("..v.."); Attempting to restore...")
-				local fixnum
-				local log = file.Read( ARCBank.Dir.."/accounts/group/logs/"..v,"DATA")
-				if log != "" then
-					local newaccount = {}
-					newaccount.isgroup = true
-					newaccount.filename = string.Replace(v,".txt","")
-					newaccount.name = string.sub( string.Replace(v,".txt",""), 8)
+			
+			local stime = SysTime()
+			local files, directories = file.Find( ARCBank.Dir.."/accounts/personal/*.txt","DATA" )
+			for _,v in pairs( files ) do
+				local accountdata = util.JSONToTable(file.Read( ARCBank.Dir.."/accounts/personal/"..v,"DATA"))
+				if !accountdata then
+					ARCBank.Msg("Corrupted account found. ("..v.."); Attempting to restore...")
+					local fixnum
+					local log = file.Read( ARCBank.Dir.."/accounts/personal/logs/"..v,"DATA")
 					
-					newaccount.rank = 6
-					newaccount.members = {}
-					newaccount.owner = ""
-					local nums = string.Explode( "(", log )
-					local i = #nums
-					while i > 0 do
-						local numss = string.Explode( ")", nums[i] )
-						fixnum = tonumber(numss[1])
-						if isnumber(fixnum) then
-							newaccount.money = fixnum
+					if log != "" then
+					
+						local nums = string.Explode( "(", log )
+						local i = #nums
+						while i > 0 do
+							local numss = string.Explode( ")", nums[i] )
+							fixnum = tonumber(numss[1])
+							--MsgN(numss[1])
+							if isnumber(fixnum) then
+								
+								local newaccount = {}
+								newaccount.isgroup = false
+								newaccount.filename = string.Replace(v,".txt","")
+								newaccount.name = "[[RESTORED ACCOUNT]]"
+								newaccount.money = tostring(fixnum)
+								newaccount.rank = 1
+								
+								file.Write( ARCBank.Dir.."/accounts/personal/"..v, util.TableToJSON(newaccount) )
+								ARCBank.Msg(v.." - Account restored!")
+								i = -1
+							end
+							i = i - 1
 						end
-						i = i - 1
+					
 					end
-					local entries = string.Explode( ">", log )
-					--PrintTable(entries)
-					i = 1
-					while i <= #entries do
-						if newaccount.owner == "" && string.StartWith(entries[i]," (STEAM_0") then
-							
-							newaccount.owner = string.Explode( ")", string.Explode( "(", entries[i] )[2] )[1]
-							i = #entries + 1
-						end
-						i = i + 1
-					end
-					if string.StartWith(newaccount.owner,"STEAM_") && isnumber(newaccount.money) then
-						file.Write( ARCBank.Dir.."/accounts/group/"..v, util.TableToJSON(newaccount) )
-						ARCBank.Msg(v.." - Account restored!")
-					else
+					if !isnumber(fixnum) then
 						ARCBank.Msg("Failed to restore account - "..v.."; Removing.")
-						--file.Delete(ARCBank.Dir.."/accounts/group/"..v)
-						file.Append(ARCBank.Dir.."/accounts/group/logs/"..v, os.date("%d-%m-%Y %H:%M:%S").." > This account was corrupt and restoration failed.\r\n")
+						file.Delete(ARCBank.Dir.."/accounts/personal/"..v)
+						file.Append(ARCBank.Dir.."/accounts/personal/logs/"..v, os.date("%d-%m-%Y %H:%M:%S").." > This account was corrupt and restoration failed.\r\n")
 					end
+					
 				end
-				--[[
-								newaccount.isgroup = true
-								newaccount.filename = string.lower(string.Replace(v,".txt",""))
-								newaccount.name = oldaccountdata[1]
-								newaccount.owner = oldaccountdata[3]
-								newaccount.money = oldaccountdata[4]
-								newaccount.rank = i
-								newaccount.members = oldaccountdata.players
-				]]
-				
-				
 			end
-		end
-		stime = SysTime() - stime 
-		if stime > 0.1 then
-			ARCBank.Msg("File system check took "..stime.." seconds. Which I personally think is a bit too long. Optimizing...")
+			
 			
 			local files, directories = file.Find( ARCBank.Dir.."/accounts/group/*.txt","DATA" )
 			for _,v in pairs( files ) do
-				local data = file.Read( ARCBank.Dir.."/accounts/group/"..v,"DATA")
-				local accountdata = util.JSONToTable(data)
-				file.Append( ARCBank.Dir.."/accounts_unused/"..string.lower(string.gsub(accountdata.owner, "[^_%w]", "_"))..".txt", "group/"..v.."\r\n" )
-				for i = 1,#accountdata.members do
-					file.Append( ARCBank.Dir.."/accounts_unused/"..string.lower(string.gsub(accountdata.members[i], "[^_%w]", "_"))..".txt", "group/"..v.."\r\n" )
+				local accountdata = util.JSONToTable(file.Read( ARCBank.Dir.."/accounts/group/"..v,"DATA"))
+				if !accountdata then
+					ARCBank.Msg("Corrupted account found. ("..v.."); Attempting to restore...")
+					local fixnum
+					local log = file.Read( ARCBank.Dir.."/accounts/group/logs/"..v,"DATA")
+					if log != "" then
+						local newaccount = {}
+						newaccount.isgroup = true
+						newaccount.filename = string.Replace(v,".txt","")
+						newaccount.name = string.sub( string.Replace(v,".txt",""), 8)
+						
+						newaccount.rank = 6
+						newaccount.members = {}
+						newaccount.owner = ""
+						local nums = string.Explode( "(", log )
+						local i = #nums
+						while i > 0 do
+							local numss = string.Explode( ")", nums[i] )
+							fixnum = tonumber(numss[1])
+							if isnumber(fixnum) then
+								newaccount.money = fixnum
+							end
+							i = i - 1
+						end
+						local entries = string.Explode( ">", log )
+						--PrintTable(entries)
+						i = 1
+						while i <= #entries do
+							if newaccount.owner == "" && string.StartWith(entries[i]," (STEAM_0") then
+								
+								newaccount.owner = string.Explode( ")", string.Explode( "(", entries[i] )[2] )[1]
+								i = #entries + 1
+							end
+							i = i + 1
+						end
+						if string.StartWith(newaccount.owner,"STEAM_") && isnumber(newaccount.money) then
+							file.Write( ARCBank.Dir.."/accounts/group/"..v, util.TableToJSON(newaccount) )
+							ARCBank.Msg(v.." - Account restored!")
+						else
+							ARCBank.Msg("Failed to restore account - "..v.."; Removing.")
+							--file.Delete(ARCBank.Dir.."/accounts/group/"..v)
+							file.Append(ARCBank.Dir.."/accounts/group/logs/"..v, os.date("%d-%m-%Y %H:%M:%S").." > This account was corrupt and restoration failed.\r\n")
+						end
+					end
+					--[[
+									newaccount.isgroup = true
+									newaccount.filename = string.lower(string.Replace(v,".txt",""))
+									newaccount.name = oldaccountdata[1]
+									newaccount.owner = oldaccountdata[3]
+									newaccount.money = oldaccountdata[4]
+									newaccount.rank = i
+									newaccount.members = oldaccountdata.players
+					]]
+					
+					
+				end
+			end
+			stime = SysTime() - stime 
+			if stime > 0.1 then
+				ARCBank.Msg("File system check took "..stime.." seconds. Which I personally think is a bit too long. Optimizing...")
+				
+				local files, directories = file.Find( ARCBank.Dir.."/accounts/group/*.txt","DATA" )
+				for _,v in pairs( files ) do
+					local data = file.Read( ARCBank.Dir.."/accounts/group/"..v,"DATA")
+					local accountdata = util.JSONToTable(data)
+					file.Append( ARCBank.Dir.."/accounts_unused/"..string.lower(string.gsub(accountdata.owner, "[^_%w]", "_"))..".txt", "group/"..v.."\r\n" )
+					for i = 1,#accountdata.members do
+						file.Append( ARCBank.Dir.."/accounts_unused/"..string.lower(string.gsub(accountdata.members[i], "[^_%w]", "_"))..".txt", "group/"..v.."\r\n" )
+					end
+					
+					file.Write( ARCBank.Dir.."/accounts_unused/group/"..v, data )
+					file.Delete( ARCBank.Dir.."/accounts/group/"..v)
+					file.Append(ARCBank.Dir.."/accounts/group/logs/"..v, os.date("%d-%m-%Y %H:%M:%S").." > Account has been archived. You will not gain interest during this time.\r\n")
+				end
+				local files, directories = file.Find( ARCBank.Dir.."/accounts/personal/*.txt","DATA" )
+				for _,v in pairs( files ) do
+					local data = file.Read( ARCBank.Dir.."/accounts/personal/"..v,"DATA")
+					file.Append( ARCBank.Dir.."/accounts_unused/"..string.Replace(v,"account_",""), "personal/"..v.."\r\n" )
+					file.Write( ARCBank.Dir.."/accounts_unused/personal/"..v, data )
+					file.Delete( ARCBank.Dir.."/accounts/personal/"..v)
+					file.Append(ARCBank.Dir.."/accounts/personal/logs/"..v, os.date("%d-%m-%Y %H:%M:%S").." > Account has been archived. You will not gain interest during this time.\r\n")
 				end
 				
-				file.Write( ARCBank.Dir.."/accounts_unused/group/"..v, data )
-				file.Delete( ARCBank.Dir.."/accounts/group/"..v)
-				file.Append(ARCBank.Dir.."/accounts/group/logs/"..v, os.date("%d-%m-%Y %H:%M:%S").." > Account has been archived. You will not gain interest during this time.\r\n")
-			end
-			local files, directories = file.Find( ARCBank.Dir.."/accounts/personal/*.txt","DATA" )
-			for _,v in pairs( files ) do
-				local data = file.Read( ARCBank.Dir.."/accounts/personal/"..v,"DATA")
-				file.Append( ARCBank.Dir.."/accounts_unused/"..string.Replace(v,"account_",""), "personal/"..v.."\r\n" )
-				file.Write( ARCBank.Dir.."/accounts_unused/personal/"..v, data )
-				file.Delete( ARCBank.Dir.."/accounts/personal/"..v)
-				file.Append(ARCBank.Dir.."/accounts/personal/logs/"..v, os.date("%d-%m-%Y %H:%M:%S").." > Account has been archived. You will not gain interest during this time.\r\n")
-			end
-			
-			
-		else
-			ARCBank.Msg("File system check took "..stime.." seconds.")
-		end
-		ARCBank.Msg("**FILESYSTEM CHECK COMPLETE!**")
-		timer.Create( "ARCBANK_SAVEDISK", 300, 0, function() 
-			if ARCBank.Settings["interest_time"] < 1 then
-				ARCBank.Msg("interest_time cannot be less than 1 hour. Will not give out interest")
+				
 			else
-				if !ARCBank.Disk.LastInterestTime then
-					ARCBank.Disk.LastInterestTime = os.time() - ARCBank.Settings["interest_time"]*3600
-				end
-				local missedtimes = math.floor((os.time() - ARCBank.Disk.LastInterestTime)/(ARCBank.Settings["interest_time"]*3600))
-				if missedtimes > 0 then
-					if missedtimes > 1 then
-						ARCBank.Msg("MISSED "..missedtimes.." INTEREST PAYMENTS! Looks like we'll have to catch up!")
-					end
-					for i=1,missedtimes do
-						timer.Simple(i*2,ARCBank.AddAccountInterest)
-					end
-					
-					ARCBank.Disk.LastInterestTime = os.time()
-					
-					timer.Simple((missedtimes+1)*2,function()
-						ARCBank.Msg("Interest will be given next on "..os.date( "%X - %d-%m-%Y", ARCBank.Disk.LastInterestTime+ARCBank.Settings["interest_time"]*3600 ))
-					end)
-				end
+				ARCBank.Msg("File system check took "..stime.." seconds.")
 			end
-			file.Write(ARCBank.Dir.."/__data.txt", util.TableToJSON(ARCBank.Disk) )
-			--ARCBank.UpdateLang(ARCBank.Settings["atm_language"])
+			ARCBank.Msg("**FILESYSTEM CHECK COMPLETE!**")
+			timer.Create( "ARCBANK_SAVEDISK", 300, 0, function() 
+				if ARCBank.Settings["interest_time"] < 1 then
+					ARCBank.Msg("interest_time cannot be less than 1 hour. Will not give out interest")
+				else
+					if !ARCBank.Disk.LastInterestTime then
+						ARCBank.Disk.LastInterestTime = os.time() - ARCBank.Settings["interest_time"]*3600
+					end
+					local missedtimes = math.floor((os.time() - ARCBank.Disk.LastInterestTime)/(ARCBank.Settings["interest_time"]*3600))
+					if missedtimes > 0 then
+						if missedtimes > 1 then
+							ARCBank.Msg("MISSED "..missedtimes.." INTEREST PAYMENTS! Looks like we'll have to catch up!")
+						end
+						for i=1,missedtimes do
+							timer.Simple(i*2,ARCBank.AddAccountInterest)
+						end
+						
+						ARCBank.Disk.LastInterestTime = os.time()
+						
+						timer.Simple((missedtimes+1)*2,function()
+							ARCBank.Msg("Interest will be given next on "..os.date( "%X - %d-%m-%Y", ARCBank.Disk.LastInterestTime+ARCBank.Settings["interest_time"]*3600 ))
+						end)
+					end
+				end
+				file.Write(ARCBank.Dir.."/__data.txt", util.TableToJSON(ARCBank.Disk) )
+				--ARCBank.UpdateLang(ARCBank.Settings["atm_language"])
 
-			if ARCBank.Settings["notify_update"] then
-				ARCBank.Msg("TODO: Check for updates")
+				if ARCBank.Settings["notify_update"] then
+					ARCBank.Msg("TODO: Check for updates")
+				end
+				
+			end )
+			timer.Start( "ARCBANK_SAVEDISK" ) 
+			if ARCBank.IsMySQLEnabled() then
+				ARCBank.MySQL.Connect()
+			else
+				ARCBank.Msg("ARCBank is ready!")
+				ARCBank.Loaded = true
+				ARCBank.Busy = false
+				ARCBank.CapAccountRank();
 			end
-			
-		end )
-		timer.Start( "ARCBANK_SAVEDISK" ) 
-		if ARCBank.IsMySQLEnabled() then
-			ARCBank.MySQL.Connect()
-		else
-			ARCBank.Msg("ARCBank is ready!")
-			ARCBank.Loaded = true
-			ARCBank.Busy = false
-			ARCBank.CapAccountRank();
-		end
-		for k,ply in pairs(player.GetAll()) do
-			local f = ARCBank.Dir.."/accounts_unused/"..string.lower(string.gsub(ARCBank.GetPlayerID(ply), "[^_%w]", "_"))..".txt" 
-			if file.Exists(f,"DATA") then 
-				local accounts = string.Explode( "\r\n", file.Read(f,"DATA")) 
-				for i=1,#accounts do 
-					if #accounts[i] > 2 && file.Exists(ARCBank.Dir.."/accounts_unused/"..accounts[i],"DATA") then 
-						file.Write( ARCBank.Dir.."/accounts/"..accounts[i], file.Read(ARCBank.Dir.."/accounts_unused/"..accounts[i],"DATA") ) 
-						file.Delete( ARCBank.Dir.."/accounts_unused/"..accounts[i]) 
-						file.Delete(f)
-						--file.Append(ARCBank.Dir.."/accounts/group/logs/"..accounts[i], os.date("%d-%m-%Y %H:%M:%S").." > Account has been re-activated.\r\n") 
+			for k,ply in pairs(player.GetAll()) do
+				local f = ARCBank.Dir.."/accounts_unused/"..string.lower(string.gsub(ARCBank.GetPlayerID(ply), "[^_%w]", "_"))..".txt" 
+				if file.Exists(f,"DATA") then 
+					local accounts = string.Explode( "\r\n", file.Read(f,"DATA")) 
+					for i=1,#accounts do 
+						if #accounts[i] > 2 && file.Exists(ARCBank.Dir.."/accounts_unused/"..accounts[i],"DATA") then 
+							file.Write( ARCBank.Dir.."/accounts/"..accounts[i], file.Read(ARCBank.Dir.."/accounts_unused/"..accounts[i],"DATA") ) 
+							file.Delete( ARCBank.Dir.."/accounts_unused/"..accounts[i]) 
+							file.Delete(f)
+							--file.Append(ARCBank.Dir.."/accounts/group/logs/"..accounts[i], os.date("%d-%m-%Y %H:%M:%S").." > Account has been re-activated.\r\n") 
+						end 
 					end 
 				end 
-			end 
-		end
+			end
+		end)
 	end)
 end
 

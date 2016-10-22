@@ -89,6 +89,8 @@ else
 		return true
 	end)
 
+	--[[
+	-- There was some bug in a very old version of ARCBank that I thought needed this for a second. Now I have no idea what
 	hook.Add( "PlayerUse", "ARCBank NoUse", function( ply, ent ) 
 		if ent != NULL && ent:IsValid() && !ent.IsAFuckingATM && table.HasValue(ARCBank.Disk.NommedCards,ARCBank.GetPlayerID(ply)) then
 			ply:PrintMessage( HUD_PRINTTALK, "ARCBank: "..ARCBank.Msgs.UserMsgs.AtmUse )
@@ -96,7 +98,8 @@ else
 		end 
 		if ent.IsAFuckingATM then return true end 
 	end)
-
+	]]
+	
 	hook.Add( "GravGunPunt", "ARCBank PuntHacker", function( ply, ent ) if ent:GetClass() == "sent_arc_atmhack" then ent:TakeDamage( 100, ply, ply:GetActiveWeapon() ) end end)
 	hook.Add( "ARCLib_OnPlayerFullyLoaded", "ARCBank PlyAuth", function( ply ) 
 		if IsValid(ply) && ply:IsPlayer() then

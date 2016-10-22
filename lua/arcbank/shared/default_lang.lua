@@ -423,7 +423,7 @@ ARCBank.SettingsDesc["atm_hack_noob_chat"] = "When enabled, players will automat
 ARCBank.SettingsDesc["atm_hack_max"] = "The maximum amount a player can hack the ATM with an ATM hacker"
 ARCBank.SettingsDesc["atm_hack_min"] = "The minimum amount a player can hack the ATM with an ATM hacker"
 
-ARCBank.SettingsDesc["language"] = "Which language file to use. (without .txt) they are located in data/_arcbank/languages. Default options are %OPTIONS%"
+ARCBank.SettingsDesc["language"] = "Which language to use. If you want a custom language, create your own file in SERVER/garrysmod/data/_arcbank/languages"
 ARCBank.SettingsDesc["use_bank_for_payday"] = "Payday checks will be sent to your Bank account."
 ARCBank.SettingsDesc["atm_holo"] = "Floating sign above the ATM"
 
