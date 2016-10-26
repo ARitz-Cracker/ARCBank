@@ -17,7 +17,8 @@ ARCBank.ATM_DarkTheme = false
 net.Receive( "ARCBank CustomATM", function(length)
 	local atm = net.ReadEntity()
 	if IsValid(atm) then
-		atm.ATMType = util.JSONToTable(net.ReadString())
+		local strlen = net.ReadUInt(32)
+		atm.ATMType = util.JSONToTable(util.Decompress(net.ReadData(strlen)))
 		for i=1,#atm.ATMType.HackedWelcomeScreen do
 			atm.hackedscrs[i] = surface.GetTextureID(atm.ATMType.HackedWelcomeScreen[i])
 		end
@@ -487,7 +488,7 @@ function ENT:MoneyOptions()
 	
 	for i = 1,3 do
 		self.ScreenOptions[i*2] = {}
-		self.ScreenOptions[i*2].text = tostring(2^(i-1)*50)
+		self.ScreenOptions[i*2].text = tostring(ARCBank.Settings["atm_fast_amount_"..tostring(i)])
 		self.ScreenOptions[i*2].icon = "money"
 		self.ScreenOptions[i*2].func = function() 
 			self.Loading = true
@@ -496,12 +497,12 @@ function ENT:MoneyOptions()
 				net.WriteEntity( self )
 				net.WriteString(self.RequestedAccount)
 				net.WriteBit(self.MoneyTake)
-				net.WriteUInt(2^(i-1)*50,32)
+				net.WriteUInt(ARCBank.Settings["atm_fast_amount_"..tostring(i)],32)
 				net.SendToServer()
 			end)
 		end
 		self.ScreenOptions[i*2-1] = {}
-		self.ScreenOptions[i*2-1].text = tostring(i*1000)
+		self.ScreenOptions[i*2-1].text = tostring(ARCBank.Settings["atm_fast_amount_"..tostring(i+3)])
 		self.ScreenOptions[i*2-1].icon = "money"
 		self.ScreenOptions[i*2-1].func = function() 
 			self.Loading = true
@@ -510,7 +511,7 @@ function ENT:MoneyOptions()
 				net.WriteEntity( self )
 				net.WriteString(self.RequestedAccount)
 				net.WriteBit(self.MoneyTake)
-				net.WriteUInt(i*1000,32)
+				net.WriteUInt(ARCBank.Settings["atm_fast_amount_"..tostring(i+3)],32)
 				net.SendToServer()
 			end)
 		end
@@ -761,13 +762,6 @@ function ENT:Think()
 	end
 	if !self.InUse || self.UseDelay > CurTime() || self.Loading || !LocalPlayer().ARCBank_FullScreen then return end
 			
-	if self.ATMType.UseTouchScreen then
-		RunConsoleCommand("arcbank","fullscreenmode","false")
-		gui.EnableScreenClicker(false) 
-		LocalPlayer().ARCBank_FullScreen = false
-		self:NewMsgBox("Fullscreen Error","Fullscreen mode is currently not supported for touchscreen ATMs. (This will be fixed in a future update)",nil,"monitor_error",1)
-	end
-			
 	for i = 0,9 do
 		
 		if input.IsKeyDown( 37+i ) then
@@ -980,7 +974,7 @@ function ENT:Screen_HAX()
 		draw.SimpleText( "Authenticating...", "ARCBankATM",self.ATMType.Resolutionx/-2, -124, Color(255,255,255,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_BOTTOM  )
 		draw.SimpleText( "Login Successful!", "ARCBankATM",self.ATMType.Resolutionx/-2, -108, Color(255,255,255,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_BOTTOM  )
 		draw.SimpleText( "**ARCBank ATM**", "ARCBankATM",self.ATMType.Resolutionx/-2, -92, Color(255,255,255,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_BOTTOM  )
-		if self.HackComplete then
+		if self.HackCompleted then
 			draw.SimpleText( "root@atm_"..self:EntIndex()..":~# mount /dev/sdb1 /mnt", "ARCBankATM",self.ATMType.Resolutionx/-2, -76, Color(255,255,255,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_BOTTOM  )
 			draw.SimpleText( "root@atm_"..self:EntIndex()..":~# /mnt/atm_money_stealer", "ARCBankATM",self.ATMType.Resolutionx/-2, -60, Color(255,255,255,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_BOTTOM  )
 			if self.HackRandom then
@@ -1035,6 +1029,7 @@ end
 function ENT:HackStart()
 	self.Hacked = true
 	self.HackAmount = false
+	self.HackCompleted = false
 end
 function ENT:HackSpark()
 
@@ -1046,6 +1041,11 @@ function ENT:HackComplete(ply,amount,rand)
 	self.Percent = 1
 	self.HackAmount = amount
 	self.HackRandom = rand
+	timer.Simple(math.Rand(0.5,3),function()
+		if !IsValid(self) then return end
+		self.HackCompleted = true
+	end)
+	
 end
 
 
@@ -1133,7 +1133,6 @@ function ENT:Screen_Main()
 				end
 			end
 			--self:Screen_Loading()
-			
 			if self.Percent < 0.999 then
 				local xpos
 				local ypos
@@ -1143,9 +1142,10 @@ function ENT:Screen_Main()
 					surface.SetDrawColor( 0, 0, 0, 255 )
 					xpos = math.random((self.ATMType.Resolutionx/-2)-20,10)
 					ypos = math.random(self.ATMType.Resolutiony/-2,self.ATMType.Resolutiony/2)
-					maxw = self.ATMType.Resolutionx - xpos
-					maxh = self.ATMType.Resolutiony - ypos
-					surface.DrawRect( xpos, ypos, math.Clamp(math.random(0,self.ATMType.Resolutionx),0,maxw), math.Clamp(math.random(0,40)*self.Percent,0,maxh) )
+					maxw = self.ATMType.Resolutionx/2 - xpos
+					maxh = self.ATMType.Resolutiony/2 - ypos + 1
+					MsgN(maxw)
+					surface.DrawRect( math.Clamp(xpos,-self.ATMType.Resolutionx/2,maxw), ypos, math.Clamp(math.random(0,self.ATMType.Resolutionx),0,maxw), math.Clamp(math.random(0,40)*self.Percent,0,maxh) )
 				end
 			end
 		end
@@ -1420,15 +1420,14 @@ function ENT:Draw()--Good
 	local ply = LocalPlayer()
 	self.CurPos = ply:GetEyeTrace().HitPos
 	if self.ATMType.UseTouchScreen then
-		local pos = util.IntersectRayWithPlane( ply:GetShootPos(), ply:GetAimVector(), self:LocalToWorld(self.ATMType.Screen), self:LocalToWorldAngles(self.ATMType.ScreenAng):Up() ) 
-		if pos then
-			--local adjhit = self:WorldToLocal(hit)-self.ATMType.Screen
-			pos = WorldToLocal( pos, self:LocalToWorldAngles(self.ATMType.ScreenAng), self:LocalToWorld(self.ATMType.Screen), self:LocalToWorldAngles(self.ATMType.ScreenAng) ) 
-			self.TouchScreenX = pos.x/self.ATMType.ScreenSize
-			self.TouchScreenY = pos.y/-self.ATMType.ScreenSize
-			
-			surface.SetDrawColor(255,0,0,128)
-			surface.DrawRect(402,47,44,28)
+		if !ply.ARCBank_FullScreen then
+			local pos = util.IntersectRayWithPlane( ply:GetShootPos(), ply:GetAimVector(), self:LocalToWorld(self.ATMType.Screen), self:LocalToWorldAngles(self.ATMType.ScreenAng):Up() ) 
+			if pos then
+				--local adjhit = self:WorldToLocal(hit)-self.ATMType.Screen
+				pos = WorldToLocal( pos, self:LocalToWorldAngles(self.ATMType.ScreenAng), self:LocalToWorld(self.ATMType.Screen), self:LocalToWorldAngles(self.ATMType.ScreenAng) ) 
+				self.TouchScreenX = pos.x/self.ATMType.ScreenSize
+				self.TouchScreenY = pos.y/-self.ATMType.ScreenSize
+			end
 		end
 	else
 		self.buttonpos[1] = self:LocalToWorld(self.ATMType.buttons[1])

@@ -11,7 +11,9 @@ net.Receive( "ARCBank CustomATM", function(length,ply)
 	if atm:GetClass() == "sent_arc_atm" then
 		net.Start("ARCBank CustomATM")
 		net.WriteEntity(atm)
-		net.WriteString(util.TableToJSON(atm.ATMType))
+		local data = util.Compress(util.TableToJSON(atm.ATMType)) -- For some reason JSON is more reliable at keeping them floats accurate than write.Table
+		net.WriteUInt(#data,32)
+		net.WriteData(data,#data)
 		net.Send(ply)
 	end
 end)

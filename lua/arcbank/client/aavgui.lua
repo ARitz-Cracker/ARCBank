@@ -70,6 +70,22 @@ surface.CreateFont( "ARCBankATMSmall", {
 	additive = false,
 	outline = false
 } )
+surface.CreateFont( "ARCBankATMConsole", {
+	font = "Consolas",
+	size = 12,
+	weight = 100,
+	blursize = 0,
+	scanlines = 0,
+	antialias = false,
+	underline = false,
+	italic = false,
+	strikeout = false,
+	symbol = false,
+	rotary = false,
+	shadow = false,
+	additive = false,
+	outline = false
+} )
 surface.CreateFont( "ARCBankATMNormal", {
 	font = "Arial",
 	size = 14,

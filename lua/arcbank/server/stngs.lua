@@ -132,6 +132,13 @@ function ARCBank.SettingsReset() --DO NOT EDIT THIS!!!!
 	ARCBank.Settings["atm_hack_min_hackerstoppers"] = 1 --DO NOT EDIT THIS!!!!
 	ARCBank.Settings["atm_darkmode_default"] = false --DO NOT EDIT THIS!!!!
 	
+	ARCBank.Settings["atm_fast_amount_1"] = 200
+	ARCBank.Settings["atm_fast_amount_2"] = 400
+	ARCBank.Settings["atm_fast_amount_3"] = 600
+	ARCBank.Settings["atm_fast_amount_4"] = 1000
+	ARCBank.Settings["atm_fast_amount_5"] = 2000
+	ARCBank.Settings["atm_fast_amount_6"] = 4000
+	
 end
 
 ARCBank.SettingsReset()

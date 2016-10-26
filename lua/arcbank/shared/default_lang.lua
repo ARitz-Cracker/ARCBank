@@ -473,3 +473,9 @@ ARCBank.SettingsDesc["atm_darkmode_default"] = "Dark Mode will be enabled on the
 
 ARCBank.SettingsDesc["admins"] = "List of in game rank(s) that can use the admin GUI and the admin commands."
 
+ARCBank.SettingsDesc["atm_fast_amount_1"] = "The 1st quick-pick option on the atm deposit/withdraw screen"
+ARCBank.SettingsDesc["atm_fast_amount_2"] = "The 2nd quick-pick option on the atm deposit/withdraw screen"
+ARCBank.SettingsDesc["atm_fast_amount_3"] = "The 3rd quick-pick option on the atm deposit/withdraw screen"
+ARCBank.SettingsDesc["atm_fast_amount_4"] = "The 4th quick-pick option on the atm deposit/withdraw screen"
+ARCBank.SettingsDesc["atm_fast_amount_5"] = "The 5th quick-pick option on the atm deposit/withdraw screen"
+ARCBank.SettingsDesc["atm_fast_amount_6"] = "The 6th quick-pick option on the atm deposit/withdraw screen"

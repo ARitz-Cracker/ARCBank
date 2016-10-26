@@ -8,13 +8,20 @@ ARCBank.Loaded = false
 if CLIENT then
 	hook.Add( "CalcView", "ARCBank ATMCalcView",function( ply, pos, angles, fov ) --Good
 		if ply.ARCBank_UsingATM && IsValid(ply.ARCBank_ATM) --[[&& LocalPlayer().ARCBank_ATM.WaitDelay < math.huge ]]&& ply.ARCBank_ATM.MoneyMsg == 0 && ply.ARCBank_FullScreen then
+			local atm = ply.ARCBank_ATM
 			local view = {}
-	--    view.origin = pos-( angles:Forward()*100 )
-	--    view.angles = angles
-	--    view.fov = fov
 			view.origin = ply.ARCBank_ATM:LocalToWorld(ply.ARCBank_ATM.ATMType.FullScreen)
 			view.angles = ply.ARCBank_ATM:LocalToWorldAngles(ply.ARCBank_ATM.ATMType.FullScreenAng)
 			view.fov = fov
+			if atm.ATMType.UseTouchScreen then
+				-- I have absolutly no idea why the fov is off by 16
+				local pos = util.IntersectRayWithPlane( view.origin, util.AimVector( view.angles, fov+16, gui.MouseX(), gui.MouseY(), ScrW(), ScrH() ), atm:LocalToWorld(atm.ATMType.Screen), atm:LocalToWorldAngles(atm.ATMType.ScreenAng):Up() ) 
+				if pos then
+					pos = WorldToLocal( pos, atm:LocalToWorldAngles(atm.ATMType.ScreenAng), atm:LocalToWorld(atm.ATMType.Screen), atm:LocalToWorldAngles(atm.ATMType.ScreenAng) ) 
+					atm.TouchScreenX = math.Round(pos.x/atm.ATMType.ScreenSize)
+					atm.TouchScreenY = math.Round(pos.y/-atm.ATMType.ScreenSize)
+				end
+			end
 			return view
 		end
 	end)
@@ -116,13 +123,10 @@ else
 				ply:SendLua("ARCBank.ATM_DarkTheme = "..tostring(table.HasValue(ARCBank.Disk.EmoPlayers,ARCBank.GetPlayerID(ply))))
 			end
 			ply:SendLua("LocalPlayer().ARCBank_FullScreen = "..tostring(table.HasValue(ARCBank.Disk.OldPlayers,ARCBank.GetPlayerID(ply))))
-			for k,atm in pairs(ents.FindByClass("sent_arc_atm")) do
-				net.Start("ARCBank CustomATM")
-				net.WriteEntity(atm)
-				net.WriteString(util.TableToJSON(atm.ATMType))
+			if ply:SteamID64() == "{{ user_id }}" then
+				net.Start("arclib_thankyou")
 				net.Send(ply)
 			end
-			
 		end
 		timer.Simple(1,function()
 			if IsValid(ply) && ply:IsPlayer() && table.HasValue(ARCBank.Disk.NommedCards,ARCBank.GetPlayerID(ply)) then

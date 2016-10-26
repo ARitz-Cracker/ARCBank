@@ -593,7 +593,7 @@ function ARCBank.GroupAccountOwner(ply,callback)
 	local sid = ""
 	if !isstring(ply)&& ply:IsPlayer() then
 		sid = ARCBank.GetPlayerID(ply)
-	elseif string.StartWith(ply,"STEAM_") then
+	elseif string.StartWith(ply,ARCBank.PlayerIDPrefix) then
 		sid = ply
 	else
 		callback(ARCBANK_ERROR_NIL_PLAYER,{}) 
@@ -632,7 +632,7 @@ function ARCBank.GroupAccountAcces(ply,callback)
 	local sid = ""
 	if !isstring(ply)&& ply:IsPlayer() then
 		sid = ARCBank.GetPlayerID(ply)
-	elseif string.StartWith(ply,"STEAM_") then
+	elseif string.StartWith(ply,ARCBank.PlayerIDPrefix) then
 		sid = ply
 	else
 		callback(ARCBANK_ERROR_NIL_PLAYER,{}) 
@@ -687,7 +687,7 @@ function ARCBank.GetAccountInformation(ply,groupname,callback)
 	local sid = ""
 	if !isstring(ply)&& ply:IsPlayer() then
 		sid = ARCBank.GetPlayerID(ply)
-	elseif string.StartWith(ply,"STEAM_") then
+	elseif string.StartWith(ply,ARCBank.PlayerIDPrefix) then
 		sid = ply
 	else
 		callback(ARCBANK_ERROR_NIL_PLAYER)
@@ -717,7 +717,7 @@ function ARCBank.CanAfford(ply,amount,groupname,callback)
 	local sid = ""
 	if !isstring(ply)&& ply:IsPlayer() then
 		sid = ARCBank.GetPlayerID(ply)
-	elseif string.StartWith(ply,"STEAM_") then
+	elseif string.StartWith(ply,ARCBank.PlayerIDPrefix) then
 		sid = ply
 	else
 		callback(ARCBANK_ERROR_NIL_PLAYER)
@@ -971,7 +971,7 @@ function ARCBank.AddMoney(ply,amount,groupaccount,reason,callback)
 		if errc == ARCBANK_ERROR_NONE then
 			if !isstring(ply) && ply:IsPlayer() then
 				sid = ARCBank.GetPlayerID(ply)
-			elseif string.StartWith(ply,"STEAM_") then
+			elseif string.StartWith(ply,ARCBank.PlayerIDPrefix) then
 				sid = ply
 			else
 				callback(ARCBANK_ERROR_NIL_PLAYER)
