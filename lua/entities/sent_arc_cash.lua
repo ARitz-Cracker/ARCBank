@@ -30,7 +30,7 @@ function ENT:Draw()
     local Ang = self:GetAngles()
 
     surface.SetFont("ChatFont")
-    local text = tostring(self:GetMoneyAmount())
+    local text = tostring(ARCBank.Settings["money_symbol"])..tostring(self:GetMoneyAmount())
     local TextWidth = surface.GetTextSize(text)
 
     cam.Start3D2D(self:LocalToWorld(Pos+offset), Ang, 0.1)
