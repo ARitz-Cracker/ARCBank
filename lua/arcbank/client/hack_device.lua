@@ -103,7 +103,7 @@ net.Receive( "arcatmhack_gui", function(length)
 	
 	HackSelector.OnSelect = function( panel, index, value )
 		weapon.HackEnt = ARCBank.HackableDevices[index]
-		PrintTable(weapon.HackEnt)
+		--PrintTable(weapon.HackEnt)
 		NumSlider2:SetValue(Lerp(0.5,ARCBank.HackTimeGetSetting(weapon.HackEnt,"MoneyMin"),ARCBank.HackTimeGetSetting(weapon.HackEnt,"MoneyMax")))
 	end
 	

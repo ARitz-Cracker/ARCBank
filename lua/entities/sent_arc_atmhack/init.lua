@@ -45,7 +45,7 @@ function ENT:Setup(hacker,ent,energy,amount,rand,side)
 	self.EnergyLevel = energy
 	self.HackAmount = amount
 	self.HackRandom = rand
-	MsgN(self.EnergyLevel)
+	--MsgN(self.EnergyLevel)
 	if (!IsValid(self:GetParent())) then
 		ErrorNoHalt("Parent not set!")
 	end
@@ -229,7 +229,7 @@ function ENT:Think()
 				end
 				
 				self.EnergyStart = CurTime()
-				MsgN(self.EnergyLevel)
+				--MsgN(self.EnergyLevel)
 				self.EnergyEnd = CurTime() + self.EnergyLevel
 				local hacktime = ARCBank.HackTimeCalculate(self.HackEnt,self.HackAmount,self.HackRandom)
 				local hackoffset = ARCBank.HackTimeOffset(self.HackEnt,hacktime)

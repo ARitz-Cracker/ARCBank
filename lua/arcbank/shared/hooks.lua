@@ -249,6 +249,9 @@ else
 		ARCBank.ClearATMs()
 	end)
 	]]
+	hook.Add( "InitPostEntity", "ARCBank SpawnATMs", function()
+		ARCBank.SpawnATMs()
+	end )
 	hook.Add( "ShutDown", "ARCBank Shutdown", function()
 		for _, oldatms in pairs( ents.FindByClass("sent_arc_atm") ) do
 			oldatms.ARCBank_MapEntity = false

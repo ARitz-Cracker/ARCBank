@@ -208,7 +208,7 @@ if ARCBank then
 			atmcard:GetPhysicsObject():SetVelocity(atmcard:GetForward()*atm.ATMType.CardRemoveAnimationSpeed.x + atmcard:GetRight()*atm.ATMType.CardRemoveAnimationSpeed.y + atmcard:GetUp()*atm.ATMType.CardRemoveAnimationSpeed.z)
 			timer.Simple(atm.ATMType.CardRemoveAnimationLength-0.3,function() atmcard:GetPhysicsObject():SetVelocity(Vector(0,0,0)) end)
 			timer.Simple(atm.ATMType.CardRemoveAnimationLength,function() 
-			MsgN(atm:WorldToLocal(atmcard:GetPos()))
+			--MsgN(atm:WorldToLocal(atmcard:GetPos()))
 			atmcard:Remove() 
 			end)
 			
@@ -228,7 +228,7 @@ if ARCBank then
 			atmcard:GetPhysicsObject():EnableGravity(false)
 			atmcard:GetPhysicsObject():SetVelocity(atmcard:GetForward()*atm.ATMType.CardInsertAnimationSpeed.x + atmcard:GetRight()*atm.ATMType.CardInsertAnimationSpeed.y + atmcard:GetUp()*atm.ATMType.CardInsertAnimationSpeed.z)
 			timer.Simple(atm.ATMType.CardInsertAnimationLength,function() 
-			MsgN(atm:WorldToLocal(atmcard:GetPos()))
+			--MsgN(atm:WorldToLocal(atmcard:GetPos()))
 			atmcard:Remove() 
 			end)
 		
@@ -240,7 +240,7 @@ if ARCBank then
 		local atm = ATMCreatorProp
 		atm.TakingMoney = tobool(net.ReadBit())
 		atm.fail = tobool(net.ReadBit())
-		MsgN(atm,atm.TakingMoney,atm.fail)
+		--MsgN(atm,atm.TakingMoney,atm.fail)
 		if atm.TakingMoney then
 			
 			

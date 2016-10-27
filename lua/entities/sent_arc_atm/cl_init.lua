@@ -249,7 +249,7 @@ local function ENT_AccountOptions(accountdata,ent)
 		end
 		
 		if accountdata.isgroup then
-			PrintTable(accountdata.members)
+			--PrintTable(accountdata.members)
 			ent.ScreenOptions[5] = {}
 			ent.ScreenOptions[5].text = ARCBank.Msgs.ATMMsgs.RemovePlayerGroup
 			ent.ScreenOptions[5].icon = "user_delete"
@@ -957,13 +957,7 @@ function ENT:Screen_HAX()
 		hackmsg = "Decoding Security Syetem"
 		for i=-12,13 do
 			if (self.Percent) > 0.005 then
-				draw.SimpleText( ARCLib.RandomString(14,hexarr), "ARCBankATM",self.ATMType.Resolutionx/-2, i*12, Color(255,255,255,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_BOTTOM  )
-			end
-			if (self.Percent) > 0.0195 then
-				draw.SimpleText( ARCLib.RandomString(14,hexarr), "ARCBankATM",-41, i*12, Color(255,255,255,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_BOTTOM  ) 	
-			end
-			if (self.Percent) > 0.030 then
-				draw.SimpleText( ARCLib.RandomString(12,hexarr), "ARCBankATM",57, i*12, Color(255,255,255,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_BOTTOM  ) 	
+				draw.SimpleText( ARCLib.RandomString(math.floor(self.ATMType.Resolutionx*ARCLib.BetweenNumberScale(0.005,self.Percent,0.1)/7),hexarr), "ARCBankATM",self.ATMType.Resolutionx/-2, i*12, Color(255,255,255,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_BOTTOM  )
 			end
 		end
 	else
@@ -997,8 +991,8 @@ net.Receive( "arcbank_atm_reboot", function(length,ply)
 	local stuff = {}
 	stuff.Broken = net.ReadBool()
 	stuff.RebootTime = net.ReadDouble()
-	MsgN(ent)
-	PrintTable(stuff)
+	--MsgN(ent)
+	--PrintTable(stuff)
 	if IsValid(ent) then
 		table.Merge( ent, stuff )
 		ent.MsgBox = {}
@@ -1144,7 +1138,7 @@ function ENT:Screen_Main()
 					ypos = math.random(self.ATMType.Resolutiony/-2,self.ATMType.Resolutiony/2)
 					maxw = self.ATMType.Resolutionx/2 - xpos
 					maxh = self.ATMType.Resolutiony/2 - ypos + 1
-					MsgN(maxw)
+					--MsgN(maxw)
 					surface.DrawRect( math.Clamp(xpos,-self.ATMType.Resolutionx/2,maxw), ypos, math.Clamp(math.random(0,self.ATMType.Resolutionx),0,maxw), math.Clamp(math.random(0,40)*self.Percent,0,maxh) )
 				end
 			end

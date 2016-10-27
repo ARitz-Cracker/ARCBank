@@ -33,7 +33,7 @@ end
 -- Accessor funcs for certain functions
 
 function ENT:LinkEnt( CardM )
-	MsgN(CardM:GetClass())
+	--MsgN(CardM:GetClass())
 	if !IsValid(CardM) || CardM:GetClass() != "sent_arc_pinmachine" then return false, "Must link to a ARCBank Card Machine" end
 	self:SetMachine( CardM )
 	WireLib.SendMarks(self, {CardM})

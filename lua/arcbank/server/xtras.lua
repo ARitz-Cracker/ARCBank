@@ -25,7 +25,7 @@ function ARCBank.CapAccountRank(ply) -- %%CONFIRMATION_HASH%%
 		ARCBank.GroupAccountOwner(ply,function(err,dat)
 			if err == ARCBANK_ERROR_NONE then
 				local maxrank = ARCBank.MaxAccountRank(ply,true)
-				MsgN(tostring(ply).."'s max rank: "..maxrank)
+				--MsgN(tostring(ply).."'s max rank: "..maxrank)
 				if maxrank == ARCBANK_GROUPACCOUNTS_ then
 					maxrank = ARCBANK_GROUPACCOUNTS_STANDARD
 				end

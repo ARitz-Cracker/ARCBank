@@ -135,7 +135,6 @@ function SWEP:SecondaryAttack()
 		net.Start("arcatmhack_gui")
 		net.WriteTable( self.Settings )
 		net.Send(self.Owner)
-		MsgN("aaa")
 	end
 	--self.SettingMenu = true
 end
