@@ -478,6 +478,7 @@ function ENT:PlayerGroup(members)
 end
 net.Receive( "ARCATM_COMM_CASH", function(length,ply)
 	local atm = net.ReadEntity() 
+	if !IsValid(atm) or LocalPlayer().ARCBank_ATM != atm then return end
 	local errcode = net.ReadInt(ARCBANK_ERRORBITRATE)
 	atm.Loading = true
 	ARCBank.GetAccountInformation(atm.RequestedAccount,atm,ENT_AccountOptions)

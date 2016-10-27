@@ -22,8 +22,8 @@ ARCBank.Msg("© Copyright 2014-2016 Aritz Beobide-Cardinal (ARitz Cracker) All r
 ARCBank.Features = {}
 ARCBank.Features["hackapi"] = true
 
-ARCBank.Update = "October 26th 2016"
-ARCBank.Version = "1.3.6b"
+ARCBank.Update = "October 27th 2016"
+ARCBank.Version = "1.3.6c"
 
 
 ARCBank.About = [[      
@@ -42,11 +42,8 @@ ATM Model by:
  *    [Whatever his name is this week] (STEAM_0:1:34654275)
 
 Translations:
- *    n00bmobile + Gm Matsilagi - Brazilian Portuguese
- *    I'm juicy :D + DiaZzZy - French
- *    MindEyes + deinemudda32 - German
- *    (Anonymous) - Spanish
- *    EpicGamesFeed - Russian
+ *    Go to github.com/ARitz-Cracker/aritzcracker-addon-translations
+ *    You can see everyone who helped out with translations by pressing the "contributors" tab!
  
 ALPHA Testers:
  *    Noddy (Senior Crayfish)
@@ -70,6 +67,7 @@ Special Thanks:
  *    Noddy (Senior Crayfish) - For inspiring me to create this and place this on CoderHire.
  *    My family - For supporting me.
  *    Snow Lou - I wouldn't be who I am without you.
+ *    Laura MacEwen - You deserve a mention here too
  *    You - For supporting me by using this addon
 	
 Originally made for:

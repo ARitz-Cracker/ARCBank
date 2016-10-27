@@ -94,7 +94,7 @@ function ENT:Initialize()
 	if startEnts[enti] then
 		table.Merge( self, startEnts[enti] )
 		table.remove( startEnts, enti )
-		ent:GetParent():HackStart()
+		self:GetParent():HackStart()
 	end
 end
 

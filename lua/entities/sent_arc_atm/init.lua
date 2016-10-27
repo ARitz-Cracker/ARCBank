@@ -173,6 +173,7 @@ function ENT:HackComplete(ply,amount,rand)
 						timer.Simple(self.ATMType.PauseBeforeWithdrawAnimation + self.ATMType.PauseAfterWithdrawAnimation + self.ATMType.WithdrawAnimationLength,function()
 							if !IsValid(self) then return end
 							self.PlayerNeedsToDoSomething = true
+							self.Beep = true
 						end)
 					else
 						ARCLib.NotifyPlayer(ply,ARCBank.Msgs.Items.Hacker..": "..ARCBANK_ERRORSTRINGS[errcode],NOTIFY_ERROR,6,true)
@@ -271,6 +272,8 @@ function ENT:Think()
 		end
 		self.Beep = false
 		self.DoingSomething = false
+		self:NextThink( CurTime() + 2 )
+		return true
 	end
 	
 	if self.Beep then
@@ -603,6 +606,7 @@ net.Receive( "ARCATM_COMM_CASH", function(length,ply)
 					end
 					ARCLib.NotifyPlayer(ply,ARCBank.Msgs.UserMsgs.WithdrawATM,NOTIFY_HINT,5,false)
 					atm.PlayerNeedsToDoSomething = true
+					atm.Beep = true
 				end)
 			else
 				if IsValid(atm.UsePlayer) then
