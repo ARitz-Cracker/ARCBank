@@ -1156,8 +1156,6 @@ function ARCBank.AtmFunc(ply,amount,groupname,callback)
 		end
 		accountdata.money = accountdata.money + amount
 		
-		MsgN(accountdata.money)
-		MsgN(ARCBank.Settings["money_max_"..accountdata.rank.."_"..ARCBANK_ACCOUNTSTRINGS[accountdata.rank]])
 		if accountdata.money >= ARCBank.Settings["money_max_"..accountdata.rank.."_"..ARCBANK_ACCOUNTSTRINGS[accountdata.rank]] && amount > 0 then
 			callback(ARCBANK_ERROR_TOO_MUCH_CASH)
 			return

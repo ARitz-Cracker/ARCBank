@@ -15,7 +15,7 @@ function ARCBank.Msg(msg)
 	end
 end
 ARCBank.Msg("Running...\n ____ ____ _ ___ ___     ____ ____ ____ ____ _  _ ____ ____    ___  ____ _  _ _  _ _ _  _ ____ \n |__| |__/ |  |    /     |    |__/ |__| |    |_/  |___ |__/    |__] |__| |\\ | |_/  | |\\ | | __ \n |  | |  \\ |  |   /__    |___ |  \\ |  | |___ | \\_ |___ |  \\    |__] |  | | \\| | \\_ | | \\| |__] \n")
-ARCBank.Msg(table.Random({"Product of BlueStone Technological Enterprises Inc. (Even before that company existed)","tbh script enforcer is kinda shit.","I am embarrassed to say that there was a bug from v1.0 to v1.3 that made arguably one of the most important settings useless...","Eh, ARCLoad was a paranoid idiots dream anyway...","Super fukin' Sexy edition!","The most realistic ATM system you'll ever see!","Wohoo! Manual Updates!","...I can never get a vacation...","I love you.","Isn't this amazing?","That's one fiiiine addon you got there!","Update, Update, Update!","You can ACTUALLY use an ATM!","Fixin' Bugs!"}))
+ARCBank.Msg(table.Random({"I'm going to run out of letters in the alphabet if I keep these patches up!","Product of BlueStone Technological Enterprises Inc. (Even before that company existed)","tbh script enforcer is kinda shit.","I am embarrassed to say that there was a bug from v1.0 to v1.3 that made arguably one of the most important settings useless...","Eh, ARCLoad was a paranoid idiots dream anyway...","Super fukin' Sexy edition!","The most realistic ATM system you'll ever see!","Wohoo! Manual Updates!","...I can never get a vacation...","I love you.","Isn't this amazing?","That's one fiiiine addon you got there!","Update, Update, Update!","You can ACTUALLY use an ATM!","Fixin' Bugs!"}))
 ARCBank.Msg("© Copyright 2014-2016 Aritz Beobide-Cardinal (ARitz Cracker) All rights reserved.")
 
 
@@ -23,7 +23,7 @@ ARCBank.Features = {}
 ARCBank.Features["hackapi"] = true
 
 ARCBank.Update = "October 28th 2016"
-ARCBank.Version = "1.3.6d"
+ARCBank.Version = "1.3.6e"
 
 
 ARCBank.About = [[      

@@ -59,9 +59,9 @@ net.Receive( "arcbank_hacker_status", function(length)
 				initEnts[enti].EnergyLevel = 0
 			end
 		end
-		table.remove( startEnts, enti ) 
+		startEnts[enti] = nil
 	elseif operation == 3 then -- Delete
-		table.remove( initEnts, enti ) 
+		initEnts[enti] = nil
 	elseif operation == 4 then -- Spark
 		if IsValid(ent) then
 			ent:Spark()
@@ -89,11 +89,11 @@ function ENT:Initialize()
 	local enti = self:EntIndex()
 	if initEnts[enti] then
 		table.Merge( self, initEnts[enti] )
-		table.remove( initEnts, enti )
+		initEnts[enti] = nil
 	end
 	if startEnts[enti] then
 		table.Merge( self, startEnts[enti] )
-		table.remove( startEnts, enti )
+		startEnts[enti] = nil
 		self:GetParent():HackStart()
 	end
 end
@@ -127,6 +127,7 @@ function ENT:Draw()
 	self:DrawShadow( true )
 	local DisplayPos = self:GetPos() + ((self:GetAngles():Up() * -0.41) + (self:GetAngles():Forward() * 5.8) + (self:GetAngles():Right() * 2.7 ))
 	local DisplayAng
+	--MsgN(self.Orientation)
 	if self.Orientation then
 		DisplayAng = self:GetAngles()+Angle( 0, 0, 180 )
 	else

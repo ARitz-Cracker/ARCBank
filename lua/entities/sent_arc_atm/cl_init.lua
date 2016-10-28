@@ -1118,7 +1118,7 @@ function ENT:Screen_Main()
 				ARCBank_Draw:Window_MsgBox(-135,-90,250,"","The instruction at '0x28fe5a7c' referenced memory at '0x00000000'. \nThe memory could not be read.",ARCBank.ATM_DarkTheme,6,ARCLib.GetIcon(2,"cancel"),nil,self.ATMType.ForegroundColour)
 			end
 			if self.Percent > 0.16 && self.Percent < 1 then
-				ARCBank_Draw:Window_MsgBox(-135,-90,250,"","The instruction at '0x00000000' referenced memory at '0xffffffff'. \nThe memory could not be read.",ARCBank.ATM_DarkTheme,6,ARCLib.GetIcon(2,"cancel"),nil,self.ATMType.ForegroundColour)
+				ARCBank_Draw:Window_MsgBox(-135,-60,250,"","The instruction at '0x00000000' referenced memory at '0xffffffff'. \nThe memory could not be read.",ARCBank.ATM_DarkTheme,6,ARCLib.GetIcon(2,"cancel"),nil,self.ATMType.ForegroundColour)
 			end
 			if self.Percent > 0.18 && self.Percent < 1 then
 				if self.Percent < 0.25 then
