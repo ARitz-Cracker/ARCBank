@@ -54,7 +54,7 @@ net.Receive( "arcbank_hacker_status", function(length)
 			ent.Hacking = false
 			ent:GetParent():HackStop()
 		else
-			initEnts[enti].EnergyLevel = startEnts.EnergyEnd - CurTime()
+			initEnts[enti].EnergyLevel = startEnts[enti].EnergyEnd - CurTime()
 			if initEnts[enti].EnergyLevel < 0 then
 				initEnts[enti].EnergyLevel = 0
 			end

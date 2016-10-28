@@ -290,8 +290,10 @@ function ENT:Think()
 				self:SetPos(pos)
 				self:SetParent()
 				self:GetPhysicsObject():Wake()
-				if(self.OurHealth <= 0) then
+				if(self.OurHealth > 0) then
 					self:EmitSound("npc/roller/blade_in.wav")
+				else
+					self:EmitSound("physics/metal/metal_box_impact_bullet"..math.random(1,3)..".wav")
 				end
 			end)
 			if self.GottaBreak then

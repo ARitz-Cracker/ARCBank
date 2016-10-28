@@ -1321,7 +1321,7 @@ function ENT:Draw()--Good
 	self:DrawShadow( true )
 	if !self.ATMType then return end
 	if ARCBank.Settings["atm_holo"] then
-		self.HoloPos = self:LocalToWorld(self:OBBCenter()+self:OBBMaxs()*vector_up+Vector(0,0,(15+math.sin(CurTime()*1)*3)))
+		self.HoloPos = self:LocalToWorld(self:OBBCenter()+(self:OBBMaxs()-self:OBBMins())*0.5*vector_up+Vector(0,0,(8+math.sin(CurTime()*1)*3)))
 		self.HoloAng1 = self:GetAngles()+Angle( 0, 0, 90 )
 		if ARCBank.Settings["atm_holo_rotate"] then
 			self.HoloAng1:RotateAroundAxis( self.HoloAng1:Right(), (CurTime()*36)%360 )

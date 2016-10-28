@@ -96,8 +96,8 @@ function ARCBank.SettingsReset() --DO NOT EDIT THIS!!!!
 	ARCBank.Settings["atm_holo_text"] = "$$ ATM $$" --DO NOT EDIT THIS!!!!
 	ARCBank.Settings["account_group_limit"] = 4 --DO NOT EDIT THIS!!!!
 	
-	ARCBank.Settings["death_money_remove"] = 100
-	ARCBank.Settings["death_money_drop"] = 70
+	ARCBank.Settings["death_money_remove"] = 80
+	ARCBank.Settings["death_money_drop"] = 60
 	ARCBank.Settings["death_money_drop_model"] = "models/props/cs_assault/money.mdl"
 	
 	ARCBank.Settings["autoban_time"] = 120 --DO NOT EDIT THIS!!!!

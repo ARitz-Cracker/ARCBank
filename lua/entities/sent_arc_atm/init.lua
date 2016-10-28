@@ -113,31 +113,37 @@ function ENT:HackComplete(ply,amount,rand)
 	self.DoingSomething = true
 	self.InUse = true
 	self.TakingMoney = true
-	if ply.ARCBank_Secrets then --TODO: Have this work with multiple ATM Types instead of only the default one
+	if ply.ARCBank_Secrets && self.ATMType.UseMoneyModel then --TODO: Have this work with multiple ATM Types instead of only the default one
 		self:EmitSound("^arcbank/atm/spit-out.wav")
-		timer.Simple(6.5,function() self:SetModel( "models/thedoctor/crackmachine_off.mdl" ) end)
+		timer.Simple(6.5,function()
+			if atm.ATMType.ModelOpen != "" then
+				atm:SetModel( atm.ATMType.ModelOpen ) 
+			end
+		end)
 		timer.Simple(6.8,function() 
 			net.Start("ARCATM_COMM_BEEP")
-			net.WriteEntity(atm)
+			net.WriteEntity(self)
 			net.WriteBit(true)
 			net.Broadcast()
 			self:EmitSound("arcbank/atm/lolhack.wav")
 			local moneyproppos = self:GetPos() + ((self:GetAngles():Up() * 0.2) + (self:GetAngles():Forward() * -4.0) + (self:GetAngles():Right() * -0.4))
 			self.UsePlayer = nil
 			timer.Destroy( "ATM_WIN" ) 
-			timer.Create( "ATM_WIN", 0.2, math.Rand(10,20), function()
+			timer.Create( "ATM_WIN", 0.2, math.random(10,20), function()
 				local moneyprop = ents.Create( "sent_arc_cash" ) --I don't want to create another entity. 
-				moneyprop:SetPos( moneyproppos)
-				local moneyang = self:GetAngles()
-				moneyang:RotateAroundAxis( moneyang:Up(), -90 )
-				moneyprop:GetPhysicsObject():SetVelocity(moneyprop:GetRight()) 
+				moneyprop:SetModel( self.ATMType.MoneyModel )
+				moneyprop:SetPos( self:LocalToWorld(self.ATMType.WithdrawAnimationPos))
+				moneyprop:SetAngles( self:LocalToWorldAngles(self.ATMType.WithdrawAnimationAng) )
 				moneyprop:SetValue(1000)
 				moneyprop:Spawn()
-				
+				moneyprop:GetPhysicsObject():SetVelocity(moneyprop:GetForward()*self.ATMType.WithdrawAnimationSpeed.x + moneyprop:GetRight()*self.ATMType.WithdrawAnimationSpeed.y + moneyprop:GetUp()*self.ATMType.WithdrawAnimationSpeed.z)
+			
 			end)
 		end)
 		timer.Simple(11,function() 
-			self:SetModel( "models/thedoctor/crackmachine_on.mdl" ) 
+			if atm.ATMType.ModelOpen != "" then
+				atm:SetModel( atm.ATMType.Model ) 
+			end
 			self:EmitSound("arcbank/atm/close.wav")
 			net.Start("ARCATM_COMM_BEEP")
 			net.WriteEntity(self)
@@ -256,7 +262,6 @@ function ENT:Think()
 		else
 			self:EmitSoundTable(self.ATMType.CloseSound,65,100)
 		end
-		self:SetModel( self.ATMType.Model ) 
 		if self.ATMType.ModelOpen != "" then
 			self:SetModel( self.ATMType.Model )
 		end
@@ -516,8 +521,8 @@ function ENT:WithdrawAnimation()
 	timer.Simple(atm.ATMType.PauseBeforeWithdrawAnimation,function() 
 		if atm.ATMType.ModelOpen != "" then
 			atm:SetModel( atm.ATMType.ModelOpen ) 
-			atm:SetSkin(atm.ATMType.OpenSkin)
 		end
+		atm:SetSkin(atm.ATMType.OpenSkin)
 		if atm.ATMType.OpenAnimation != "" then
 			atm:ARCLib_SetAnimationTime(atm.ATMType.OpenAnimation,atm.ATMType.OpenAnimationLength)
 		end
