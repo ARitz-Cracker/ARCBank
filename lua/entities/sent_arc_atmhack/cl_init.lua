@@ -1,6 +1,6 @@
--- This 2014,2015 is under copyright, and is bound to the agreement stated in the EULA.
+-- This file is under copyright, and is bound to the agreement stated in the EULA.
 -- Any 3rd party content has been used as either public domain or with permission.
--- © Copyright 2014 Aritz Beobide-Cardinal All rights reserved.
+-- © Copyright 2014-2016 Aritz Beobide-Cardinal All rights reserved.
 include('shared.lua')
 language.Add("sent_arc_atm","ARCBank ATM")
 local hexarr = {"0","1","2","3","4","5","6","7","8","9","A","B","C","D","E","F"}
@@ -8,11 +8,20 @@ local hexarr = {"0","1","2","3","4","5","6","7","8","9","A","B","C","D","E","F"}
 local initEnts = {} --Sometimes ents don't exist on the client, but they do on the server. This is to make sure that everything is still synced up.
 local startEnts = {} 
 
+local function IsValidHacker(ent)
+	return IsValid(ent) && ent:GetClass() == "sent_arc_atmhack"
+end
+
 net.Receive( "arcbank_hacker_status", function(length)
 	local enti = net.ReadUInt(16)
 	local ent = Entity(enti)
+	
 	local operation = net.ReadUInt(4)
 	
+	local parent = NULL
+	if IsValidHacker(ent) then
+		parent = ent:GetParent()
+	end
 	if operation == 0 then -- Setup
 		local stuff = {}
 		stuff.Hacker = net.ReadEntity()
@@ -21,7 +30,7 @@ net.Receive( "arcbank_hacker_status", function(length)
 		stuff.HackAmount = net.ReadUInt(32)
 		stuff.HackRandom = net.ReadBool()
 		stuff.Orientation = net.ReadBool()
-		if IsValid(ent) then
+		if IsValidHacker(ent) then
 			table.Merge( ent, stuff ) 
 		else
 			initEnts[enti] = stuff
@@ -38,21 +47,21 @@ net.Receive( "arcbank_hacker_status", function(length)
 		
 		stuff.Hacking = true
 		
-		if IsValid(ent) then
+		if IsValidHacker(ent) and IsValid(parent) then
 			table.Merge( ent, stuff )
-			ent:GetParent():HackStart()
+			parent:HackStart()
 		else
 			startEnts[enti] = stuff
 		end
 
 	elseif operation == 2 then -- Stop
-		if IsValid(ent) then
+		if IsValidHacker(ent) and IsValid(parent) then
 			ent.EnergyLevel = ent.EnergyEnd - CurTime()
 			if ent.EnergyLevel < 0 then
 				ent.EnergyLevel = 0
 			end
 			ent.Hacking = false
-			ent:GetParent():HackStop()
+			parent:HackStop()
 		else
 			initEnts[enti].EnergyLevel = startEnts[enti].EnergyEnd - CurTime()
 			if initEnts[enti].EnergyLevel < 0 then
@@ -63,15 +72,15 @@ net.Receive( "arcbank_hacker_status", function(length)
 	elseif operation == 3 then -- Delete
 		initEnts[enti] = nil
 	elseif operation == 4 then -- Spark
-		if IsValid(ent) then
+		if IsValidHacker(ent) then
 			ent:Spark()
 		end
 	elseif operation == 5 then -- Complete
-		if IsValid(ent) then
+		if IsValidHacker(ent) then
 			ent:HackComplete()
 		end
 	elseif operation == 6 then -- Broke
-		if IsValid(ent) then
+		if IsValidHacker(ent) then
 			ent.Broken = true
 		end
 	end
@@ -86,16 +95,6 @@ function ENT:Initialize()
 	self.HackStart = 0
 	self.HackEnd = 1
 	self.EnergyLevel = self.EnergyLevel || 0
-	local enti = self:EntIndex()
-	if initEnts[enti] then
-		table.Merge( self, initEnts[enti] )
-		initEnts[enti] = nil
-	end
-	if startEnts[enti] then
-		table.Merge( self, startEnts[enti] )
-		startEnts[enti] = nil
-		self:GetParent():HackStart()
-	end
 end
 
 function ENT:Spark()
@@ -110,7 +109,18 @@ function ENT:HackComplete()
 end
 
 function ENT:Think()
-	if self.Hacking && IsValid(self:GetParent()) then
+	if !IsValid(self:GetParent()) then return end
+	local enti = self:EntIndex()
+	if initEnts[enti] then
+		table.Merge( self, initEnts[enti] )
+		initEnts[enti] = nil
+	end
+	if startEnts[enti] then
+		table.Merge( self, startEnts[enti] )
+		startEnts[enti] = nil
+		self:GetParent():HackStart()
+	end
+	if self.Hacking then
 		self.HackPercent = ARCLib.BetweenNumberScale(self.HackStart,CurTime(),self.HackEnd)
 		self:GetParent():HackProgress(self.HackPercent)
 	end

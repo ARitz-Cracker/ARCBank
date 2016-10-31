@@ -143,7 +143,7 @@ if SERVER then
 	function ARCBank.MsgCL(ply,msg)
 		--net.Start( "ARCBank_Msg" )
 		--net.WriteString( msg )
-		if !ply || !ply:IsPlayer() then
+		if !IsValid(ply) || !ply:IsPlayer() then
 			ARCBank.Msg(tostring(msg))
 		else
 			if ARCBank.Settings && ARCBank.Settings.name then

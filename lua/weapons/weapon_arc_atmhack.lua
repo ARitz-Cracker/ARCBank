@@ -96,6 +96,7 @@ function SWEP:PrimaryAttack()
 		self.Weapon:SendWeaponAnim( ACT_SLAM_TRIPMINE_ATTACH )
 		self.Owner:SetAnimation( PLAYER_ATTACK1 )
 		timer.Simple(0.3,function() 
+			if !IsValid(self) then return end
 			local aim,side = self:ValidAim()
 			if aim then
 				self.Weapon:SendWeaponAnim( ACT_SLAM_TRIPMINE_ATTACH2 ) 
