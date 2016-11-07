@@ -111,7 +111,7 @@ end
 
 function ENT:Screen_Options()
 	local halfres = math.Round(self.ATMType.Resolutionx*0.5)
-	ARCBank_Draw:Window_MsgBox((halfres*-1)+2,-150,self.ATMType.Resolutionx-24,"ATM Menu Preview","I see you're customizing the ATM! Good for you!",self.DarkMode,0,ARCLib.Icons32t["atm"],nil,self.ATMType.ForegroundColour)
+	ARCBank_Draw:Window_MsgBox((halfres*-1)+2,-150,self.ATMType.Resolutionx-24,"ATM Menu Preview","I see you're customizing the ATM! Good for you!",self.DarkMode,0,ARCLib.GetWebIcon32("atm"),nil,self.ATMType.ForegroundColour)
 	local light = 255*ARCLib.BoolToNumber(self.DarkMode)
 	local darkk = 255*ARCLib.BoolToNumber(!self.DarkMode)
 	
@@ -132,7 +132,7 @@ function ENT:Screen_Options()
 			draw.SimpleText( fitstr[ii], "ARCBankATMNormal",xpos+37+((i%2)*63), ypos+((ii-1)*12), Color(light,light,light,255), (i%2)*2 , TEXT_ALIGN_TOP  )
 		end
 		surface.SetDrawColor( 255, 255, 255, 255 )
-		surface.SetTexture(ARCLib.Icons32t["information"])
+		surface.SetMaterial(ARCLib.GetWebIcon32("information"))
 		surface.DrawTexturedRect( xpos+2+((i%2)*98), ypos+4, 32, 32)
 	end
 	--[[

@@ -35,14 +35,15 @@ if CLIENT then
 	SWEP.WElements = {
 		["hacker"] = { type = "Model", model = "models/arc/card.mdl", bone = "ValveBiped.Bip01_R_Hand", rel = "", pos = Vector(4, 1.0, -0.425), angle = Angle(98.75, 92.75, -10.114), size = Vector(1, 1, 1), color = Color(255, 255, 255, 255), surpresslightning = false, material = "", skin = 0, bodygroup = {} }
 	}
-	SWEP.WepSelectIcon = surface.GetTextureID( "arc/atm_base/screen/card" )
+	SWEP.WepSelectIcon = surface.GetTextureID( "arc/atm_base/screen/cardex" )
+	SWEP.HUDIcon = surface.GetTextureID( "arc/atm_base/screen/card" )
 	function SWEP:DrawHUD() 
 		--if ARCLoad.Loaded then
 			surface.SetDrawColor( 255, 255, 255, 255 )
-			surface.SetTexture( self.WepSelectIcon ) 
+			surface.SetTexture( self.HUDIcon ) 
 			--surface.DrawOutlinedRect( surface.ScreenWidth() - 512, surface.ScreenHeight() - 256, 512, 256 )
 			surface.DrawTexturedRect( surface.ScreenWidth() - 512 - ARCBank.Settings["card_weapon_position_left"], surface.ScreenHeight() - 256 - ARCBank.Settings["card_weapon_position_up"], 512, 256 )
-			draw.SimpleText(ARCBank.GetPlayerID(self.Owner), "ARCBankCard", surface.ScreenWidth() - 430 - ARCBank.Settings["card_weapon_position_left"], surface.ScreenHeight() - 94 - ARCBank.Settings["card_weapon_position_up"], Color(255,255,255,200), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
+			draw.SimpleText(ARCBank.GetPlayerID(self.Owner), "ARCBankCard", surface.ScreenWidth() - 430 - ARCBank.Settings["card_weapon_position_left"], surface.ScreenHeight() - 92 - ARCBank.Settings["card_weapon_position_up"], Color(255,255,255,200), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
 			draw.SimpleText(self.Owner:Nick(), "ARCBankCard", surface.ScreenWidth() - 430 - ARCBank.Settings["card_weapon_position_left"], surface.ScreenHeight() - 55 - ARCBank.Settings["card_weapon_position_up"], Color(255,255,255,200), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
 		--end
 	end
@@ -214,8 +215,9 @@ end
 function SWEP:Initialize()
 	self:SetNextPrimaryFire(CurTime() + 5)
 	if ARCBank && ARCBank.Settings then
-		if CLIENT && ARCBank.Settings.card_texture then
+		if CLIENT && ARCBank.Settings.card_texture && ARCBank.Settings.card_texture != "arc/atm_base/screen/card" then
 			self.WepSelectIcon = surface.GetTextureID( ARCBank.Settings.card_texture )
+			self.HUDIcon = self.WepSelectIcon
 		end
 		if ARCBank.Settings.name_long then
 			self.PrintName = ARCBank.Settings.name_long.." "..ARCBank.Msgs.Items.Card
@@ -231,8 +233,9 @@ function SWEP:Initialize()
 end
 function SWEP:Deploy()
 	if ARCBank && ARCBank.Settings then
-		if CLIENT && ARCBank.Settings.card_texture then
+		if CLIENT && ARCBank.Settings.card_texture && ARCBank.Settings.card_texture != "arc/atm_base/screen/card" then
 			self.WepSelectIcon = surface.GetTextureID( ARCBank.Settings.card_texture )
+			self.HUDIcon = self.WepSelectIcon
 		end
 		if ARCBank.Settings.name_long then
 			self.PrintName = ARCBank.Settings.name_long.." "..ARCBank.Msgs.Items.Card
