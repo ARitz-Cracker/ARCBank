@@ -44,6 +44,7 @@ function ENT:SetATMType(typ)
 			if phys:IsValid() then
 				phys:Wake() 
 			end
+			self:SetSkin(tab.CloseSkin)
 			return true
 		else
 			return false

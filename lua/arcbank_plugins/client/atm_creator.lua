@@ -53,7 +53,9 @@ if ARCBank then
 		outline = true
 	} )
 	local ATMThing = NULL
-
+	net.Receive("ARCBank ATM CreatorUse",function(length)
+		ARCBank.OpenATMCreatorGUI(net.ReadEntity())
+	end)
 	net.Receive( "ARCBank ATM Creator", function(length)
 		ATMThing = net.ReadEntity()
 		ATMThing.ATMType = util.JSONToTable(net.ReadString())
@@ -61,8 +63,8 @@ if ARCBank then
 
 	local MainPanel	
 	local CurrentColour = 1
-	hook.Add("KeyPress", "ARCBank ATM CreatorStuffs", function(ply, key)
-		if ply == LocalPlayer() && key == IN_USE && ply:GetEyeTrace().Entity.IsDuhATMCreatorProp && IsValid(ATMThing) && ply:GetEyeTrace().HitPos:Distance(ply:GetShootPos()) < 84 then
+	function ARCBank.OpenATMCreatorGUI(ent)
+		if ent == ATMThing then
 
 			MainPanel = vgui.Create( "DFrame" )
 			MainPanel:SetPos( 0, ScrH()-430 )
@@ -1681,7 +1683,7 @@ if ARCBank then
 			--gui.EnableScreenClicker( true ) 
 		end
 	
-	end)
+	end
 	--[[
 	hook.Add("KeyRelease", "ARCBank ATM CreatorStuffs", function(ply, key)
 		if ply == LocalPlayer() && key == IN_USE then

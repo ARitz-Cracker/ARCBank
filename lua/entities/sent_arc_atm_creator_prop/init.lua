@@ -130,6 +130,10 @@ function ENT:Use( ply, caller )
 				self.PlayerNeedsToDoSomething = false
 			end
 		end
+	elseif self.CreatorPerson == ply then
+		net.Start("ARCBank ATM CreatorUse" )
+		net.WriteEntity(self)
+		net.Send(ply)
 	end
 end
 function ENT:OnRemove()
