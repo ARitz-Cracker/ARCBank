@@ -224,6 +224,21 @@ else
 		end
 		ARCBank.CapAccountRank(ply);
 	end)
+    hook.Add("OnCharDelete","ARCBank NutScriptDeleteAccount",function(ply,charid,currentchar)
+		if (nut) then
+			local userid = ARCBank.PlayerIDPrefix..charid
+			ARCBank.EraseAccount(ARCBank.GetAccountID(userid),false,NULLFUNC) -- We'll just assume that the account has been successfully removed
+			ARCBank.GroupAccountOwner(ply,function(errorcode,accounts)
+				if errorcode == ARCBANK_ERROR_NONE then
+					for k,v in ipairs(accounts) do
+						ARCBank.EraseAccount(accountdata.filename,true,NULLFUNC)
+					end
+				else
+					ARCBank.Msg("Failed to get list of group accounts for deleted character "..userid.." - "..ARCBANK_ERRORSTRINGS[errorcode])
+				end
+			end)
+		end
+    end)
 	--[[
 	-- This is now handeled in the ATM entity itself.
 	%%CONFIRMATION_HASH%%
