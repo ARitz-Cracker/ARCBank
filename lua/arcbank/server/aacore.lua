@@ -410,15 +410,26 @@ function ARCBank.CreateAccount(ply,rank,initbalance,groupname,callback)
 		if yes then
 			callback(ARCBANK_ERROR_NAME_DUPE)
 		else
-			ARCBank.WriteAccountFile(accountdata,function(didwrite)
-				if didwrite then
-					ARCBank.Msg(ply:Nick().."("..ARCBank.GetPlayerID(ply)..") ceated an account named "..accountdata.name.." with "..initbalance.." munnies")
-					ARCBankAccountMsg(accountdata,"Account Created/Reset!")
-					callback(ARCBANK_ERROR_NONE)
+			ARCBank.GroupAccountOwner(ply,function(errcode,data)
+				if errcode == ARCBANK_ERROR_NONE then
+					if #data >= ARCBank.Settings["account_group_limit"] then
+						callback(ARCBANK_ERROR_TOO_MANY_ACCOUNTS)
+					else
+						ARCBank.WriteAccountFile(accountdata,function(didwrite)
+							if didwrite then
+								ARCBank.Msg(ply:Nick().."("..ARCBank.GetPlayerID(ply)..") ceated an account named "..accountdata.name.." with "..initbalance.." munnies")
+								ARCBankAccountMsg(accountdata,"Account Created/Reset!")
+								callback(ARCBANK_ERROR_NONE)
+							else
+								callback(ARCBANK_ERROR_WRITE_FAILURE)
+							end
+						end)
+					end
 				else
-					callback(ARCBANK_ERROR_WRITE_FAILURE)
+					callback(errcode)
 				end
 			end)
+
 		end
 	end)
 end

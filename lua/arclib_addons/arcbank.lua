@@ -23,7 +23,7 @@ ARCBank.Features = {}
 ARCBank.Features["hackapi"] = true
 
 ARCBank.Update = "November 17th 2016"
-ARCBank.Version = "1.3.7b"
+ARCBank.Version = "1.3.7c"
 
 
 ARCBank.About = [[      
