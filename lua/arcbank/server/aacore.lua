@@ -1252,7 +1252,7 @@ function ARCBank.Transfer(fromply,toply,fromname,toname,amount,reason,callback)
 		if !isstring(toply) && toply:IsPlayer() then
 			sid = ARCBank.GetPlayerID(toply)
 			nic = toply:Nick()
-		elseif string.StartWith(toply,"STEAM_") then
+		elseif string.StartWith(toply,ARCBank.PlayerIDPrefix) then
 			sid = toply
 		else
 			callback(ARCBANK_ERROR_NIL_PLAYER)

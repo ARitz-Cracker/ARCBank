@@ -128,13 +128,15 @@ else
 				net.Send(ply)
 			end
 		end
-		timer.Simple(1,function()
-			if IsValid(ply) && ply:IsPlayer() && table.HasValue(ARCBank.Disk.NommedCards,ARCBank.GetPlayerID(ply)) then
-				ply:PrintMessage( HUD_PRINTTALK, "ARCBank: "..ARCBank.Msgs.UserMsgs.Eatcard2 )
-				ply:Give("weapon_arc_atmcard")
-				table.RemoveByValue(ARCBank.Disk.NommedCards,ARCBank.GetPlayerID(ply))
-			end
-		end)
+		if ARCBank.Settings["card_weapon"] == "weapon_arc_atmcard" then
+			timer.Simple(1,function()
+				if IsValid(ply) && ply:IsPlayer() && table.HasValue(ARCBank.Disk.NommedCards,ARCBank.GetPlayerID(ply)) then
+					ply:PrintMessage( HUD_PRINTTALK, "ARCBank: "..ARCBank.Msgs.UserMsgs.Eatcard2 )
+					ply:Give("weapon_arc_atmcard")
+					table.RemoveByValue(ARCBank.Disk.NommedCards,ARCBank.GetPlayerID(ply))
+				end
+			end)
+		end
 	end)
 
 				
@@ -159,7 +161,7 @@ else
 				if pay <= 0 then return end
 				ARCBank.AtmFunc(ply,pay,"",function(errcode)
 					if errcode == 0 then
-						ARCLib.NotifyPlayer(ply,string.Replace(ARCBank.Msgs.UserMsgs.Paycheck.." ("..ARCBank.Settings["money_symbol"]..pay..")","ARCBank",ARCBank.Settings.name),NOTIFY_HINT,4,false)
+						ARCLib.NotifyPlayer(ply,string.Replace(ARCBank.Msgs.UserMsgs.Paycheck.." ("..string.Replace( string.Replace( ARCBank.Settings["money_format"], "$", ARCBank.Settings.money_symbol ) , "0", tostring(pay) )..")","ARCBank",ARCBank.Settings.name),NOTIFY_HINT,4,false)
 					elseif errcode != ARCBANK_ERROR_NIL_ACCOUNT then
 						ARCLib.NotifyPlayer(ply,string.Replace(ARCBank.Msgs.UserMsgs.PaycheckFail,"ARCBank",ARCBank.Settings.name).." ("..ARCBANK_ERRORSTRINGS[errcode]..")",NOTIFY_ERROR,4,true)
 					end
@@ -176,7 +178,7 @@ else
 				if pay <= 0 then return end
 				ARCBank.AtmFunc(ply,pay,"",function(errcode)
 					if errcode == 0 then
-						ARCLib.NotifyPlayer(ply,string.Replace(ARCBank.Msgs.UserMsgs.Paycheck.." ("..ARCBank.Settings["money_symbol"]..pay..")","ARCBank",ARCBank.Settings.name),NOTIFY_HINT,4,false)
+						ARCLib.NotifyPlayer(ply,string.Replace(ARCBank.Msgs.UserMsgs.Paycheck.." ("..string.Replace( string.Replace( ARCBank.Settings["money_format"], "$", ARCBank.Settings.money_symbol ) , "0", tostring(pay) )..")","ARCBank",ARCBank.Settings.name),NOTIFY_HINT,4,false)
 					elseif errcode != ARCBANK_ERROR_NIL_ACCOUNT then
 						ARCLib.NotifyPlayer(ply,string.Replace(ARCBank.Msgs.UserMsgs.PaycheckFail,"ARCBank",ARCBank.Settings.name).." ("..ARCBANK_ERRORSTRINGS[errcode]..")",NOTIFY_ERROR,4,true)
 					end

@@ -33,18 +33,23 @@ SWEP.AutoSwitchTo = false
 SWEP.AutoSwitchFrom = false
 if CLIENT then
 	SWEP.WElements = {
-		["hacker"] = { type = "Model", model = "models/arc/card.mdl", bone = "ValveBiped.Bip01_R_Hand", rel = "", pos = Vector(4, 1.0, -0.425), angle = Angle(98.75, 92.75, -10.114), size = Vector(1, 1, 1), color = Color(255, 255, 255, 255), surpresslightning = false, material = "", skin = 0, bodygroup = {} }
+		["card"] = { type = "Model", model = "models/arc/card.mdl", bone = "ValveBiped.Bip01_R_Hand", rel = "", pos = Vector(4, 1.0, -0.425), angle = Angle(98.75, 92.75, -10.114), size = Vector(1, 1, 1), color = Color(255, 255, 255, 255), surpresslightning = false, material = "", skin = 0, bodygroup = {} }
 	}
+	SWEP.WElements.card.submaterial = {}
+	SWEP.WElements.card.submaterial[2] = "arc/card/cardex"
+	
 	SWEP.WepSelectIcon = surface.GetTextureID( "arc/atm_base/screen/cardex" )
 	SWEP.HUDIcon = surface.GetTextureID( "arc/atm_base/screen/card" )
 	function SWEP:DrawHUD() 
 		--if ARCLoad.Loaded then
+		if ARCBank.Settings["card_draw_vehicle"] or not self.Owner:InVehicle() then
 			surface.SetDrawColor( 255, 255, 255, 255 )
 			surface.SetTexture( self.HUDIcon ) 
 			--surface.DrawOutlinedRect( surface.ScreenWidth() - 512, surface.ScreenHeight() - 256, 512, 256 )
 			surface.DrawTexturedRect( surface.ScreenWidth() - 512 - ARCBank.Settings["card_weapon_position_left"], surface.ScreenHeight() - 256 - ARCBank.Settings["card_weapon_position_up"], 512, 256 )
 			draw.SimpleText(ARCBank.GetPlayerID(self.Owner), "ARCBankCard", surface.ScreenWidth() - 430 - ARCBank.Settings["card_weapon_position_left"], surface.ScreenHeight() - 92 - ARCBank.Settings["card_weapon_position_up"], Color(255,255,255,200), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
 			draw.SimpleText(self.Owner:Nick(), "ARCBankCard", surface.ScreenWidth() - 430 - ARCBank.Settings["card_weapon_position_left"], surface.ScreenHeight() - 55 - ARCBank.Settings["card_weapon_position_up"], Color(255,255,255,200), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
+		end
 		--end
 	end
 		
@@ -113,7 +118,11 @@ if CLIENT then
 				elseif (model:GetMaterial() != v.material) then
 					model:SetMaterial( v.material )
 				end
-				
+				if v.submaterial then
+					for kk,vv in pairs(v.submaterial) do
+						model:SetSubMaterial(kk,vv)
+					end
+				end
 				if (v.skin and v.skin != model:GetSkin()) then
 					model:SetSkin(v.skin)
 				end
@@ -229,6 +238,7 @@ function SWEP:Initialize()
 	if CLIENT then
 		self.WElements = table.FullCopy( self.WElements )
 		self:CreateModels(self.WElements) -- create worldmodels
+		self.WElements.card.submaterial[2] = ARCBank.Settings.card_texture_world or "arc/card/cardex"
 	end
 end
 function SWEP:Deploy()
@@ -242,6 +252,9 @@ function SWEP:Deploy()
 		end
 		self.Slot = ARCBank.Settings.card_weapon_slot or 1
 		self.SlotPos = ARCBank.Settings.card_weapon_slotpos or 4
+		if CLIENT then
+			self.WElements.card.submaterial[2] = ARCBank.Settings.card_texture_world or "arc/card/cardex"
+		end
 	end
 	return true
 end

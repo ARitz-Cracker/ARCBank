@@ -74,7 +74,7 @@ function ENT:GetATMType()
 end
 
 function ENT:Hackable()
-	return !self.Broken && self.RebootTime < CurTime()
+    return not self.Broken and self.RebootTime < CurTime() and self.UsePlayer == nil
 end
 
 function ENT:Break()
@@ -449,6 +449,9 @@ function ENT:ATM_USE(activator)
 				selfcard:SetPos( self:LocalToWorld(self.ATMType.CardRemoveAnimationPos))
 				selfcard:SetAngles( self:LocalToWorldAngles(self.ATMType.CardRemoveAnimationAng) )
 				selfcard:Spawn()
+				if self.ATMType.CardModel == "models/arc/card.mdl" then
+					selfcard:SetSubMaterial(2,ARCBank.Settings.card_texture_world)
+				end
 				selfcard:GetPhysicsObject():EnableCollisions(false)
 				selfcard:GetPhysicsObject():EnableGravity(false)
 				selfcard:GetPhysicsObject():SetVelocity(selfcard:GetForward()*self.ATMType.CardRemoveAnimationSpeed.x + selfcard:GetRight()*self.ATMType.CardRemoveAnimationSpeed.y + selfcard:GetUp()*self.ATMType.CardRemoveAnimationSpeed.z)
@@ -460,8 +463,8 @@ function ENT:ATM_USE(activator)
 				
 				local ply = self.UsePlayer
 				timer.Simple(0.5,function()
-					ply:Give("weapon_arc_atmcard")
-					ply:SelectWeapon("weapon_arc_atmcard")
+					ply:Give(ARCBank.Settings["card_weapon"])
+					ply:SelectWeapon(ARCBank.Settings["card_weapon"])
 				end)
 				
 				self.InUse = false
@@ -491,6 +494,9 @@ function ENT:ATM_USE(activator)
 			selfcard:SetPos( self:LocalToWorld(self.ATMType.CardInsertAnimationPos))
 			selfcard:SetAngles( self:LocalToWorldAngles(self.ATMType.CardInsertAnimationAng) )
 			selfcard:Spawn()
+			if self.ATMType.CardModel == "models/arc/card.mdl" then
+				selfcard:SetSubMaterial(2,ARCBank.Settings.card_texture_world)
+			end
 			selfcard:GetPhysicsObject():EnableCollisions(false)
 			selfcard:GetPhysicsObject():EnableGravity(false)
 			selfcard:GetPhysicsObject():SetVelocity(selfcard:GetForward()*self.ATMType.CardInsertAnimationSpeed.x + selfcard:GetRight()*self.ATMType.CardInsertAnimationSpeed.y + selfcard:GetUp()*self.ATMType.CardInsertAnimationSpeed.z)
@@ -503,7 +509,7 @@ function ENT:ATM_USE(activator)
 			table.insert(ARCBank.Disk.NommedCards,activator:SteamID())
 			self.UsePlayer = activator
 			activator:SwitchToDefaultWeapon() 
-			activator:StripWeapon( "weapon_arc_atmcard" ) 
+			activator:StripWeapon( ARCBank.Settings["card_weapon"] ) 
 			--activator:SendLua( "achievements.EatBall()" );
 			if IsValid(activator) then
 				net.Start( "ARCATM_USE" )

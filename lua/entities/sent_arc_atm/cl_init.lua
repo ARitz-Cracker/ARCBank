@@ -168,7 +168,7 @@ local function ENT_AccountOptions(accountdata,ent)
 	else
 		ent.OnHomeScreen = false
 		ent.Title = accountdata.name
-		ent.TitleText = ARCBank.Msgs.ATMMsgs.Balance..ARCBank.Settings["money_symbol"]..ARCLib.MoneyLimit(accountdata.money)
+		ent.TitleText = ARCBank.Msgs.ATMMsgs.Balance..string.Replace( string.Replace( ARCBank.Settings["money_format"], "$", ARCBank.Settings.money_symbol ) , "0", tostring(accountdata.money))
 		ent.TitleIcon = icons_rank[accountdata.rank]
 		
 		ent.ScreenOptions = {}
@@ -366,16 +366,22 @@ function ENT:PlayerSearch(addgroup)
 	self.ScreenOptions[#plys+1].text = ARCBank.Msgs.ATMMsgs.OfflinePlayer
 	self.ScreenOptions[#plys+1].icon = "textfield"
 	self.ScreenOptions[#plys+1].func = function() 
-		self.InputSID = ""
-		local function ENT_SID_Yes()
-			self.InputSID = "STEAM_0:1:"
-			self.MsgBox.Type = 0
+		self.InputSID = ARCBank.PlayerIDPrefix
+		
+		if ARCBank.PlayerIDPrefix == "STEAM_" then
+			local function ENT_SID_Yes()
+				self.InputSID = "STEAM_0:1:"
+				self.MsgBox.Type = 0
+			end
+			local function ENT_SID_No()
+				self.InputSID = "STEAM_0:0:"
+				self.MsgBox.Type = 0
+			end
+			self:Question(ARCBank.Msgs.ATMMsgs.SIDAsk,ENT_SID_Yes,ENT_SID_No)
+		else
+			--GO BACK HERE!
+			self:NewMsgBox(ARCBank.Settings.name,ARCBank.Msgs.ATMMsgs.EnterPlayer,nil,"information",1)
 		end
-		local function ENT_SID_No()
-			self.InputSID = "STEAM_0:0:"
-			self.MsgBox.Type = 0
-		end
-		self:Question(ARCBank.Msgs.ATMMsgs.SIDAsk,ENT_SID_Yes,ENT_SID_No)
 		self:EnableInput(true,function(nummmmm)
 			self.Loading = true
 			if addgroup then

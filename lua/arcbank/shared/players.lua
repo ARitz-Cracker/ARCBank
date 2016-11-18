@@ -1,13 +1,20 @@
--- hooks.lua - Player utilities
+-- player.lua - Player utilities
 
 -- This file is under copyright, and is bound to the agreement stated in the EULA.
 -- Any 3rd party content has been used as either public domain or with permission.
 -- © Copyright 2014-2016 Aritz Beobide-Cardinal All rights reserved.
 
-ARCBank.PlayerIDPrefix = "STEAM_"
-if (nut) then
-	ARCBank.PlayerIDPrefix = "NUT_"
-end
+ARCBank.PlayerIDPrefix = "ARCBANK_"
+
+timer.Simple(0,function() -- I hate stuff like this, but if autorun is called BEFORE gamemodes, there's not much I can do.
+	if ARCBank.PlayerIDPrefix == "ARCBANK_" then
+		if (nut) then
+			ARCBank.PlayerIDPrefix = "NUT_"
+		else
+			ARCBank.PlayerIDPrefix = "STEAM_"
+		end
+	end
+end)
 
 ARCBank.GetCustomPlayerID = false
 
@@ -18,7 +25,12 @@ function ARCBank.GetPlayerID(plyy)
 	if (type(ARCBank.GetCustomPlayerID) == "function") then
 		return ARCBank.GetCustomPlayerID(ply)
 	elseif (nut) then
-		return ARCBank.PlayerIDPrefix..plyy:getChar():getID()
+		local chr = plyy:getChar()
+		if chr then
+			return ARCBank.PlayerIDPrefix..chr:getID()
+		else
+			return ARCBank.PlayerIDPrefix.."PENDING"
+		end
 	else
 		return plyy:SteamID()
 	end
@@ -43,11 +55,14 @@ end
 
 function ARCBank.PlayerAddMoney(ply,amount)
 	if (nut) then
-		if amount > 0 then
-			ply:getChar():giveMoney(amount)
-		else
-			amount = amount * -1
-			ply:getChar():takeMoney(amount)
+		local chr = ply:getChar()
+		if chr then
+			if amount > 0 then
+				chr:giveMoney(amount)
+			else
+				amount = amount * -1
+				chr:takeMoney(amount)
+			end
 		end
 	elseif string.lower(GAMEMODE.Name) == "gmod day-z" then
 		if amount > 0 then
@@ -74,7 +89,12 @@ end
 	
 function ARCBank.PlayerCanAfford(ply,amount)
 	if (nut) then
-		return ply:getChar():getMoney() >= amount
+		local chr = ply:getChar()
+		if chr then
+			return chr:getMoney() >= amount
+		else
+			return false
+		end
 	elseif string.lower(GAMEMODE.Name) == "gmod day-z" then
 		return ply:HasItemAmount("item_money", amount)
 	elseif string.lower(GAMEMODE.Name) == "underdone - rpg" then
@@ -90,7 +110,12 @@ end
 
 function ARCBank.PlayerGetMoney(ply)
 	if (nut) then
-		return ply:getChar():getMoney()
+		local chr = ply:getChar()
+		if chr then
+			return chr:getMoney()
+		else
+			return 0
+		end
 	elseif string.lower(GAMEMODE.Name) == "gmod day-z" then
 		return ply:GetItem("item_money")
 	elseif string.lower(GAMEMODE.Name) == "underdone - rpg" then

@@ -299,6 +299,8 @@ ARCBank.Msgs.ATMMsgs.UpgradeAccount = "Are you sure you want to upgrade this acc
 ARCBank.Msgs.ATMMsgs.CreateGroupAccount = "*Create Group Account"
 ARCBank.Msgs.ATMMsgs.PersonalAccount = "*Personal Account             "
 ARCBank.Msgs.ATMMsgs.OfflinePlayer = "Offline Player"
+ARCBank.Msgs.ATMMsgs.EnterPlayer = "Please enter the player's card number"
+
 ARCBank.Msgs.CardMsgs.NoOwner = "No owner is set!"
 ARCBank.Msgs.CardMsgs.Owner = "This is owned by %PLAYER%"
 ARCBank.Msgs.CardMsgs.InvalidOwner = "You don't own this device!"
