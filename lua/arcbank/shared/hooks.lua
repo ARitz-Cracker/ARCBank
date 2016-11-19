@@ -35,7 +35,7 @@ else
 
 	hook.Add( "CanTool", "ARCBank Tool", function( ply, tr, tool )
 		if IsValid(tr.Entity) then -- Overrides shitty FPP
-			if tr.Entity.IsAFuckingATM && tr.Entity.ARCBank_MapEntity then return false end 
+			if tr.Entity.ARCBank_MapEntity then return false end 
 			--[[
 			for k, v in pairs(constraint.GetAllConstrainedEntities(tr.Entity)) do
 				if v:GetClass() == "sent_arc_pinmachine" && v._Owner == ply then -- Overrides shitty FPP
@@ -46,10 +46,10 @@ else
 		end
 	end)
 	hook.Add( "CanPlayerUnfreeze", "ARCBank BlockUnfreeze", function( ply, ent, phys )
-		if ent.IsAFuckingATM && ent.ARCBank_MapEntity then return false end 
+		if ent.ARCBank_MapEntity then return false end 
 	end )
 	hook.Add( "CanProperty", "ARCBank BlockProperties", function( ply, property, ent )
-		if ent.IsAFuckingATM && ent.ARCBank_MapEntity then return false end 
+		if ent.ARCBank_MapEntity then return false end 
 	end )
 	hook.Add( "PlayerCanPickupWeapon", "ARCBank HackerPickup", function( ply, wep ) 
 		if ARCBank.Settings["atm_hack_allowed_use"] && wep:GetClass() == "weapon_arc_atmhack" then
@@ -64,7 +64,7 @@ else
 		end
 	end)
 	hook.Add( "PhysgunPickup", "ARCBank NoPhys", function( ply, ent ) 
-		if ent.IsAFuckingATM && ent.ARCBank_MapEntity then return false end 
+		if ent.ARCBank_MapEntity then return false end 
 		if ent:GetClass() == "sent_arc_atmhack" && ent:GetPos():DistToSqr( ply:GetPos() ) < 9500 then ent:TakeDamage( 200, ply, ply:GetActiveWeapon() ) return true end 
 		if ent:GetClass() == "sent_arc_pinmachine" && ent._Owner == ply then -- Overrides shitty FPP
 			return true
