@@ -62,11 +62,13 @@ net.Receive( "arcbank_hacker_status", function(length)
 			end
 			ent.Hacking = false
 			parent:HackStop()
-		else
+		elseif istable(initEnts[enti]) and istable(startEnts[enti]) then
 			initEnts[enti].EnergyLevel = startEnts[enti].EnergyEnd - CurTime()
 			if initEnts[enti].EnergyLevel < 0 then
 				initEnts[enti].EnergyLevel = 0
 			end
+		else
+			ARCBank.Msg("Warning! Hacker entity isn't loaded but the loading table doesn't exist? "..tostring(initEnts[enti]).." "..tostring(startEnts[enti]))
 		end
 		startEnts[enti] = nil
 	elseif operation == 3 then -- Delete

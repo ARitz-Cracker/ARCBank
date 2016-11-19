@@ -231,8 +231,3 @@ function ARCBank.ConvertOldAccounts()
 		ARCLib.DeleteAll(ARCBank.Dir.."/personal_account")
 	end
 end
-
-
-
-
-

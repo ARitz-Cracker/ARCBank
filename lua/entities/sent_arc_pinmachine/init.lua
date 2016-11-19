@@ -134,8 +134,8 @@ end
 function ENT:SetScreenMsg(strtop,strbottom)
 	net.Start( "ARCCHIPMACHINE_STRINGS" )
 	net.WriteEntity(self.Entity)
-	net.WriteString(strtop)
-	net.WriteString(strbottom)
+	net.WriteString(strtop or "")
+	net.WriteString(strbottom or "")
 	net.WriteEntity(self._Owner)
 	net.Broadcast()
 	self.TopScreenText = strtop
@@ -145,8 +145,8 @@ net.Receive( "ARCCHIPMACHINE_STRINGS", function(length,ply)
 	local ent = net.ReadEntity()
 	net.Start( "ARCCHIPMACHINE_STRINGS" )
 	net.WriteEntity(ent)
-	net.WriteString(ent.TopScreenText)
-	net.WriteString(ent.BottomScreenText)
+	net.WriteString(ent.TopScreenText or "")
+	net.WriteString(ent.BottomScreenText or "")
 	net.Send(ply)
 end)
 net.Receive( "ARCCHIPMACHINE_MENU_OWNER", function(length,ply)
@@ -157,7 +157,7 @@ net.Receive( "ARCCHIPMACHINE_MENU_OWNER", function(length,ply)
 	ent.ToAccount = account
 	ent.EnteredAmount = amount
 	ent.DemandingMoney = true
-	ent:SetScreenMsg(ARCBank.Settings["money_symbol"]..tostring(amount),ARCBank.Msgs.CardMsgs.InsertCard)
+	ent:SetScreenMsg(string.Replace( string.Replace( ARCBank.Settings["money_format"], "$", ARCBank.Settings.money_symbol ) , "0", tostring(amount)),ARCBank.Msgs.CardMsgs.InsertCard)
 	ent.Reason = re
 end)
 net.Receive( "ARCCHIPMACHINE_MENU_CUSTOMER", function(length,ply)

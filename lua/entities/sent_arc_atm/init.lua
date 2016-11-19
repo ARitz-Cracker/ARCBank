@@ -44,6 +44,7 @@ function ENT:SetATMType(typ)
 			if phys:IsValid() then
 				phys:Wake() 
 			end
+			self:SetSkin(tab.CloseSkin)
 			return true
 		else
 			return false
@@ -130,7 +131,7 @@ function ENT:HackComplete(ply,amount,rand)
 			self.UsePlayer = nil
 			timer.Destroy( "ATM_WIN" ) 
 			timer.Create( "ATM_WIN", 0.2, math.random(10,20), function()
-				local moneyprop = ents.Create( "sent_arc_cash" ) --I don't want to create another entity. 
+				local moneyprop = ents.Create( "sent_arc_cash" )
 				moneyprop:SetModel( self.ATMType.MoneyModel )
 				moneyprop:SetPos( self:LocalToWorld(self.ATMType.WithdrawAnimationPos))
 				moneyprop:SetAngles( self:LocalToWorldAngles(self.ATMType.WithdrawAnimationAng) )
@@ -240,7 +241,9 @@ function ENT:Think()
 		if self.PlayerNeedsToDoSomething then
 			if self.TakingMoney then
 				self.errorc = ARCBANK_ERROR_ABORTED
-				self.moneyprop:Remove()
+				if IsValid(self.moneyprop) then
+					self.moneyprop:Remove()
+				end
 			else
 				self.errorc = ARCBANK_ERROR_ABORTED
 				self:EmitSound("^arcbank/atm/eat-duh-cash-stop.wav",65,100)
@@ -292,7 +295,9 @@ function ENT:Think()
 				
 				if self.TakingMoney then
 					self.errorc = ARCBANK_ERROR_ABORTED
-					self.moneyprop:Remove()
+					if IsValid(self.moneyprop) then
+						self.moneyprop:Remove()
+					end
 				else
 					self.errorc = ARCBANK_ERROR_ABORTED
 					self:EmitSoundTable(self.ATMType.DepositFailSound,65,100)
@@ -358,7 +363,7 @@ function ENT:Use( ply, caller )
 					ARCBank.PlayerAddMoney(self.UsePlayer,self.args.money)
 					self.errorc = 0
 					self.UsePlayer = nil
-					if self.ATMType.UseMoneyModel then
+					if self.ATMType.UseMoneyModel and IsValid(self.moneyprop) then
 						self.moneyprop:Remove()
 					end
 					self:EmitSound("foley/alyx_hug_eli.wav",65,math.random(225,255))
@@ -366,7 +371,7 @@ function ENT:Use( ply, caller )
 				else
 					ARCBank.AtmFunc(self.UsePlayer,-self.args.money,self.args.name,function(errc)
 						self.errorc = errc
-						if self.ATMType.UseMoneyModel then
+						if self.ATMType.UseMoneyModel and IsValid(self.moneyprop) then
 							self.moneyprop:Remove()
 						end
 						self:EmitSound("foley/alyx_hug_eli.wav",65,math.random(225,255))
@@ -384,16 +389,19 @@ function ENT:Use( ply, caller )
 						if self.ATMType.UseMoneyModel then
 
 							self.moneyprop = ents.Create( "prop_physics" )
-							self.moneyprop:SetModel( self.ATMType.MoneyModel )
-							self.moneyprop:SetKeyValue("spawnflags","516")
-							self.moneyprop:SetPos( self:LocalToWorld(self.ATMType.DepositAnimationPos))
-							self.moneyprop:SetAngles( self:LocalToWorldAngles(self.ATMType.DepositAnimationAng) )
-							self.moneyprop:Spawn()
-							self.moneyprop:GetPhysicsObject():EnableCollisions(false)
-							self.moneyprop:GetPhysicsObject():EnableGravity(false)
-							self.moneyprop:GetPhysicsObject():SetVelocity(self.moneyprop:GetForward()*self.ATMType.DepositAnimationSpeed.x + self.moneyprop:GetRight()*self.ATMType.DepositAnimationSpeed.y + self.moneyprop:GetUp()*self.ATMType.DepositAnimationSpeed.z)
+							if IsValid(self.moneyprop) then
+								self.moneyprop.ARCBank_MapEntity = true
+								self.moneyprop:SetModel( self.ATMType.MoneyModel )
+								self.moneyprop:SetKeyValue("spawnflags","516")
+								self.moneyprop:SetPos( self:LocalToWorld(self.ATMType.DepositAnimationPos))
+								self.moneyprop:SetAngles( self:LocalToWorldAngles(self.ATMType.DepositAnimationAng) )
+								self.moneyprop:Spawn()
+								self.moneyprop:GetPhysicsObject():EnableCollisions(false)
+								self.moneyprop:GetPhysicsObject():EnableGravity(false)
+								self.moneyprop:GetPhysicsObject():SetVelocity(self.moneyprop:GetForward()*self.ATMType.DepositAnimationSpeed.x + self.moneyprop:GetRight()*self.ATMType.DepositAnimationSpeed.y + self.moneyprop:GetUp()*self.ATMType.DepositAnimationSpeed.z)
+							end
 							--MsgN(tostring(self.moneyprop:GetAngles():Up()).." + "..tostring(self.ATMType.DepositAnimationSpeed).." = ".. tostring(self.moneyprop:GetAngles():Up() * self.ATMType.DepositAnimationSpeed))
-							timer.Simple(self.ATMType.DepositAnimationLength,function() self.moneyprop:Remove() end)
+							timer.Simple(self.ATMType.DepositAnimationLength,function() if IsValid(self.moneyprop) then self.moneyprop:Remove() end end)
 						end
 						timer.Simple(self.ATMType.PauseAfterDepositAnimation,function() self.TakingMoney = true end)
 					else
@@ -443,24 +451,29 @@ function ENT:ATM_USE(activator)
 				self:EmitSoundTable(self.ATMType.WithdrawCardSound,65,math.random(95,105))
 				
 				local selfcard = ents.Create( "prop_physics" )
-				selfcard:SetModel( self.ATMType.CardModel )
-				selfcard:SetKeyValue("spawnflags","516")
-				selfcard:SetPos( self:LocalToWorld(self.ATMType.CardRemoveAnimationPos))
-				selfcard:SetAngles( self:LocalToWorldAngles(self.ATMType.CardRemoveAnimationAng) )
-				selfcard:Spawn()
-				selfcard:GetPhysicsObject():EnableCollisions(false)
-				selfcard:GetPhysicsObject():EnableGravity(false)
-				selfcard:GetPhysicsObject():SetVelocity(selfcard:GetForward()*self.ATMType.CardRemoveAnimationSpeed.x + selfcard:GetRight()*self.ATMType.CardRemoveAnimationSpeed.y + selfcard:GetUp()*self.ATMType.CardRemoveAnimationSpeed.z)
-				timer.Simple(self.ATMType.CardRemoveAnimationLength-0.3,function() selfcard:GetPhysicsObject():SetVelocity(Vector(0,0,0)) end)
-				timer.Simple(self.ATMType.CardRemoveAnimationLength,function() 
-				--MsgN(self:WorldToLocal(selfcard:GetPos()))
-				selfcard:Remove() 
-				end)
-				
+				if IsValid(selfcard) then
+					selfcard.ARCBank_MapEntity = true
+					selfcard:SetModel( self.ATMType.CardModel )
+					selfcard:SetKeyValue("spawnflags","516")
+					selfcard:SetPos( self:LocalToWorld(self.ATMType.CardRemoveAnimationPos))
+					selfcard:SetAngles( self:LocalToWorldAngles(self.ATMType.CardRemoveAnimationAng) )
+					selfcard:Spawn()
+					if self.ATMType.CardModel == "models/arc/card.mdl" then
+						selfcard:SetSubMaterial(2,ARCBank.Settings.card_texture_world)
+					end
+					selfcard:GetPhysicsObject():EnableCollisions(false)
+					selfcard:GetPhysicsObject():EnableGravity(false)
+					selfcard:GetPhysicsObject():SetVelocity(selfcard:GetForward()*self.ATMType.CardRemoveAnimationSpeed.x + selfcard:GetRight()*self.ATMType.CardRemoveAnimationSpeed.y + selfcard:GetUp()*self.ATMType.CardRemoveAnimationSpeed.z)
+					timer.Simple(self.ATMType.CardRemoveAnimationLength-0.3,function() selfcard:GetPhysicsObject():SetVelocity(Vector(0,0,0)) end)
+					timer.Simple(self.ATMType.CardRemoveAnimationLength,function() 
+						--MsgN(self:WorldToLocal(selfcard:GetPos()))
+						selfcard:Remove() 
+					end)
+				end
 				local ply = self.UsePlayer
 				timer.Simple(0.5,function()
-					ply:Give("weapon_arc_atmcard")
-					ply:SelectWeapon("weapon_arc_atmcard")
+					ply:Give(ARCBank.Settings["card_weapon"])
+					ply:SelectWeapon(ARCBank.Settings["card_weapon"])
 				end)
 				
 				self.InUse = false
@@ -485,24 +498,29 @@ function ENT:ATM_USE(activator)
 			self:EmitSoundTable(self.ATMType.InsertCardSound,65,math.random(95,105))
 			
 			local selfcard = ents.Create( "prop_physics" )
-			selfcard:SetModel( self.ATMType.CardModel )
-			selfcard:SetKeyValue("spawnflags","516")
-			selfcard:SetPos( self:LocalToWorld(self.ATMType.CardInsertAnimationPos))
-			selfcard:SetAngles( self:LocalToWorldAngles(self.ATMType.CardInsertAnimationAng) )
-			selfcard:Spawn()
-			selfcard:GetPhysicsObject():EnableCollisions(false)
-			selfcard:GetPhysicsObject():EnableGravity(false)
-			selfcard:GetPhysicsObject():SetVelocity(selfcard:GetForward()*self.ATMType.CardInsertAnimationSpeed.x + selfcard:GetRight()*self.ATMType.CardInsertAnimationSpeed.y + selfcard:GetUp()*self.ATMType.CardInsertAnimationSpeed.z)
-			timer.Simple(self.ATMType.CardInsertAnimationLength,function() 
-			--MsgN(self:WorldToLocal(selfcard:GetPos()))
-			selfcard:Remove() 
-			end)
-		
+			if IsValid(selfcard) then
+				selfcard.ARCBank_MapEntity = true
+				selfcard:SetModel( self.ATMType.CardModel )
+				selfcard:SetKeyValue("spawnflags","516")
+				selfcard:SetPos( self:LocalToWorld(self.ATMType.CardInsertAnimationPos))
+				selfcard:SetAngles( self:LocalToWorldAngles(self.ATMType.CardInsertAnimationAng) )
+				selfcard:Spawn()
+				if self.ATMType.CardModel == "models/arc/card.mdl" then
+					selfcard:SetSubMaterial(2,ARCBank.Settings.card_texture_world)
+				end
+				selfcard:GetPhysicsObject():EnableCollisions(false)
+				selfcard:GetPhysicsObject():EnableGravity(false)
+				selfcard:GetPhysicsObject():SetVelocity(selfcard:GetForward()*self.ATMType.CardInsertAnimationSpeed.x + selfcard:GetRight()*self.ATMType.CardInsertAnimationSpeed.y + selfcard:GetUp()*self.ATMType.CardInsertAnimationSpeed.z)
+				timer.Simple(self.ATMType.CardInsertAnimationLength,function() 
+					--MsgN(self:WorldToLocal(selfcard:GetPos()))
+					selfcard:Remove() 
+				end)
+			end
 			self.InUse = true
 			table.insert(ARCBank.Disk.NommedCards,activator:SteamID())
 			self.UsePlayer = activator
 			activator:SwitchToDefaultWeapon() 
-			activator:StripWeapon( "weapon_arc_atmcard" ) 
+			activator:StripWeapon( ARCBank.Settings["card_weapon"] ) 
 			--activator:SendLua( "achievements.EatBall()" );
 			if IsValid(activator) then
 				net.Start( "ARCATM_USE" )
@@ -530,18 +548,23 @@ function ENT:WithdrawAnimation()
 	timer.Simple(atm.ATMType.PauseBeforeWithdrawAnimation + atm.ATMType.PauseAfterWithdrawAnimation,function() 
 		if atm.ATMType.UseMoneyModel then
 			atm.moneyprop = ents.Create( "prop_physics" )
-			atm.moneyprop:SetModel( atm.ATMType.MoneyModel )
-			atm.moneyprop:SetKeyValue("spawnflags","516")
-			atm.moneyprop:SetPos( atm:LocalToWorld(atm.ATMType.WithdrawAnimationPos))
-			atm.moneyprop:SetAngles( atm:LocalToWorldAngles(atm.ATMType.WithdrawAnimationAng) )
-			atm.moneyprop:Spawn()
-			atm.moneyprop:GetPhysicsObject():EnableCollisions(false)
-			atm.moneyprop:GetPhysicsObject():EnableGravity(false)
-			timer.Simple(atm.ATMType.WithdrawAnimationLength,function() 
-				atm.moneyprop:GetPhysicsObject():SetVelocity(Vector(0,0,0)) 
-				atm.moneyprop:GetPhysicsObject():EnableMotion( false) 
-			end)
-			atm.moneyprop:GetPhysicsObject():SetVelocity(atm.moneyprop:GetForward()*atm.ATMType.WithdrawAnimationSpeed.x + atm.moneyprop:GetRight()*atm.ATMType.WithdrawAnimationSpeed.y + atm.moneyprop:GetUp()*atm.ATMType.WithdrawAnimationSpeed.z)
+			if IsValid(atm.moneyprop) then
+				atm.moneyprop.ARCBank_MapEntity = true
+				atm.moneyprop:SetModel( atm.ATMType.MoneyModel )
+				atm.moneyprop:SetKeyValue("spawnflags","516")
+				atm.moneyprop:SetPos( atm:LocalToWorld(atm.ATMType.WithdrawAnimationPos))
+				atm.moneyprop:SetAngles( atm:LocalToWorldAngles(atm.ATMType.WithdrawAnimationAng) )
+				atm.moneyprop:Spawn()
+				atm.moneyprop:GetPhysicsObject():EnableCollisions(false)
+				atm.moneyprop:GetPhysicsObject():EnableGravity(false)
+				timer.Simple(atm.ATMType.WithdrawAnimationLength,function() 
+					if IsValid(atm.moneyprop) then
+						atm.moneyprop:GetPhysicsObject():SetVelocity(Vector(0,0,0)) 
+						atm.moneyprop:GetPhysicsObject():EnableMotion( false) 
+					end
+				end)
+				atm.moneyprop:GetPhysicsObject():SetVelocity(atm.moneyprop:GetForward()*atm.ATMType.WithdrawAnimationSpeed.x + atm.moneyprop:GetRight()*atm.ATMType.WithdrawAnimationSpeed.y + atm.moneyprop:GetUp()*atm.ATMType.WithdrawAnimationSpeed.z)
+			end
 		end
 		if atm.ATMType.WithdrawAnimation != "" then
 			atm:ARCLib_SetAnimationTime(atm.ATMType.WithdrawAnimation,atm.ATMType.WithdrawAnimationLength)

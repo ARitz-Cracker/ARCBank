@@ -35,7 +35,7 @@ else
 
 	hook.Add( "CanTool", "ARCBank Tool", function( ply, tr, tool )
 		if IsValid(tr.Entity) then -- Overrides shitty FPP
-			if tr.Entity.IsAFuckingATM && tr.Entity.ARCBank_MapEntity then return false end 
+			if tr.Entity.ARCBank_MapEntity then return false end 
 			--[[
 			for k, v in pairs(constraint.GetAllConstrainedEntities(tr.Entity)) do
 				if v:GetClass() == "sent_arc_pinmachine" && v._Owner == ply then -- Overrides shitty FPP
@@ -46,10 +46,10 @@ else
 		end
 	end)
 	hook.Add( "CanPlayerUnfreeze", "ARCBank BlockUnfreeze", function( ply, ent, phys )
-		if ent.IsAFuckingATM && ent.ARCBank_MapEntity then return false end 
+		if ent.ARCBank_MapEntity then return false end 
 	end )
 	hook.Add( "CanProperty", "ARCBank BlockProperties", function( ply, property, ent )
-		if ent.IsAFuckingATM && ent.ARCBank_MapEntity then return false end 
+		if ent.ARCBank_MapEntity then return false end 
 	end )
 	hook.Add( "PlayerCanPickupWeapon", "ARCBank HackerPickup", function( ply, wep ) 
 		if ARCBank.Settings["atm_hack_allowed_use"] && wep:GetClass() == "weapon_arc_atmhack" then
@@ -64,7 +64,7 @@ else
 		end
 	end)
 	hook.Add( "PhysgunPickup", "ARCBank NoPhys", function( ply, ent ) 
-		if ent.IsAFuckingATM && ent.ARCBank_MapEntity then return false end 
+		if ent.ARCBank_MapEntity then return false end 
 		if ent:GetClass() == "sent_arc_atmhack" && ent:GetPos():DistToSqr( ply:GetPos() ) < 9500 then ent:TakeDamage( 200, ply, ply:GetActiveWeapon() ) return true end 
 		if ent:GetClass() == "sent_arc_pinmachine" && ent._Owner == ply then -- Overrides shitty FPP
 			return true
@@ -128,13 +128,15 @@ else
 				net.Send(ply)
 			end
 		end
-		timer.Simple(1,function()
-			if IsValid(ply) && ply:IsPlayer() && table.HasValue(ARCBank.Disk.NommedCards,ARCBank.GetPlayerID(ply)) then
-				ply:PrintMessage( HUD_PRINTTALK, "ARCBank: "..ARCBank.Msgs.UserMsgs.Eatcard2 )
-				ply:Give("weapon_arc_atmcard")
-				table.RemoveByValue(ARCBank.Disk.NommedCards,ARCBank.GetPlayerID(ply))
-			end
-		end)
+		if ARCBank.Settings["card_weapon"] == "weapon_arc_atmcard" then
+			timer.Simple(1,function()
+				if IsValid(ply) && ply:IsPlayer() && table.HasValue(ARCBank.Disk.NommedCards,ARCBank.GetPlayerID(ply)) then
+					ply:PrintMessage( HUD_PRINTTALK, "ARCBank: "..ARCBank.Msgs.UserMsgs.Eatcard2 )
+					ply:Give("weapon_arc_atmcard")
+					table.RemoveByValue(ARCBank.Disk.NommedCards,ARCBank.GetPlayerID(ply))
+				end
+			end)
+		end
 	end)
 
 				
@@ -159,7 +161,7 @@ else
 				if pay <= 0 then return end
 				ARCBank.AtmFunc(ply,pay,"",function(errcode)
 					if errcode == 0 then
-						ARCLib.NotifyPlayer(ply,string.Replace(ARCBank.Msgs.UserMsgs.Paycheck.." ("..ARCBank.Settings["money_symbol"]..pay..")","ARCBank",ARCBank.Settings.name),NOTIFY_HINT,4,false)
+						ARCLib.NotifyPlayer(ply,string.Replace(ARCBank.Msgs.UserMsgs.Paycheck.." ("..string.Replace( string.Replace( ARCBank.Settings["money_format"], "$", ARCBank.Settings.money_symbol ) , "0", tostring(pay) )..")","ARCBank",ARCBank.Settings.name),NOTIFY_HINT,4,false)
 					elseif errcode != ARCBANK_ERROR_NIL_ACCOUNT then
 						ARCLib.NotifyPlayer(ply,string.Replace(ARCBank.Msgs.UserMsgs.PaycheckFail,"ARCBank",ARCBank.Settings.name).." ("..ARCBANK_ERRORSTRINGS[errcode]..")",NOTIFY_ERROR,4,true)
 					end
@@ -176,7 +178,7 @@ else
 				if pay <= 0 then return end
 				ARCBank.AtmFunc(ply,pay,"",function(errcode)
 					if errcode == 0 then
-						ARCLib.NotifyPlayer(ply,string.Replace(ARCBank.Msgs.UserMsgs.Paycheck.." ("..ARCBank.Settings["money_symbol"]..pay..")","ARCBank",ARCBank.Settings.name),NOTIFY_HINT,4,false)
+						ARCLib.NotifyPlayer(ply,string.Replace(ARCBank.Msgs.UserMsgs.Paycheck.." ("..string.Replace( string.Replace( ARCBank.Settings["money_format"], "$", ARCBank.Settings.money_symbol ) , "0", tostring(pay) )..")","ARCBank",ARCBank.Settings.name),NOTIFY_HINT,4,false)
 					elseif errcode != ARCBANK_ERROR_NIL_ACCOUNT then
 						ARCLib.NotifyPlayer(ply,string.Replace(ARCBank.Msgs.UserMsgs.PaycheckFail,"ARCBank",ARCBank.Settings.name).." ("..ARCBANK_ERRORSTRINGS[errcode]..")",NOTIFY_ERROR,4,true)
 					end
@@ -222,6 +224,21 @@ else
 		end
 		ARCBank.CapAccountRank(ply);
 	end)
+    hook.Add("OnCharDelete","ARCBank NutScriptDeleteAccount",function(ply,charid,currentchar)
+		if (nut) then
+			local userid = ARCBank.PlayerIDPrefix..charid
+			ARCBank.EraseAccount(ARCBank.GetAccountID(userid),false,NULLFUNC) -- We'll just assume that the account has been successfully removed
+			ARCBank.GroupAccountOwner(ply,function(errorcode,accounts)
+				if errorcode == ARCBANK_ERROR_NONE then
+					for k,v in ipairs(accounts) do
+						ARCBank.EraseAccount(accountdata.filename,true,NULLFUNC)
+					end
+				else
+					ARCBank.Msg("Failed to get list of group accounts for deleted character "..userid.." - "..ARCBANK_ERRORSTRINGS[errorcode])
+				end
+			end)
+		end
+    end)
 	--[[
 	-- This is now handeled in the ATM entity itself.
 	%%CONFIRMATION_HASH%%

@@ -102,8 +102,8 @@ function ENT:Initialize()
 end
 
 
-function ENT:Think()
-
+function ENT:Use()
+	ARCBank.OpenATMCreatorGUI(self)
 end
 
 function ENT:OnRestore()

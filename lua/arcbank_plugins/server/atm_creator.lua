@@ -5,6 +5,7 @@
 -- However, you must credit me.
 if ARCBank then
 	util.AddNetworkString( "ARCBank ATM Creator" )
+	util.AddNetworkString( "ARCBank ATM CreatorUse" )
 	local ATMCreatorPerson = NULL
 	local ATMCreatorProp = NULL
 	local ATMCreationTable = {}
