@@ -34,28 +34,22 @@ ARCBank.SettingsDesc = ARCBank.SettingsDesc or {}
 | | | | | | | |  \| | | | || |   |  _| | | | | |  | |     | | | |_| |  _|   | |  | | | |/ _ \   | |_   | || |   |  _| | |
 | |_| | |_| | | |\  | |_| || |   | |___| |_| | |  | |     | | |  _  | |___  | |__| |_| / ___ \  |  _|  | || |___| |___|_|
 |____/ \___/  |_| \_|\___/ |_|   |_____|____/___| |_|     |_| |_| |_|_____| |_____\___/_/   \_\ |_|   |___|_____|_____(_)
-                                                                                                                         
 
  ____   ___    _   _  ___ _____   _____ ____ ___ _____   _____ _   _ _____   _    _   _   _      _____ ___ _     _____ _ 
 |  _ \ / _ \  | \ | |/ _ \_   _| | ____|  _ \_ _|_   _| |_   _| | | | ____| | |  | | | | / \    |  ___|_ _| |   | ____| |
 | | | | | | | |  \| | | | || |   |  _| | | | | |  | |     | | | |_| |  _|   | |  | | | |/ _ \   | |_   | || |   |  _| | |
 | |_| | |_| | | |\  | |_| || |   | |___| |_| | |  | |     | | |  _  | |___  | |__| |_| / ___ \  |  _|  | || |___| |___|_|
 |____/ \___/  |_| \_|\___/ |_|   |_____|____/___| |_|     |_| |_| |_|_____| |_____\___/_/   \_\ |_|   |___|_____|_____(_)
-                                                                                                                         
-																														 
+
+DO NOT EDIT THE LUA FILE!
+
 These are the default values in order to prevent you from screwing it up!
 
+GO TO THE ADMIN GUI TO CHANGE THE LANGUAGE!
+
 For a tutorial on how to create your own custom language, READ THE README!
-
-There's even a command that lets you select from a range of pre-loaded languages!
-
-type "arcbank settings language (lang)" in console
-(lang) can be the following:
-en -- English
-fr -- French
-ger -- German
-pt_br -- Brazilian Portuguese
-sp -- Spanish
+If you want to submit your own language to be included with ARCBank, please go here:
+https://github.com/ARitz-Cracker/aritzcracker-addon-translations
 ]]
 
 ARCBANK_ERRORSTRINGS[-2] = "Downloading..."
@@ -81,6 +75,8 @@ ARCBANK_ERRORSTRINGS[15] = "Server took too long to send data."
 ARCBANK_ERRORSTRINGS[16] = "Failure writing to database."
 ARCBANK_ERRORSTRINGS[17] = "Mmm yes. You are a very good hacker. Totally."
 ARCBANK_ERRORSTRINGS[18] = "Download failed. Data is corrupted."
+ARCBANK_ERRORSTRINGS[19] = "Bank account is corrupt"
+ARCBANK_ERRORSTRINGS[20] = "The account is locked. This is usually caused by the server shutting down while a transaction was in progress."
 
 ARCBANK_ERRORSTRINGS[32] = "Account with the same or a similar name already exists."
 ARCBANK_ERRORSTRINGS[33] = "Account name is too long."
@@ -229,7 +225,7 @@ ARCBank.Msgs.CommandOutput.ResetYes = "System reset!"
 ARCBank.Msgs.CommandOutput.ResetNo = "Error. Check server console for details. Or look at the latest system log located in garrysmod/data/_arcbank on the server."
 ARCBank.Msgs.CommandOutput.MySQL1 = "A MySQL Error occured. Tell your server owner to check the logs."
 ARCBank.Msgs.CommandOutput.MySQL2 = "The logs can be found in garrysmod/data/_arcbank on the server."
-ARCBank.Msgs.CommandOutput.MySQL3 = "ARCBank will re-activate in 10 seconds."
+ARCBank.Msgs.CommandOutput.MySQL3 = "ARCBank will re-activate in 5 seconds."
 ARCBank.Msgs.CommandOutput.MySQL4 = "ARCBank failed to restart. Contact your server owner."
 ARCBank.Msgs.CommandOutput.MySQLCopy = "Copying all accounts to MySQL database. This might take a while..."
 ARCBank.Msgs.CommandOutput.MySQLCopyFrom = "Copying all accounts from MySQL database. The server might freeze for a bit."

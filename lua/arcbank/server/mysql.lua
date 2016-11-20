@@ -87,18 +87,14 @@ function ARCBank.MySQL.CreateQuery(str,succfunc,errfunc)
 	end
 end
 
+--1.3: arcbank_account_members arcbank_personal_account arcbank_personal_account
 function ARCBank.MySQL.Connect()
 	ARCBank.Msg("INITIALIZING MYSQL SEQUENCE!")
 	if MYSQL_TYPE == 0 then
-		ARCBank.Msg("No suitable MySQL module has been found. This addon supports MySQLOO or tmysql4 is supported.")
+		ARCBank.Msg("No suitable MySQL module has been found. This addon supports MySQLOO or tmysql4.")
 		ARCBank.Msg("You can download tmysql4 here: https://facepunch.com/showthread.php?t=1442438")
 		return 
 	end
-	if MYSQL_TYPE == 1 then
-		ARCBank.Msg("Still running MySQLOO? Why not try tmysql4? MySQLOO is full of memory-leaks and crashes.")
-		ARCBank.Msg("You can download tmysql4 here: https://facepunch.com/showthread.php?t=1442438")
-	end
-	
 
 	local function onConnected()
 
@@ -166,39 +162,47 @@ function ARCBank.MySQL.Connect()
 	
 
 end
+local ignorableErrors = {}
+local resetErrors = {}
 function ARCBank.MySQL.Query(str,callback)
 	local function onSuccess( data )
-		callback(true,data)
+		callback(nil,data)
 	end
 	
 	local function onError( err, sqlq )
-		ARCBank.Msg( "MySQL ERROR: "..tostring(err))
-		ARCBank.Msg( "In Query ("..tostring(sqlq)..")")
-		ARCBank.Msg(tostring(#err).." - "..tostring(#sqlq))
-		for _,plys in pairs(player.GetAll()) do
-			ARCBank.MsgCL(plys,ARCBank.Msgs.CommandOutput.MySQL1)
-			ARCBank.MsgCL(plys,ARCBank.Msgs.CommandOutput.MySQL2)
-			ARCBank.MsgCL(plys,ARCBank.Msgs.CommandOutput.MySQL3)
-		end
-		callback(false,err)
-		ARCBank.Loaded = false
-		if string.find( err, "gone") then
-			ARCBank.Msg( "This error can be ignored. Correcting...." )
-			ARCBank.Msg( "If you have had this error too many times, try upping the timeout time on your MySQL server." )
-			timer.Simple(10,function()
-				if ARCBank.Loaded then return end
-				ARCBank.MySQL.Connect()
+		if not ignorableErrors[err] then
+			for _,plys in pairs(player.GetAll()) do
+				ARCBank.MsgCL(plys,ARCBank.Msgs.CommandOutput.MySQL1)
+				ARCBank.MsgCL(plys,ARCBank.Msgs.CommandOutput.MySQL2)
+			end
+		
+			ARCBank.Msg( "MySQL ERROR: "..tostring(err))
+			ARCBank.Msg( "In Query ("..tostring(sqlq)..")")
+			ARCBank.Msg(tostring(#err).." - "..tostring(#sqlq))
+		
+			if resetErrors[err] then
+				for _,plys in pairs(player.GetAll()) do
+					ARCBank.MsgCL(plys,ARCBank.Msgs.CommandOutput.MySQL3)
+				end
+				ARCBank.Msg( "This error can be corrected by re-connecting to the MySQL server (which I am about to do)" )
+				ARCBank.Msg( "If you're getting errors like this very consistently (like every 5 or 10 minutes) try increasing the connection time limit on the MySQL server" )
 				timer.Simple(5,function()
-					if !ARCBank.Loaded then
-						for _,plys in pairs(player.GetAll()) do
-							ARCBank.MsgCL(plys,ARCBank.Msgs.CommandOutput.MySQL4)
+					if ARCBank.Loaded then return end
+					ARCBank.MySQL.Connect()
+					timer.Simple(5,function()
+						if !ARCBank.Loaded then
+							for _,plys in pairs(player.GetAll()) do
+								ARCBank.MsgCL(plys,ARCBank.Msgs.CommandOutput.MySQL4)
+							end
 						end
-					end
+					end)
 				end)
-			end)
-		else
-			ARCBank.Msg( "REPORT THIS TO ARITZ CRACKER ASAP!!! (Unless it's your fault)" )
+			else
+				ARCBank.Msg( "REPORT THIS TO ARITZ CRACKER ASAP!!! (Unless it's your fault)" )
+			end
+			ARCBank.Loaded = false
 		end
+		callback(err)
 	end
 	ARCBank.MySQL.CreateQuery(str,onSuccess,onError)
 end
@@ -218,7 +222,7 @@ function ARCBank.MySQL.RunCustomCommand(str)
 
 		print( "Query errored!" )
 		print( "Query:", sql )
-		print( "Error:", err ) -- Check error %%CONFIRMATION_HASH%% ????
+		print( "Error:", err )
 	
 	end
 

@@ -1,4 +1,4 @@
--- aacore.lua - Accounts and File manager
+-- aacore.lua -Misc functions
 
 -- This file is under copyright, and is bound to the agreement stated in the EULA.
 -- Any 3rd party content has been used as either public domain or with permission.
@@ -11,7 +11,7 @@ ARCBank.LogFile = ""
 ARCBank.Loaded = false
 ARCBank.Busy = true
 ARCBank.Dir = "_arcbank"
-ARCBank.AccountPrefix = "account_"
+ARCBank.AccountPrefix = "account_" -- THIS IS DUMB AND I HAVE NO IDEA WHY DID THIS
 
 ARCBank.EasterEggsEnabled = false
 
@@ -1401,78 +1401,6 @@ function ARCBank.Load()
 			ARCBank.Msg("Log File Created at "..ARCBank.LogFile)
 			
 			ARCBank.Msg("**STARTING FILESYSTEM CHECK!**") -- I can't wait to remove this in v1.3.7 when I re-do the account system
-			if file.IsDir( ARCBank.Dir.."/group_account","DATA" ) || file.IsDir( ARCBank.Dir.."/personal_account","DATA" ) then
-				ARCBank.Msg("Filesystem from a pre-release version of ARCBank detected.")
-				ARCBank.Msg("Migrating data...")
-				local OldFolders = {ARCBank.Dir.."/personal_account/standard/",ARCBank.Dir.."/personal_account/bronze/",ARCBank.Dir.."/personal_account/silver/",ARCBank.Dir.."/personal_account/gold/","NOPE",ARCBank.Dir.."/group_account/standard/",ARCBank.Dir.."/group_account/premium/"}
-				for i = 1,4 do
-					for k,v in pairs(file.Find(OldFolders[i].."*.txt","DATA")) do
-						local oldaccountdata = util.JSONToTable(file.Read(OldFolders[i]..v,"DATA"))
-						if oldaccountdata then
-							if file.Exists(ARCBank.Dir.."/accounts/personal/"..v..".txt","DATA") then
-								ARCBank.Msg(string.Replace(v,".txt","").." is already in the new filesystem! Account will be removed.")
-							else
-								local newaccount = {}
-									newaccount.isgroup = false
-									newaccount.filename =  string.lower(string.Replace(v,".txt",""))
-									newaccount.name = oldaccountdata[1]
-									newaccount.money = oldaccountdata[4]
-									newaccount.rank = i
-								file.Write( ARCBank.Dir.."/accounts/personal/"..newaccount.filename..".txt", util.TableToJSON(newaccount) )
-								if file.Exists(ARCBank.Dir.."/accounts/personal/"..newaccount.filename..".txt","DATA") then
-									file.Write(ARCBank.Dir.."/accounts/personal/logs/"..newaccount.filename..".txt",file.Read(OldFolders[i].."logs/"..v,"DATA"))
-									file.Delete(OldFolders[i].."logs/"..v)
-									file.Delete(OldFolders[i]..v)
-									
-								else
-									ARCBank.Msg("Failed to transfer "..string.lower(string.Replace(v,".txt",""))..". account will be removed")
-								end
-							
-							end
-							
-							--ARCBank.WriteAccountFile(datatadada)
-							--
-							--ARCBank.AccountExists(ARCBank.GetAccountID(string.Replace(v,".txt" "")),false)
-						end
-					end
-				end
-				
-				
-				for i = 6,7 do
-					for k,v in pairs(file.Find(OldFolders[i].."*.txt","DATA")) do
-						local oldaccountdata = util.JSONToTable(file.Read(OldFolders[i]..v,"DATA"))
-						if oldaccountdata then
-							if file.Exists(ARCBank.Dir.."/accounts/group/"..v..".txt","DATA") then
-							
-								ARCBank.Msg(string.Replace(v,".txt","").." is already in the new filesystem!")
-							else
-								local newaccount = {}
-									newaccount.isgroup = true
-									newaccount.filename = string.lower(string.Replace(v,".txt",""))
-									newaccount.name = oldaccountdata[1]
-									newaccount.owner = oldaccountdata[3]
-									newaccount.money = oldaccountdata[4]
-									newaccount.rank = i
-									newaccount.members = oldaccountdata.players
-								file.Write( ARCBank.Dir.."/accounts/group/"..newaccount.filename..".txt", util.TableToJSON(newaccount) )
-								if file.Exists(ARCBank.Dir.."/accounts/group/"..newaccount.filename..".txt","DATA") then
-									file.Write(ARCBank.Dir.."/accounts/group/logs/"..newaccount.filename..".txt",file.Read(OldFolders[i].."logs/"..v,"DATA"))
-									file.Delete(OldFolders[i].."logs/"..v)
-									file.Delete(OldFolders[i]..v)
-								else
-									ARCBank.Msg("Failed to transfer ".. string.lower(string.Replace(v,".txt","")))
-								end
-							end
-							
-							--ARCBank.WriteAccountFile(datatadada)
-							--
-							--ARCBank.AccountExists(ARCBank.GetAccountID(string.Replace(v,".txt" "")),false)
-						end
-					end
-				end
-				ARCLib.DeleteAll(ARCBank.Dir.."/group_account")
-				ARCLib.DeleteAll(ARCBank.Dir.."/personal_account")
-			end
 			
 			local stime = SysTime()
 			local files, directories = file.Find( ARCBank.Dir.."/accounts/personal/*.txt","DATA" )

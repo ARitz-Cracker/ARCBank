@@ -74,7 +74,7 @@ function ENT:GetATMType()
 end
 
 function ENT:Hackable()
-    return not self.Broken and self.RebootTime < CurTime() and self.UsePlayer == nil
+	return not self.Broken and self.RebootTime < CurTime() and self.UsePlayer == nil
 end
 
 function ENT:Break()
