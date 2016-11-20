@@ -1,7 +1,7 @@
 -- svcomm.lua - Client/Server communications for ARCBank
--- This shit is under copyright.
+-- This file is under copyright, and is bound to the agreement stated in the ELUA.
 -- Any 3rd party content has been used as either public domain or with permission.
--- © Copyright 2014,2015 Aritz Beobide-Cardinal All rights reserved.
+-- © Copyright 2014-2016 Aritz Beobide-Cardinal All rights reserved.
 
 local ARCBank_PingBusy = false
 local ARCBank_PingCallBack = {}
