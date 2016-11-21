@@ -88,6 +88,8 @@ ARCBANK_ERRORSTRINGS[36] = "Cannot create/upgrade account. Account rank is too h
 ARCBANK_ERRORSTRINGS[37] = "You've reached the limit of accounts you can have."
 ARCBANK_ERRORSTRINGS[38] = "There are too many players in this group."
 ARCBANK_ERRORSTRINGS[39] = "You cannot close a personal account."
+ARCBANK_ERRORSTRINGS[40] = "A group account's name must not start with \"personal\""
+
 ARCBANK_ERRORSTRINGS[-127] = "The ARCBank system failed to load."
 ARCBANK_ERRORSTRINGS[-128] = "Unknown Error. Try again."
 

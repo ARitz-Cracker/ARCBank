@@ -1297,6 +1297,12 @@ function ARCBank.Load()
 		timer.Simple(1,function()
 
 		ARCBank.Msg("Post-loading ARCBank...")
+		if not ARCLib.IsVersion("1.6.2") then
+			ARCBank.Msg("CRITICAL ERROR! This addon requires ARCLib 1.6.2 or later!")
+			ARCBank.Msg("LOADING FALIURE!")
+			return
+		end
+		
 		if game.SinglePlayer() then
 			ARCBank.Msg("CRITICAL ERROR! THIS IS A SINGLE PLAYER GAME!")
 			ARCBank.Msg("LOADING FALIURE!")
