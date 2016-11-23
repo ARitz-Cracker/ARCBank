@@ -143,7 +143,11 @@ function ENT:Break()
 			effectdata:SetStart(self:GetPos()) -- not sure if we need a start and origin (endpoint) for this effect, but whatever.
 			effectdata:SetOrigin(self:GetPos())
 			effectdata:SetScale(1)
-			self:EmitSound("npc/turret_floor/detonate.wav")
+			self:EmitSound("physics/glass/glass_impact_bullet"..math.random(1,4)..".wav")
+			self:EmitSound("physics/plastic/plastic_box_break"..math.random(1,2)..".wav")
+			self:EmitSound("ambient/levels/labs/electric_explosion"..ARCLib.RandomExclude(1,5,3)..".wav")
+			
+			
 			util.Effect( "HelicopterMegaBomb", effectdata )	
 			util.Effect( "cball_explode", effectdata )	
 			self:Remove()

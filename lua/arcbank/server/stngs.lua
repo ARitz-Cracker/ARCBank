@@ -55,6 +55,7 @@ function ARCBank.SettingsReset() --DO NOT EDIT THIS!!!!
 	ARCBank.Settings["name"] = "ARCBank" --DO NOT EDIT THIS!!!!
 	ARCBank.Settings["name_long"] = "ARitz Cracker Bank" --DO NOT EDIT THIS!!!!
 	
+	ARCBank.Settings["account_interest_time_limit"] = 14 --DO NOT EDIT THIS!!!!
 	ARCBank.Settings["account_starting_cash"] = 500 --DO NOT EDIT THIS!!!!
 	ARCBank.Settings["account_debt_limit"] = 10000  --DO NOT EDIT THIS!!!!
 	
