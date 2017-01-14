@@ -2,7 +2,7 @@
 
 -- This file is under copyright, and is bound to the agreement stated in the EULA.
 -- Any 3rd party content has been used as either public domain or with permission.
--- © Copyright 2014-2016 Aritz Beobide-Cardinal All rights reserved.
+-- © Copyright 2014-2017 Aritz Beobide-Cardinal All rights reserved.
 
 ARCBank.Msgs = ARCBank.Msgs or {}
 ARCBank.Msgs.Time = ARCBank.Msgs.Time or {}

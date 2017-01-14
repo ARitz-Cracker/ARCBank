@@ -32,7 +32,7 @@ if ARCBank then
 			MainPanel:ShowCloseButton( true )
 			MainPanel:MakePopup()
 			
-			Text = vgui.Create("DTextEntry", MainPanel) // The info text.
+			Text = vgui.Create("DTextEntry", MainPanel)
 			Text:SetPos( 5, 30 ) -- Set the position of the label
 			Text:SetSize( 590, 515 )
 			Text:SetText("") --  Set the text of the label

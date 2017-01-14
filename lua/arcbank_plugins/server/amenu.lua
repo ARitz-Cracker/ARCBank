@@ -17,7 +17,7 @@ if ARCBank then
 				elseif args[1] == "logs" then
 					net.Start( "ARCBank_Admin_GUI" )
 					net.WriteString("logs")
-					net.WriteTable(file.Find( ARCBank.Dir.."/systemlog*", "DATA", "datedesc" ) )
+					net.WriteTable(file.Find( ARCBank.Dir.."/systemlogs/", "DATA", "datedesc" ) )
 					net.Send(ply)
 				else
 					ARCBank.MsgCL(ply,"Invalid AdminGUI request")

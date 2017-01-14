@@ -99,6 +99,7 @@ function ARCBank.SettingsReset() --DO NOT EDIT THIS!!!!
 	ARCBank.Settings["atm_holo_rotate"] = true --DO NOT EDIT THIS!!!!
 	ARCBank.Settings["atm_holo_text"] = "$$ ATM $$" --DO NOT EDIT THIS!!!!
 	ARCBank.Settings["account_group_limit"] = 4 --DO NOT EDIT THIS!!!!
+	ARCBank.Settings["account_group_member_limit"] = 32 --DO NOT EDIT THIS!!!!
 	
 	ARCBank.Settings["death_money_remove"] = 80
 	ARCBank.Settings["death_money_drop"] = 60
@@ -145,6 +146,7 @@ function ARCBank.SettingsReset() --DO NOT EDIT THIS!!!!
 	ARCBank.Settings["atm_fast_amount_4"] = 1000
 	ARCBank.Settings["atm_fast_amount_5"] = 2000
 	ARCBank.Settings["atm_fast_amount_6"] = 4000
+	ARCBank.Settings["_ester_eggs"] = true
 	
 end
 

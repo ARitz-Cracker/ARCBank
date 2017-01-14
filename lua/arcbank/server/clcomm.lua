@@ -1,14 +1,12 @@
 -- clcomm.lua - Client/Server communications for ARCBank
 -- This file is under copyright, and is bound to the agreement stated in the EULA.
 -- Any 3rd party content has been used as either public domain or with permission.
--- © Copyright 2014-2016 Aritz Beobide-Cardinal All rights reserved.
+-- © Copyright 2014-2017 Aritz Beobide-Cardinal All rights reserved.
 
 --Check if the thing is running
 
 util.AddNetworkString( "arcbank_comm_check" )
 ARCBank.Loaded = false
-
-ARCBank.EasterEggs = (!file.Exists("arcbank_no_easter_eggs.txt","DATA")) && tobool(math.Round(math.random()))
 
 net.Receive( "arcbank_comm_check", function(length,ply)
 	net.Start("arcbank_comm_check")
@@ -17,611 +15,500 @@ net.Receive( "arcbank_comm_check", function(length,ply)
 	net.Send(ply)
 end)
 
+local function isValidPermissions(ply,ent,perm)
+	if not isfunction(ent.GetARCBankUsePlayer) then return end
+	return table.HasValue(ARCBank.Settings.admins,string.lower(ply:GetUserGroup())) or (ent:GetARCBankUsePlayer() == ply and bit.band(tonumber(ent.ARCBank_Permissions) or 0,perm) > 0)
+end
+--[[
+ARCBANK_PERMISSIONS_READ = 1
+ARCBANK_PERMISSIONS_READ_LOG = 2
+ARCBANK_PERMISSIONS_DEPOSIT = 4
+ARCBANK_PERMISSIONS_WITHDRAW = 8
+ARCBANK_PERMISSIONS_TRANSFER = 16
+ARCBANK_PERMISSIONS_RANK = 32
+ARCBANK_PERMISSIONS_CREATE = 64
+ARCBANK_PERMISSIONS_MEMBERS = 128
+ARCBANK_PERMISSIONS_OTHER = 32768
+ARCBANK_PERMISSIONS_EVERYTHING = 65535 -- everything
 
--- Account information --
 
-util.AddNetworkString( "arcbank_comm_get_account_information" )
-
-net.Receive( "arcbank_comm_get_account_information", function(length,ply)
-	local ent = net.ReadEntity()--ARCBank_IsAValidDevice
-	local accname = tostring(net.ReadString())
-	local callback = function(accdata)
-		if accdata then
-			if ARCBank.PlayerHasAccesToAccount(ply,accdata) then
-				if !accdata.isgroup then
-					accdata.owner = ""
-					accdata.members = {}
-				end
-				net.Start("arcbank_comm_get_account_information")
-				net.WriteEntity(ent)
-				net.WriteInt(ARCBANK_ERROR_NONE,ARCBANK_ERRORBITRATE)
-				net.WriteBit(accdata.isgroup)
-				net.WriteString(accdata.filename)
-				net.WriteString(accdata.name)
-				net.WriteString(accdata.owner)
-				if (math.random(1,4) == 1 && os.date("%d%m") == "0104") then
-					net.WriteDouble(0) 
-					timer.Simple(2, function() ARCBank.MsgCL(ply,"April fools :)") end)
-				else
-					net.WriteDouble(accdata.money) 
-				end
-				
-				net.WriteUInt(accdata.rank,ARCBANK_ACCOUNTBITRATE)
-				net.WriteTable(accdata.members)
-				net.Send(ply)
-			else
-				net.Start("arcbank_comm_get_account_information")
-				net.WriteEntity(ent)
-				net.WriteInt(ARCBANK_ERROR_NO_ACCESS,ARCBANK_ERRORBITRATE)
-				net.Send(ply)
-			end
-		else
-			net.Start("arcbank_comm_get_account_information")
-			net.WriteEntity(ent)
-			net.WriteInt(ARCBANK_ERROR_NIL_ACCOUNT,ARCBANK_ERRORBITRATE)
-			net.Send(ply)
-		end
-	end
-	if ent.ARCBank_IsAValidDevice && ent.UsePlayer == ply then
-		if accname == "" then
-			ARCBank.ReadAccountFile(ARCBank.GetAccountID(ARCBank.GetPlayerID(ply)),false,callback)
-		else
-			ARCBank.ReadAccountFile(ARCBank.GetAccountID(accname),true,callback)
-		end
-	else
-		ARCBank.FuckIdiotPlayer(ply,"Specified entity was not a valid ARCBank entity") 
-		net.Start("arcbank_comm_get_account_information")
-		net.WriteEntity(ent)
+]]
+-- Account Properties --
+util.AddNetworkString( "arcbank_comm_get_account_properties" )
+net.Receive( "arcbank_comm_get_account_properties", function(length,ply)
+	local ent = net.ReadEntity()
+	if !isValidPermissions(ply,ent,ARCBANK_PERMISSIONS_READ) then
+		net.Start("arcbank_comm_get_account_properties")
 		net.WriteInt(ARCBANK_ERROR_EXPLOIT,ARCBANK_ERRORBITRATE)
 		net.Send(ply)
+		return
 	end
+	local name = net.ReadString()
+	ARCBank.GetAccountProperties(ply,name,function(err,data)
+		net.Start("arcbank_comm_get_account_properties")
+		net.WriteInt(err,ARCBANK_ERRORBITRATE)
+		if istable(data) then
+			if isstring(data.account) then
+				net.WriteString(data.account)
+			end
+			if isstring(data.name) then
+				net.WriteString(data.name)
+			end
+			if isstring(data.owner) then
+				net.WriteString(data.owner)
+			end
+			if isnumber(data.rank) then
+				net.WriteUInt(data.rank,ARCBANK_ACCOUNTBITRATE)
+			end
+		end
+		net.Send(ply)
+	end)
 end)
 
--- Transfer funds --
+-- Account Balance
+util.AddNetworkString( "arcbank_comm_get_account_balance" )
+net.Receive( "arcbank_comm_get_account_balance", function(length,ply)
+	local ent = net.ReadEntity()
+	if !isValidPermissions(ply,ent,ARCBANK_PERMISSIONS_READ) then
+		net.Start("arcbank_comm_get_account_balance")
+		net.WriteInt(ARCBANK_ERROR_EXPLOIT,ARCBANK_ERRORBITRATE)
+		net.Send(ply)
+		return
+	end
+	
+	local name = net.ReadString()
+	ARCBank.GetBalance(ply,name,function(err,balance)
+		net.Start("arcbank_comm_get_account_balance")
+		net.WriteInt(err,ARCBANK_ERRORBITRATE)
+		net.WriteDouble(balance or 0)
+		net.Send(ply)
+	end)
+end)
 
+-- Group Members
+util.AddNetworkString( "arcbank_comm_get_group_members" )
+net.Receive( "arcbank_comm_get_group_members", function(length,ply)
+	local ent = net.ReadEntity()
+	if !isValidPermissions(ply,ent,ARCBANK_PERMISSIONS_READ) then
+		net.Start("arcbank_comm_get_group_members")
+		net.WriteInt(ARCBANK_ERROR_EXPLOIT,ARCBANK_ERRORBITRATE)
+		net.Send(ply)
+		return
+	end
+	
+	local name = net.ReadString()
+	ARCBank.GroupGetPlayers(ply,name,function(err,people)
+		net.Start("arcbank_comm_get_group_members")
+		net.WriteInt(err,ARCBANK_ERRORBITRATE)
+		if istable(people) then
+			local len = #people
+			net.WriteUInt(len,32)
+			for i=1,len do
+				net.WriteString(people[i])
+			end
+		end
+		net.Send(ply)
+	end)
+end)
+
+-- Transfer
 util.AddNetworkString( "arcbank_comm_transfer" )
-
-net.Receive( "arcbank_comm_transfer", function(length,ply)
-	local ent = net.ReadEntity()--ARCBank_IsAValidDevice
-	local sid = tostring(net.ReadString())
-	local accountfrom = tostring(net.ReadString())
-	local accountto = tostring(net.ReadString())
+net.Receive( "arcbank_comm_transfer", function(length,ply) -- Potential exploit: Someone could send a billion transfers of $1 to lock out someone's account
+	local ent = net.ReadEntity()
+	if !isValidPermissions(ply,ent,ARCBANK_PERMISSIONS_TRANSFER) then
+		net.Start("arcbank_comm_transfer")
+		net.WriteInt(ARCBANK_ERROR_EXPLOIT,ARCBANK_ERRORBITRATE)
+		net.Send(ply)
+		return
+	end
+	local plyto
+	local usePlyEnt = net.ReadBool()
+	if usePlyEnt then
+		plyto = net.ReadEntity()
+	else
+		plyto = net.ReadString()
+	end
+	local accountfrom = net.ReadString()
+	local accountto = net.ReadString()
 	local amount = net.ReadUInt(32)
-	local reason = tostring(net.ReadString())
-	local function callback(errcode)
+	local comment = net.ReadString()
+	ARCBank.Transfer(ply,plyto,accountfrom,accountto,amount,comment,function(err)
 		net.Start("arcbank_comm_transfer")
-		net.WriteEntity(ent)
-		net.WriteInt(errcode,ARCBANK_ERRORBITRATE)
+		net.WriteInt(err,ARCBANK_ERRORBITRATE)
 		net.Send(ply)
-	end
-	
-	if ent.ARCBank_IsAValidDevice && ent.UsePlayer == ply then
-		local tply = ARCBank.GetPlayerByID(sid)
-		if !tply:IsPlayer() then
-			tply = sid
-		end
-		ARCBank.Transfer(ply,tply,accountfrom,accountto,amount,reason,callback)
-	else
-		ARCBank.FuckIdiotPlayer(ply,"Specified entity was not a valid ARCBank entity") 
-		net.Start("arcbank_comm_transfer")
-		net.WriteEntity(ent)
+	end)
+end)
+
+-- Get Log
+local readLogs = {}
+ARCLib.RegisterBigMessage("arcbank_comm_get_account_log_dl",16000,255,true)
+local maxloglen = 16000*255
+util.AddNetworkString( "arcbank_comm_get_account_log" )
+net.Receive( "arcbank_comm_get_account_log", function(length,ply)
+	local ent = net.ReadEntity()
+	if !isValidPermissions(ply,ent,ARCBANK_PERMISSIONS_READ_LOG) then
+		net.Start("arcbank_comm_get_account_log")
 		net.WriteInt(ARCBANK_ERROR_EXPLOIT,ARCBANK_ERRORBITRATE)
 		net.Send(ply)
+		return
 	end
-end)
-
--- Get Group List 
---_ARCBank_Group_List
---_ARCBank_Group_List_Place
-util.AddNetworkString( "arcbank_comm_group_list" )
-net.Receive( "arcbank_comm_group_list", function(length,ply)
-	local ent = net.ReadEntity()--ARCBank_IsAValidDevice
-	local steamid = tostring(net.ReadString())
-	if string.StartWith(steamid,"RECIEVED DUH FOOKING CHUNK ||||") then
-		local progr = string.Explode("/",string.Replace(steamid,"RECIEVED DUH FOOKING CHUNK ||||",""))
-		if tonumber(progr[2]) == #ply._ARCBank_Group_List then
-			if tonumber(progr[1]) == ply._ARCBank_Group_List_Place then
-				ply._ARCBank_Group_List_Place = ply._ARCBank_Group_List_Place + 1
-				net.Start("arcbank_comm_group_list")
-				net.WriteEntity(ent)
-				net.WriteInt(ARCBANK_ERROR_NONE,ARCBANK_ERRORBITRATE)
-				net.WriteUInt(ply._ARCBank_Group_List_Place,32)
-				net.WriteUInt(#ply._ARCBank_Group_List,32)
-				net.WriteString(tostring(ply._ARCBank_Group_List[ply._ARCBank_Group_List_Place]))
-				net.Send(ply)
-				if ply._ARCBank_Group_List_Place == #ply._ARCBank_Group_List then
-					ply._ARCBank_Group_List = nil
-				end
-			else
-				net.Start("arcbank_comm_group_list")
-				net.WriteEntity(ent)
-				net.WriteInt(ARCBANK_ERROR_CHUNK_MISMATCH,ARCBANK_ERRORBITRATE)
-				net.Send(ply)
-			end
-		else
-			net.Start("arcbank_comm_group_list")
-			net.WriteEntity(ent)
-			net.WriteInt(ARCBANK_ERROR_CHUNK_MISMATCH,ARCBANK_ERRORBITRATE)
+	local teatAsRawName = net.ReadBool() and table.HasValue(ARCBank.Settings.admins,string.lower(ply:GetUserGroup()))
+	local account = net.ReadString()
+	local timestamp = net.ReadUInt(32) -- This addon is not going to be used in 2038. Shocking, I know
+	local transaction_type = net.ReadUInt(16)
+	local callback = function(err,progress,data)
+		if err == ARCBANK_ERROR_NONE then
+			local datalen = #data
+			datalen = datalen + 1
+			data[datalen] = ply
+			--datalen = datalen + 1
+			--data[datalen] = ent
+			readLogs[#readLogs + 1] = data 
+		elseif err != ARCBANK_ERROR_DOWNLOADING then
+			net.Start("arcbank_comm_get_account_log")
+			net.WriteInt(err,ARCBANK_ERRORBITRATE)
 			net.Send(ply)
 		end
+	end
+	if teatAsRawName then
+		ARCBank.ReadTransactions(account,timestamp,transaction_type,callback)
 	else
-		--ARCBank.Msgs.ATMMsgs.PersonalAccount
-		if ent.ARCBank_IsAValidDevice && ent.UsePlayer == ply then
-			ARCBank.GroupAccountAcces(steamid,function(code,lst)
-				net.Start("arcbank_comm_group_list")
-				net.WriteEntity(ent)
-				net.WriteInt(code,ARCBANK_ERRORBITRATE)
-				if code == 0 then
-					--table.insert(lst,1,ARCBank.Msgs.ATMMsgs.PersonalAccount)
-					ply._ARCBank_Group_List = ARCLib.SplitString(util.TableToJSON(lst),16384) -- Splitting the string every 16 kb just in case
-					ply._ARCBank_Group_List_Place = 0
-					net.WriteUInt(0,32)
-					net.WriteUInt(#ply._ARCBank_Group_List,32)
-					net.WriteString("")
-				end
-				net.Send(ply)
-			end)
-		else
-			ARCBank.FuckIdiotPlayer(ply,"Specified entity was not a valid ARCBank entity") 
-			net.Start("arcbank_comm_group_list")
-			net.WriteEntity(ent)
-			net.WriteInt(ARCBANK_ERROR_EXPLOIT,ARCBANK_ERRORBITRATE)
-			net.Send(ply)
-		end
+		ARCBank.GetLog(ply,account,timestamp,transaction_type,callback)
 	end
 end)
 
---Create Account
 
+if !ARCLib.IsVersion("1.6.2") then return end -- ARCLib.AddThinkFunc is only available in v1.6.2 or later
+
+ARCLib.AddThinkFunc("ARCBank SendUserLogs",function()
+	local i = 1
+	while i < #readLogs do
+		local entries = readLogs[i]
+		local ply = table.remove(entries)
+		--local ent = table.remove(entries)
+		local bigstring = ""
+		for k,v in iparis(entries) do 
+			bigstring = bigstring + v.transaction_id.."\t"..v.timestamp.."\t"..v.account1.."\t"..v.account2.."\t"..v.user1.."\t"..v.user2.."\t"..v.moneydiff.."\t"..(v.money or "").."\t"..v.transaction_type.."\t"..string.Replace( v.comment, "\r\n", " " ).."\r\n"
+			coroutine.yield()
+			if !IsValid(ply) then break end
+		end
+		if IsValid(ply) then
+			if #bigstring > maxloglen then
+				local place = string.find( bigstring, "\r\n", -maxloglen, true )
+				bigstring = string.sub(bigstring,place)
+				ARCBank.MsgCL(ply,"The log was too big to send, the oldest stuff has been cut off.")
+			end
+			--I would compress the data before sending if util.Compress didn't block the entire server. (It takes 1.5 seconds to compress 4.4KB on my Intel i7 5820k, I don't want to freeze the server just because some idiot wants to look at 3 years of transaction history)
+			ARCLib.SendBigMessage("arcbank_comm_get_account_log_dl",bigstring,ply,NULLFUNC) -- Client gets notified of errors anyway
+		end
+		i = i + 1
+	end
+	readLogs = {}
+	coroutine.yield() 
+
+end)
+
+
+-- Withdraw/Deposit
+util.AddNetworkString( "arcbank_comm_wallet" )
+net.Receive( "arcbank_comm_wallet", function(length,ply)
+	local ent = net.ReadEntity()
+	local account = net.ReadString()
+	local amount = net.ReadInt(32)
+	local comment = net.ReadString()
+	--local
+	local perm = ARCBANK_PERMISSIONS_DEPOSIT
+	if amount < 0 then
+		perm = ARCBANK_PERMISSIONS_WITHDRAW
+	end
+	if !isValidPermissions(ply,ent,perm) then
+		net.Start("arcbank_comm_wallet")
+		net.WriteInt(ARCBANK_ERROR_EXPLOIT,ARCBANK_ERRORBITRATE)
+		net.Send(ply)
+		return
+	end
+	
+	ARCBank.AddFromWallet(ply,account,amount,comment,function(err)
+		net.Start("arcbank_comm_wallet")
+		net.WriteInt(err,ARCBANK_ERRORBITRATE)
+		net.Send(ply)
+	end)
+end)
+
+
+-- Create
 util.AddNetworkString( "arcbank_comm_create" )
-
 net.Receive( "arcbank_comm_create", function(length,ply)
-	local ent = net.ReadEntity()--ARCBank_IsAValidDevice
-	local accname = tostring(net.ReadString())
-	local callback = function(errcode)
+	local ent = net.ReadEntity()
+	local groupname = net.ReadString()
+	local rank = net.ReadUInt(ARCBANK_ACCOUNTBITRATE)
+	--local
+	if !isValidPermissions(ply,ent,ARCBANK_PERMISSIONS_CREATE) then
 		net.Start("arcbank_comm_create")
-		net.WriteEntity(ent)
-		net.WriteInt(errcode,ARCBANK_ERRORBITRATE)
-		net.Send(ply)
-	end
-	if ent.ARCBank_IsAValidDevice && ent.UsePlayer == ply then
-		if accname == "" then
-			ARCBank.CreateAccount(ply,1,ARCBank.Settings["account_starting_cash"],accname,callback)
-		else
-			if ent.IsAFuckingATM && ent.UsePlayer == ply && string.find( accname, "() { :;};", 1, true ) then
-				--TODO:SHELLSHOCK
-				ent:Break()
-				ent:ATM_USE(ply)
-				timer.Simple(2,function()
-					if IsValid(ent) then
-						ent:Reboot(2)
-					end
-				end)
-				
-				net.Start("arcbank_comm_create")
-				net.WriteEntity(ent)
-				net.WriteInt(ARCBANK_ERROR_UNKNOWN,ARCBANK_ERRORBITRATE)
-				net.Send(ply)
-				return
-			end
-			ARCBank.CreateAccount(ply,6,0,accname,callback)
-		end
-	else
-		ARCBank.FuckIdiotPlayer(ply,"Specified entity was not a valid ARCBank entity") 
-		net.Start("arcbank_comm_create")
-		net.WriteEntity(ent)
 		net.WriteInt(ARCBANK_ERROR_EXPLOIT,ARCBANK_ERRORBITRATE)
 		net.Send(ply)
+		return
 	end
-end)
-
---Delete Account
-
-util.AddNetworkString( "arcbank_comm_delete" )
-
-net.Receive( "arcbank_comm_delete", function(length,ply)
-	local ent = net.ReadEntity() --ARCBank_IsAValidDevice
-	local accname = tostring(net.ReadString())
-	local callback = function(accdata)
-		if accdata then
-			if ARCBank.PlayerHasAccesToAccount(ply,accdata) then
-				--%%CONFIRMATION_HASH%%
-				if accdata.money < 0 then
-						net.Start("arcbank_comm_delete")
-						net.WriteEntity(ent)
-						net.WriteInt(ARCBANK_ERROR_DEBT,ARCBANK_ERRORBITRATE)
-						net.Send(ply)
-				else
-					ARCBank.EraseAccount(accdata.filename,accdata.isgroup,function(didwork)
-						net.Start("arcbank_comm_delete")
-						net.WriteEntity(ent)
-						net.WriteInt(ARCBANK_ERROR_WRITE_FAILURE*ARCLib.BoolToNumber(!didwork),ARCBANK_ERRORBITRATE) -- I'm feeling lazy today.
-						net.Send(ply)
-					end)
-				end
-			else
-				net.Start("arcbank_comm_delete")
-				net.WriteEntity(ent)
-				net.WriteInt(ARCBANK_ERROR_NO_ACCESS,ARCBANK_ERRORBITRATE)
-				net.Send(ply)
-			end
-		else
-			net.Start("arcbank_comm_delete")
-			net.WriteEntity(ent)
-			net.WriteInt(ARCBANK_ERROR_NIL_ACCOUNT,ARCBANK_ERRORBITRATE)
-			net.Send(ply)
-		end
-	end
-	if ent.ARCBank_IsAValidDevice && ent.UsePlayer == ply then
-		if accname == "" then
-			if ARCBank.Settings["account_starting_cash"] > 0 then -- We don't want people closing their personal accounts and reopening them to make free money.
-				net.Start("arcbank_comm_delete")
-				net.WriteEntity(ent)
-				net.WriteInt(ARCBANK_ERROR_DELETE_REFUSED,ARCBANK_ERRORBITRATE)
-				net.Send(ply)
-			else
-				ARCBank.ReadAccountFile(ARCBank.GetAccountID(ARCBank.GetPlayerID(ply)),false,callback)
-			end
-		else
-			ARCBank.ReadAccountFile(ARCBank.GetAccountID(accname),true,callback)
-		end
-	else
-		ARCBank.FuckIdiotPlayer(ply,"Specified entity was not a valid ARCBank entity") 
-		net.Start("arcbank_comm_delete")
-		net.WriteEntity(ent)
-		net.WriteInt(ARCBANK_ERROR_EXPLOIT,ARCBANK_ERRORBITRATE)
+	
+	ARCBank.CreateAccount(ply,groupname,rank,function(err)
+		net.Start("arcbank_comm_create")
+		net.WriteInt(err,ARCBANK_ERRORBITRATE)
 		net.Send(ply)
-	end
+	end)
 end)
 
-
--- Upgrade account
-
+-- Upgrade
 util.AddNetworkString( "arcbank_comm_upgrade" )
-
 net.Receive( "arcbank_comm_upgrade", function(length,ply)
-	local ent = net.ReadEntity()--ARCBank_IsAValidDevice
-	local writecallback = function(didwork)
-		if didwork then
-			net.Start("arcbank_comm_upgrade")
-			net.WriteEntity(ent)
-			net.WriteInt(0,ARCBANK_ERRORBITRATE)
-			net.Send(ply)	
-		else
-			net.Start("arcbank_comm_upgrade")
-			net.WriteEntity(ent)
-			net.WriteInt(ARCBANK_ERROR_WRITE_FAILURE,ARCBANK_ERRORBITRATE)
-			net.Send(ply)	
-		end
-	end
-	
-	local accname = tostring(net.ReadString())
-	
-	local callback = function(accdata)
-		if accdata then
-			if accdata.rank == 4 || accdata.rank >= 7 then
-				net.Start("arcbank_comm_upgrade")
-				net.WriteEntity(ent)
-				net.WriteInt(ARCBANK_ERROR_INVALID_RANK,ARCBANK_ERRORBITRATE)
-				net.Send(ply)		
-			else
-				local newb = true
-				for k,v in pairs( ARCBank.Settings["usergroup_all"] ) do
-					if ply:IsUserGroup( v ) then
-						newb = false
-					end
-				end
-				if accdata.isgroup then
-					if accdata.owner == ARCBank.GetPlayerID(ply) then
-						accdata.rank = accdata.rank + 1	
-						for i=accdata.rank,ARCBANK_GROUPACCOUNTS_PREMIUM do
-							if table.HasValue(ARCBank.Settings["usergroup_"..i.."_"..ARCBANK_ACCOUNTSTRINGS[i]],ply:GetUserGroup()) then
-								newb = false
-								break
-							end
-						end
-						if newb then
-							net.Start("arcbank_comm_upgrade")
-							net.WriteEntity(ent)
-							net.WriteInt(ARCBANK_ERROR_UNDERLING,ARCBANK_ERRORBITRATE)
-							net.Send(ply)		
-						else
-							ARCBank.WriteAccountFile(accdata,writecallback)	
-						end
-					else
-						net.Start("arcbank_comm_upgrade")
-						net.WriteEntity(ent)
-						net.WriteInt(ARCBANK_ERROR_NO_ACCESS,ARCBANK_ERRORBITRATE)
-						net.Send(ply)			
-					end
-				else
-					accdata.rank = accdata.rank + 1
-					for i=accdata.rank,ARCBANK_PERSONALACCOUNTS_GOLD do
-						if table.HasValue(ARCBank.Settings["usergroup_"..i.."_"..ARCBANK_ACCOUNTSTRINGS[i]],ply:GetUserGroup()) then
-							newb = false
-							break
-						end
-					end
-					if newb then
-						net.Start("arcbank_comm_upgrade")
-						net.WriteEntity(ent)
-						net.WriteInt(ARCBANK_ERROR_UNDERLING,ARCBANK_ERRORBITRATE)
-						net.Send(ply)		
-					else
-						ARCBank.WriteAccountFile(accdata,writecallback)	
-					end
-				end
-			end
-		else
-			
-			net.Start("arcbank_comm_upgrade")
-			net.WriteEntity(ent)
-			net.WriteInt(ARCBANK_ERROR_NIL_ACCOUNT,ARCBANK_ERRORBITRATE)
-			net.Send(ply)
-		end
-	end
-		
-	if ent.ARCBank_IsAValidDevice && ent.UsePlayer == ply then
-		if accname == "" then
-			ARCBank.ReadAccountFile(ARCBank.GetAccountID(ARCBank.GetPlayerID(ply)),false,callback)
-		else
-			ARCBank.ReadAccountFile(ARCBank.GetAccountID(accname),true,callback)
-		end
-	else
-		ARCBank.FuckIdiotPlayer(ply,"Specified entity was not a valid ARCBank entity") 
+	local ent = net.ReadEntity()
+	local account = net.ReadString()
+	--local
+	if !isValidPermissions(ply,ent,ARCBANK_PERMISSIONS_RANK) then
 		net.Start("arcbank_comm_upgrade")
-		net.WriteEntity(ent)
 		net.WriteInt(ARCBANK_ERROR_EXPLOIT,ARCBANK_ERRORBITRATE)
 		net.Send(ply)
+		return
 	end
-end)
-
-
-
---Get Log _ARCBank_Log_Place _ARCBank_Log
-util.AddNetworkString( "arcbank_comm_log" )
-net.Receive( "arcbank_comm_log", function(length,ply)
-	local ent = net.ReadEntity()--ARCBank_IsAValidDevice
-	local accname = tostring(net.ReadString())
-	if string.StartWith(accname,"RECIEVED DUH FOOKING CHUNK ||||") then
-		local progr = string.Explode("/",string.Replace(accname,"RECIEVED DUH FOOKING CHUNK ||||",""))
-		if tonumber(progr[2]) == #ply._ARCBank_Log then
-			if tonumber(progr[1]) == ply._ARCBank_Log_Place then
-				ply._ARCBank_Log_Place = ply._ARCBank_Log_Place + 1
-				net.Start("arcbank_comm_log")
-				net.WriteEntity(ent)
-				net.WriteInt(ARCBANK_ERROR_NONE,ARCBANK_ERRORBITRATE)
-				net.WriteUInt(ply._ARCBank_Log_Place,32)
-				net.WriteUInt(#ply._ARCBank_Log,32)
-				net.WriteString(tostring(ply._ARCBank_Log[ply._ARCBank_Log_Place]))
-				net.Send(ply)
-				if ply._ARCBank_Log_Place == #ply._ARCBank_Log then
-					ply._ARCBank_Log = nil
-				end
-			else
-				net.Start("arcbank_comm_log")
-				net.WriteEntity(ent)
-				net.WriteInt(ARCBANK_ERROR_CHUNK_MISMATCH,ARCBANK_ERRORBITRATE)
-				net.Send(ply)
-			end
-		else
-			net.Start("arcbank_comm_log")
-			net.WriteEntity(ent)
-			net.WriteInt(ARCBANK_ERROR_CHUNK_MISMATCH,ARCBANK_ERRORBITRATE)
-			net.Send(ply)
-		end
-	else
-		--ARCBank.Msgs.ATMMsgs.PersonalAccount
-		--ARCBank.GroupAccountAcces(steamid,function(code,lst)
-		local lst = ""
-		if ent.ARCBank_IsAValidDevice && ent.UsePlayer == ply then
-			local thing = function(accdata)
-				if accdata then
-					if ARCBank.PlayerHasAccesToAccount(ply,accdata) then
-						if !lst || lst == "" then 
-							lst = ARCBank.Msgs.ATMMsgs.NoLog
-						end
-						net.Start("arcbank_comm_log")
-						net.WriteEntity(ent)
-						net.WriteInt(0,ARCBANK_ERRORBITRATE)
-						ply._ARCBank_Log = ARCLib.SplitString(string.Right(lst,3276800),16384) -- Splitting the string every 16 kb just in case
-						-- TODO: Compress %%CONFIRMATION_HASH%%
-						ply._ARCBank_Log_Place = 0
-						net.WriteUInt(0,32)
-						net.WriteUInt(#ply._ARCBank_Log,32)
-						net.WriteString("")
-						net.Send(ply)
-					else
-						net.Start("arcbank_comm_log")
-						net.WriteEntity(ent)
-						net.WriteInt(ARCBANK_ERROR_NO_ACCESS,ARCBANK_ERRORBITRATE)
-						net.Send(ply)
-					end
-				else
-					net.Start("arcbank_comm_log")
-					net.WriteEntity(ent)
-					net.WriteInt(ARCBANK_ERROR_NIL_ACCOUNT,ARCBANK_ERRORBITRATE)
-					net.Send(ply)
-				end
-			end
-			if !accname || accname == "" then
-				lst = file.Read( ARCBank.Dir.."/accounts/personal/logs/"..ARCBank.GetAccountID(ARCBank.GetPlayerID(ply))..".txt","DATA")
-				ARCBank.ReadAccountFile(ARCBank.GetAccountID(ARCBank.GetPlayerID(ply)),false,thing)
-			else
-				lst = file.Read( ARCBank.Dir.."/accounts/group/logs/"..ARCBank.GetAccountID(accname)..".txt","DATA")
-				ARCBank.ReadAccountFile(ARCBank.GetAccountID(accname),true,thing)
-			end
-		else
-			ARCBank.FuckIdiotPlayer(ply,"Specified entity was not a valid ARCBank entity") 
-			net.Start("arcbank_comm_log")
-			net.WriteEntity(ent)
-			net.WriteInt(ARCBANK_ERROR_EXPLOIT,ARCBANK_ERRORBITRATE)
-			net.Send(ply)
-		end
-		--end)
-	end
-end)
-
-
-
---Add/Remove player from group
-
-util.AddNetworkString( "arcbank_comm_playergroup" )
-
-net.Receive( "arcbank_comm_playergroup", function(length,ply)
-	local ent = net.ReadEntity()--ARCBank_IsAValidDevice
-	local accname = tostring(net.ReadString())
-	local steamid = tostring(net.ReadString())
-	local add = tobool(net.ReadBit())
 	
-	local callback = function(errcode)
-		net.Start("arcbank_comm_playergroup")
-		net.WriteEntity(ent)
-		net.WriteInt(errcode,ARCBANK_ERRORBITRATE)
+	
+	ARCBank.UpgradeAccount(ply,account,function(err,people)
+		net.Start("arcbank_comm_upgrade")
+		net.WriteInt(err,ARCBANK_ERRORBITRATE)
 		net.Send(ply)
-	end
-	if ent.ARCBank_IsAValidDevice && ent.UsePlayer == ply then
-		if add then
-			ARCBank.AddPlayerToGroup(ply,steamid,accname,callback)
-		else
-			ARCBank.RemovePlayerFromGroup(ply,steamid,accname,callback)
-		end
-	else
-		ARCBank.FuckIdiotPlayer(ply,"Specified entity was not a valid ARCBank entity") 
-		net.Start("arcbank_comm_playergroup")
-		net.WriteEntity(ent)
+	end)
+end)
+
+-- Downgrade
+util.AddNetworkString( "arcbank_comm_downgrade" )
+net.Receive( "arcbank_comm_downgrade", function(length,ply)
+	local ent = net.ReadEntity()
+	local account = net.ReadString()
+	--local
+	if !isValidPermissions(ply,ent,ARCBANK_PERMISSIONS_RANK) then
+		net.Start("arcbank_comm_downgrade")
 		net.WriteInt(ARCBANK_ERROR_EXPLOIT,ARCBANK_ERRORBITRATE)
 		net.Send(ply)
+		return
 	end
-end)
-
----------------------
--- ADMIN FUNCTIONS --
----------------------
-
---Get Log 
-util.AddNetworkString( "arcbank_comm_admin_log" )
-net.Receive( "arcbank_comm_admin_log", function(length,ply)
-	local accname = tostring(net.ReadString())
-	local isgroup = tobool(net.ReadBit())
-	if string.StartWith(accname,"RECIEVED DUH FOOKING CHUNK ||||") then
-		local progr = string.Explode("/",string.Replace(accname,"RECIEVED DUH FOOKING CHUNK ||||",""))
-		if tonumber(progr[2]) == #ply._ARCBank_Admin_Log then
-			if tonumber(progr[1]) == ply._ARCBank_Admin_Log_Place then
-				ply._ARCBank_Admin_Log_Place = ply._ARCBank_Admin_Log_Place + 1
-				net.Start("arcbank_comm_admin_log")
-				net.WriteEntity(ent)
-				net.WriteInt(ARCBANK_ERROR_NONE,ARCBANK_ERRORBITRATE)
-				net.WriteUInt(ply._ARCBank_Admin_Log_Place,32)
-				net.WriteUInt(#ply._ARCBank_Admin_Log,32)
-				net.WriteString(tostring(ply._ARCBank_Admin_Log[ply._ARCBank_Admin_Log_Place]))
-				net.Send(ply)
-				if ply._ARCBank_Admin_Log_Place == #ply._ARCBank_Admin_Log then
-					ply._ARCBank_Admin_Log = nil
-				end
-			else
-				net.Start("arcbank_comm_admin_log")
-				net.WriteEntity(ent)
-				net.WriteInt(ARCBANK_ERROR_CHUNK_MISMATCH,ARCBANK_ERRORBITRATE)
-				net.Send(ply)
-			end
-		else
-			net.Start("arcbank_comm_admin_log")
-			net.WriteEntity(ent)
-			net.WriteInt(ARCBANK_ERROR_CHUNK_MISMATCH,ARCBANK_ERRORBITRATE)
-			net.Send(ply)
-		end
-	else
-		--ARCBank.Msgs.ATMMsgs.PersonalAccount
-		--ARCBank.GroupAccountAcces(steamid,function(code,lst)
-		
-		if ply && ply:IsPlayer() && ((!ARCBank.Settings["superadmin_only"] && ply:IsAdmin()) || ply:IsSuperAdmin()) then
-			local lst = ""
-			if string.StartWith( accname, "account_" ) then
-				if isgroup then
-					lst = file.Read( ARCBank.Dir.."/accounts/group/logs/"..accname..".txt","DATA")
-				else
-					lst = file.Read( ARCBank.Dir.."/accounts/personal/logs/"..accname..".txt","DATA")
-				end
-			else
-				lst = file.Read( ARCBank.Dir.."/"..accname,"DATA")
-			end
-			
-			
-			if !lst || lst == "" then 
-				lst = ARCBank.Msgs.ATMMsgs.NoLog
-			end
-			net.Start("arcbank_comm_admin_log")
-			net.WriteEntity(ent)
-			net.WriteInt(0,ARCBANK_ERRORBITRATE)
-			ply._ARCBank_Admin_Log = ARCLib.SplitString(string.Right(lst,3276800),16384) -- Splitting the string every 16 kb just in case
-			ply._ARCBank_Admin_Log_Place = 0
-			net.WriteUInt(0,32)
-			net.WriteUInt(#ply._ARCBank_Admin_Log,32)
-			net.WriteString("")
-			net.Send(ply)
-		else
-			net.Start("arcbank_comm_admin_log")
-			net.WriteEntity(ent)
-			net.WriteInt(ARCBANK_ERROR_NO_ACCESS,ARCBANK_ERRORBITRATE)
-			net.Send(ply)
-		end
-		--end)
-	end
+	
+	
+	ARCBank.DowngradeAccount(ply,account,function(err,people)
+		net.Start("arcbank_comm_downgrade")
+		net.WriteInt(err,ARCBANK_ERRORBITRATE)
+		net.Send(ply)
+	end)
 end)
 
 
---GetAll Accounts
---_ARCBank_AllAccounts_List_Place
---_ARCBank_A
-util.AddNetworkString( "arcbank_comm_admin_accounts" )
-net.Receive( "arcbank_comm_admin_accounts", function(length,ply)
-	local steamid = tostring(net.ReadString())
-	if string.StartWith(steamid,"RECIEVED DUH FOOKING CHUNK ||||") then
-		local progr = string.Explode("/",string.Replace(steamid,"RECIEVED DUH FOOKING CHUNK ||||",""))
-		if tonumber(progr[2]) == #ply._ARCBank_AllAccounts_List then
-			if tonumber(progr[1]) == ply._ARCBank_AllAccounts_List_Place then
-				ply._ARCBank_AllAccounts_List_Place = ply._ARCBank_AllAccounts_List_Place + 1
-				net.Start("arcbank_comm_admin_accounts")
-				net.WriteInt(ARCBANK_ERROR_NONE,ARCBANK_ERRORBITRATE)
-				net.WriteUInt(ply._ARCBank_AllAccounts_List_Place,32)
-				net.WriteUInt(#ply._ARCBank_AllAccounts_List,32)
-				net.WriteString(tostring(ply._ARCBank_AllAccounts_List[ply._ARCBank_AllAccounts_List_Place]))
-				net.Send(ply)
-				if ply._ARCBank_AllAccounts_List_Place == #ply._ARCBank_AllAccounts_List then
-					ply._ARCBank_AllAccounts_List = nil
-				end
+-- Delete
+util.AddNetworkString( "arcbank_comm_delete" )
+net.Receive( "arcbank_comm_delete", function(length,ply)
+	local ent = net.ReadEntity()
+	local account = net.ReadString()
+	local reason = net.ReadString()
+	--local
+	if !isValidPermissions(ply,ent,ARCBANK_PERMISSIONS_CREATE) then
+		net.Start("arcbank_comm_delete")
+		net.WriteInt(ARCBANK_ERROR_EXPLOIT,ARCBANK_ERRORBITRATE)
+		net.Send(ply)
+		return
+	end
+	
+	
+	ARCBank.RemoveAccount(ply,account,reason,function(err,people)
+		net.Start("arcbank_comm_delete")
+		net.WriteInt(err,ARCBANK_ERRORBITRATE)
+		net.Send(ply)
+	end)
+end)
+
+
+--[[
+ARCBANK_PERMISSIONS_READ = 1
+ARCBANK_PERMISSIONS_READ_LOG = 2
+ARCBANK_PERMISSIONS_DEPOSIT = 4
+ARCBANK_PERMISSIONS_WITHDRAW = 8
+ARCBANK_PERMISSIONS_TRANSFER = 16
+ARCBANK_PERMISSIONS_RANK = 32
+ARCBANK_PERMISSIONS_CREATE = 64
+ARCBANK_PERMISSIONS_MEMBERS = 128
+ARCBANK_PERMISSIONS_OTHER = 32768
+ARCBANK_PERMISSIONS_EVERYTHING = 65535 -- everything
+
+]]
+
+-- Add/Remove player from group
+util.AddNetworkString( "arcbank_comm_add_group_member" )
+net.Receive( "arcbank_comm_add_group_member", function(length,ply)
+	local ent = net.ReadEntity()
+	local account = net.ReadString()
+	local otherply
+	local usePlyEnt = net.ReadBool()
+	if usePlyEnt then
+		otherply = net.ReadEntity()
+	else
+		otherply = net.ReadString()
+	end
+	local comment = net.ReadString()
+	--local
+	if !isValidPermissions(ply,ent,ARCBANK_PERMISSIONS_MEMBERS) then
+		net.Start("arcbank_comm_add_group_member")
+		net.WriteInt(ARCBANK_ERROR_EXPLOIT,ARCBANK_ERRORBITRATE)
+		net.Send(ply)
+		return
+	end
+	
+	
+	ARCBank.GroupAddPlayer(ply,account,otherply,comment,function(err)
+		net.Start("arcbank_comm_add_group_member")
+		net.WriteInt(err,ARCBANK_ERRORBITRATE)
+		net.Send(ply)
+	end)
+end)
+
+util.AddNetworkString( "arcbank_comm_remove_group_member" )
+net.Receive( "arcbank_comm_remove_group_member", function(length,ply)
+	local ent = net.ReadEntity()
+	local account = net.ReadString()
+	local otherply
+	local usePlyEnt = net.ReadBool()
+	if usePlyEnt then
+		otherply = net.ReadEntity()
+	else
+		otherply = net.ReadString()
+	end
+	local comment = net.ReadString()
+	--local
+	if !isValidPermissions(ply,ent,ARCBANK_PERMISSIONS_MEMBERS) then
+		net.Start("arcbank_comm_remove_group_member")
+		net.WriteInt(ARCBANK_ERROR_EXPLOIT,ARCBANK_ERRORBITRATE)
+		net.Send(ply)
+		return
+	end
+	
+	
+	ARCBank.GroupRemovePlayer(ply,account,otherply,comment,function(err)
+		net.Start("arcbank_comm_remove_group_member")
+		net.WriteInt(err,ARCBANK_ERRORBITRATE)
+		net.Send(ply)
+	end)
+end)
+
+-- AccountName
+util.AddNetworkString( "arcbank_comm_accname" )
+net.Receive( "arcbank_comm_accname", function(length,ply)
+	local account = net.ReadString()
+	ARCBank.GetAccountName(account,function(err,name)
+		net.Start("arcbank_comm_downgrade")
+		net.WriteInt(err,ARCBANK_ERRORBITRATE)
+		net.WriteString(name or "")
+		net.Send(ply)
+	end)
+end)
+
+--GetAccessableAccounts
+
+util.AddNetworkString( "arcbank_comm_get_accounts" )
+net.Receive( "arcbank_comm_get_accounts", function(length,ply)
+	--[[
+	local ent = net.ReadEntity()
+	if !isValidPermissions(ply,ent,ARCBANK_PERMISSIONS_READ) then
+		net.Start("arcbank_comm_get_accounts")
+		net.WriteInt(ARCBANK_ERROR_EXPLOIT,ARCBANK_ERRORBITRATE)
+		net.Send(ply)
+		return
+	end
+	]]
+	local plyto
+	local usePlyEnt = net.ReadBool()
+	if usePlyEnt then
+		plyto = net.ReadEntity()
+	else
+		plyto = net.ReadString()
+	end
+	MsgN(plyto)
+	ARCBank.GetAccessableAccounts(plyto,function(err,accounts)
+		net.Start("arcbank_comm_get_accounts")
+		net.WriteInt(err,ARCBANK_ERRORBITRATE)
+		if istable(accounts) then
+			local len = #accounts
+			net.WriteUInt(len,32)
+			for i=1,len do
+				net.WriteString(accounts[i])
+			end
+		end
+		net.Send(ply)
+	end)
+end)
+
+-- Admin search account?
+--1 Account owner (UserID)
+--2 Group Member (UserID)
+--3 Accessable accounts (UserID) (Group member and account owner combined)
+--4 Balance equal
+--5 Balance more
+--6 Balance less
+local comparefuncs = {}
+comparefuncs[4] = function(a,b) return a==b end
+comparefuncs[5] = function(a,b) return a>b end
+comparefuncs[6] = function(a,b) return a<b end
+
+util.AddNetworkString( "arcbank_comm_admin_search" )
+net.Receive( "arcbank_comm_admin_search", function(length,ply)
+	--local
+	if !table.HasValue(ARCBank.Settings.admins,string.lower(ply:GetUserGroup())) then
+		net.Start("arcbank_comm_admin_search")
+		net.WriteInt(ARCBANK_ERROR_EXPLOIT,ARCBANK_ERRORBITRATE)
+		net.Send(ply)
+		return
+	end
+	local search = net.ReadUInt(4)
+	local term = net.ReadString()
+	local callback = function(err,list)
+		net.Start("arcbank_comm_admin_search")
+		net.WriteInt(err,ARCBANK_ERRORBITRATE)
+		if istable(list) then
+			local len = #list
+			net.WriteUInt(len,32)
+			for i=1,len do
+				net.WriteString(list[i])
+			end
+		end
+		net.Send(ply)
+	end
+	
+	
+	if search == 1 then -- Account owner (UserID)
+		ARCBank.GetOwnedAccounts(term,callback)
+	elseif search == 2 then -- Group Member (UserID)
+		ARCBank.GetGroupAccounts(term,callback)
+	elseif search == 3 then -- Accessable accounts (UserID) (Group member and account owner combined)
+		ARCBank.GetAccessableAccounts("__SYSTEM",term,callback)
+	elseif isfunction(comparefuncs[search]) then
+		term = tonumber(term)
+		ARCBank.ReadAllAccountProperties(function(err,data)
+			if err == ARCBANK_ERROR_NONE then
+				local list = {}
+				ARCLib.ForEachAsync(tab,function(k,v,callback)
+					ARCBank.ReadBalance(v.account,function(err,amount)
+						if err == ARCBANK_ERROR_NONE and comparefuncs[search](amount,term) then
+							list[#list + 1] = v.account
+						end
+						callback()
+					end,true)
+				end,function()
+					callback(ARCBANK_ERROR_NONE,list)
+				end)
 			else
-				net.Start("arcbank_comm_admin_accounts")
-				net.WriteInt(ARCBANK_ERROR_CHUNK_MISMATCH,ARCBANK_ERRORBITRATE)
+				net.Start("arcbank_comm_admin_search")
+				net.WriteInt(err,ARCBANK_ERRORBITRATE)
 				net.Send(ply)
 			end
-		else
-			net.Start("arcbank_comm_admin_accounts")
-			net.WriteInt(ARCBANK_ERROR_CHUNK_MISMATCH,ARCBANK_ERRORBITRATE)
-			net.Send(ply)
-		end
+		end)
 	else
-		if ply && ply:IsPlayer() && ((!ARCBank.Settings["superadmin_only"] && ply:IsAdmin()) || ply:IsSuperAdmin()) then
-			ARCBank.GetAllAccountsUnordered(ARCBank.IsMySQLEnabled(),function(code,lst)
-				net.Start("arcbank_comm_admin_accounts")
-				net.WriteInt(code,ARCBANK_ERRORBITRATE)
-				if code == 0 then
-					--table.insert(lst,1,ARCBank.Msgs.ATMMsgs.PersonalAccount)
-					ply._ARCBank_AllAccounts_List = ARCLib.SplitString(util.TableToJSON(lst),16384) -- Splitting the string every 16 kb just in case
-					ply._ARCBank_AllAccounts_List_Place = 0
-					net.WriteUInt(0,32)
-					net.WriteUInt(#ply._ARCBank_AllAccounts_List,32)
-					net.WriteString("")
-				end
-				net.Send(ply)
-			end)
-		else
-			ARCBank.FuckIdiotPlayer(ply,"Specified entity was not a valid ARCBank entity") 
-			net.Start("arcbank_comm_admin_accounts")
-			net.WriteInt(ARCBANK_ERROR_NO_ACCESS,ARCBANK_ERRORBITRATE)
-			net.Send(ply)
-		end
+		net.Start("arcbank_comm_admin_search")
+		net.WriteInt(ARCBANK_ERROR_EXPLOIT,ARCBANK_ERRORBITRATE)
+		net.Send(ply)
 	end
 end)
 
@@ -634,7 +521,6 @@ net.Receive( "arcbank_comm_secret", function(length,ply)
 	local arg = net.ReadInt(32)
 	if !IsValid(ent) || !ent.ARCBank_IsAValidDevice || !ent.IsAFuckingATM then
 		net.Start("arcbank_comm_secret")
-		net.WriteEntity(ent)
 		net.WriteBit(false)
 		net.Send(ply)
 		return
@@ -642,16 +528,14 @@ net.Receive( "arcbank_comm_secret", function(length,ply)
 	if operation == -1 then
 		net.Start("arcbank_comm_secret")
 		net.WriteBit(ply.ARCBank_Secrets)
-		net.WriteEntity(ent)
 		net.Send(ply)
 	elseif operation == 0 then
 		-- My birthday :)
-		if arg == 19970415 && ARCBank.EasterEggs && math.random() < 0.9 then
+		if arg == 19970415 && ARCBank.Settings["_ester_eggs"] && math.random() < 0.9 then
 			ARCBank.MsgCL(ply,"Hello.")
 			ply.ARCBank_Secrets = true
 			net.Start("arcbank_comm_secret")
 			net.WriteBit(true)
-			net.WriteEntity(ent)
 			net.Send(ply)
 			timer.Simple(math.random(200,1000),function()
 				if IsValid(ply) && ply:IsPlayer() then
@@ -663,7 +547,6 @@ net.Receive( "arcbank_comm_secret", function(length,ply)
 			timer.Simple(math.Rand(0.7,1.7),function()
 				net.Start("arcbank_comm_secret")
 				net.WriteBit(false)
-				net.WriteEntity(ent)
 				net.Send(ply)
 			end)
 			if arg == 88888888 then
@@ -685,12 +568,10 @@ net.Receive( "arcbank_comm_secret", function(length,ply)
 			ply:SetVelocity(ply:GetVelocity()*-1)
 			net.Start("arcbank_comm_secret")
 			net.WriteBit(true)
-			net.WriteEntity(ent)
 			net.Send(ply)
 		else
 			net.Start("arcbank_comm_secret")
 			net.WriteBit(false)
-			net.WriteEntity(ent)
 			net.Send(ply)
 		end
 	elseif operation == 3 then
@@ -750,12 +631,10 @@ net.Receive( "arcbank_comm_secret", function(length,ply)
 			end
 			net.Start("arcbank_comm_secret")
 			net.WriteBit(true)
-			net.WriteEntity(ent)
 			net.Send(ply)
 		else
 			net.Start("arcbank_comm_secret")
 			net.WriteBit(false)
-			net.WriteEntity(ent)
 			net.Send(ply)
 		end
 	

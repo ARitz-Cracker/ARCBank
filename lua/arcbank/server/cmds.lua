@@ -2,7 +2,7 @@
 
 -- This file is under copyright, and is bound to the agreement stated in the EULA.
 -- Any 3rd party content has been used as either public domain or with permission.
--- © Copyright 2014-2016 Aritz Beobide-Cardinal All rights reserved.
+-- © Copyright 2014-2017 Aritz Beobide-Cardinal All rights reserved.
 ARCBank.Loaded = false
 ARCBank.Commands = { --Make sure they are less then 16 chars long.$
 	["about"] = {
@@ -62,7 +62,8 @@ ARCBank.Commands = { --Make sure they are less then 16 chars long.$
 	},
 	["owner"] = {
 		command = function(ply,args) 
-			ARCBank.MsgCL(ply,"%%SID%%")
+			ARCBank.MsgCL(ply,"{{ user_id }}")
+			ARCBank.MsgCL(ply,"{{ user_id sha256 trackarcbank }}")
 		end, 
 		usage = "",
 		description = "Who owns this copy of ARCBank?",
@@ -128,6 +129,7 @@ ARCBank.Commands = { --Make sure they are less then 16 chars long.$
 		adminonly = true,
 		hidden = false
 	},
+	--[[
 	["give_money"] = {
 		command = function(ply,args) 
 			if !ARCBank.Loaded then ARCBank.MsgCL(ply,ARCBank.Msgs.CommandOutput.SysReset) return end
@@ -156,6 +158,7 @@ ARCBank.Commands = { --Make sure they are less then 16 chars long.$
 		adminonly = true,
 		hidden = false
 	},
+	]]
 	["print_json"] = {
 		command = function(ply,args) 
 			if !ARCBank.Loaded then ARCBank.MsgCL(ply,ARCBank.Msgs.CommandOutput.SysReset) return end

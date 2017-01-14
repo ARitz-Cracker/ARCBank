@@ -1,6 +1,6 @@
 -- This file is under copyright, and is bound to the agreement stated in the EULA.
 -- Any 3rd party content has been used as either public domain or with permission.
--- © Copyright 2014-2016 Aritz Beobide-Cardinal All rights reserved.
+-- © Copyright 2014-2017 Aritz Beobide-Cardinal All rights reserved.
 ENT.RenderGroup = RENDERGROUP_TRANSLUCENT
 include('shared.lua')
 local icons_rank = {}
@@ -161,129 +161,204 @@ function ENT:UpdateList()
 end
 
 
-local function ENT_AccountOptions(accountdata,ent)
-	ent.Loading = false
-	if isnumber(accountdata) then
-		ent:ThrowError(accountdata)
+--local function ENT_AccountOptions(accountdata,ent)
+local function ENT_AccountOptions(errcode,accountdata,ent)
+	if errcode != ARCBANK_ERROR_NONE then
+		ent.Loading = false
+		ent:ThrowError(errcode)
 	else
-		ent.OnHomeScreen = false
-		ent.Title = accountdata.name
-		ent.TitleText = ARCBank.Msgs.ATMMsgs.Balance..string.Replace( string.Replace( ARCBank.Settings["money_format"], "$", ARCBank.Settings.money_symbol ) , "0", tostring(accountdata.money))
-		ent.TitleIcon = icons_rank[accountdata.rank]
-		
-		ent.ScreenOptions = {}
-		ent.ScreenOptions[1] = {}
-		ent.ScreenOptions[1].text = ARCBank.Msgs.ATMMsgs.Withdrawal
-		ent.ScreenOptions[1].icon = "money_delete"
-		ent.ScreenOptions[1].func = function() 
-			ent.MoneyTake = true
-			ent:MoneyOptions()
-			ent.TitleIcon = "money_delete"
-		end
-		
-		ent.ScreenOptions[2] = {}
-		ent.ScreenOptions[2].text = ARCBank.Msgs.ATMMsgs.Deposit
-		ent.ScreenOptions[2].icon = "money_add"
-		ent.ScreenOptions[2].func = function() 
-			ent.MoneyTake = false
-			ent:MoneyOptions()
-			ent.TitleIcon = "money_add"
-		end
-		
-		ent.ScreenOptions[3] = {}
-		ent.ScreenOptions[3].text = ARCBank.Msgs.ATMMsgs.Transfer
-		ent.ScreenOptions[3].icon = "money_in_envelope"
-		ent.ScreenOptions[3].func = function() 
-			ent:PlayerSearch(addgroup)
-		end
-		
-		ent.ScreenOptions[4] = {}
-		ent.ScreenOptions[4].text = ARCBank.Msgs.ATMMsgs.ViewLog
-		ent.ScreenOptions[4].icon = "file_extension_log"
-		ent.ScreenOptions[4].func = function() 
-			ent.Loading = true
-			local accn = ""
-			if accountdata.isgroup then
-				accn = accountdata.name
-			end
-			ARCBank.Log(accn,ent,function(data,per,_)
-				if !IsValid(ent) then return end
-				if data == ARCBANK_ERROR_DOWNLOADING then
-					ent.Percent = per*0.5
-				elseif isnumber(data) then
-					ent.Percent = 0
-					ent.Loading = false
-					ent:ThrowError(data)
-				else
-					data = string.Replace(data,"STEAM_0:0:0",LocalPlayer():Nick())
-					for k,v in pairs(player.GetAll()) do -- I don't know why I didn't think of this before...
-						data = string.Replace(data,ARCBank.GetPlayerID(v),v:Nick())
+		accountdata.isgroup = accountdata.rank > ARCBANK_GROUPACCOUNTS_
+		ARCBank.GetBalance(ent,accountdata.account,function(err,money,ent)
+			if errcode != ARCBANK_ERROR_NONE then
+				ent:ThrowError(errcode)
+			else
+				accountdata.money = num
+				ent.OnHomeScreen = false
+				ent.Title = accountdata.name
+				ent.TitleText = ARCBank.Msgs.ATMMsgs.Balance..string.Replace( string.Replace( ARCBank.Settings["money_format"], "$", ARCBank.Settings.money_symbol ) , "0", tostring(money))
+				ent.TitleIcon = icons_rank[accountdata.rank]
+				
+				ent.ScreenOptions = {}
+				ent.ScreenOptions[1] = {}
+				ent.ScreenOptions[1].text = ARCBank.Msgs.ATMMsgs.Withdrawal
+				ent.ScreenOptions[1].icon = "money_delete"
+				ent.ScreenOptions[1].func = function() 
+					ent.MoneyTake = true
+					ent:MoneyOptions()
+					ent.TitleIcon = "money_delete"
+				end
+				
+				ent.ScreenOptions[2] = {}
+				ent.ScreenOptions[2].text = ARCBank.Msgs.ATMMsgs.Deposit
+				ent.ScreenOptions[2].icon = "money_add"
+				ent.ScreenOptions[2].func = function() 
+					ent.MoneyTake = false
+					ent:MoneyOptions()
+					ent.TitleIcon = "money_add"
+				end
+				
+				ent.ScreenOptions[3] = {}
+				ent.ScreenOptions[3].text = ARCBank.Msgs.ATMMsgs.Transfer
+				ent.ScreenOptions[3].icon = "money_in_envelope"
+				ent.ScreenOptions[3].func = function() 
+					ent:PlayerSearch(false)
+				end
+				
+				ent.ScreenOptions[4] = {}
+				ent.ScreenOptions[4].text = ARCBank.Msgs.ATMMsgs.ViewLog
+				ent.ScreenOptions[4].icon = "file_extension_log"
+				ent.ScreenOptions[4].func = function() 
+					--[[
+					ent.Loading = true
+					local accn = ""
+					if accountdata.isgroup then
+						accn = accountdata.name
 					end
-					ARCLib.FitTextRealtime(data,"ARCBankATMSmall",274,function(per,tab)
+					ARCBank.Log(accn,ent,function(data,per,_)
+						
 						if !IsValid(ent) then return end
-						if per == 1 then
-							ent.Percent = 1
-							ent.LogTable = tab
-							ent.LogPageMax = math.ceil(#ent.LogTable/20)
-							ent.LogPage = ent.LogPageMax
-							timer.Simple(math.Rand(1.5,3),function()
-								ent.Percent = 0
-								ent.Loading = false
-							end)
+						if data == ARCBANK_ERROR_DOWNLOADING then
+							ent.Percent = per*0.5
+						elseif isnumber(data) then
+							ent.Percent = 0
+							ent.Loading = false
+							ent:ThrowError(data)
 						else
-							ent.Percent = 0.5 + per*0.5
+							data = string.Replace(data,"STEAM_0:0:0",LocalPlayer():Nick())
+							for k,v in pairs(player.GetAll()) do -- I don't know why I didn't think of this before...
+								data = string.Replace(data,ARCBank.GetPlayerID(v),v:Nick())
+							end
+							ARCLib.FitTextRealtime(data,"ARCBankATMSmall",274,function(per,tab)
+								if !IsValid(ent) then return end
+								if per == 1 then
+									ent.Percent = 1
+									ent.LogTable = tab
+									ent.LogPageMax = math.ceil(#ent.LogTable/20)
+									ent.LogPage = ent.LogPageMax
+									timer.Simple(math.Rand(1.5,3),function()
+										ent.Percent = 0
+										ent.Loading = false
+									end)
+								else
+									ent.Percent = 0.5 + per*0.5
+								end
+							end)
 						end
 					end)
-					
-					
-					--[[
-					ent.LogTable = ARCLib.FitText(data,"ARCBankATMSmall",274)
-					
-					ent.LogPageMax = math.ceil(#ent.LogTable/20)
-					ent.LogPage = ent.LogPageMax
-					ent.Percent = 0
-					ent.Loading = false
 					]]
 				end
-			end)
-		end
-		
-		if accountdata.isgroup then
-			--PrintTable(accountdata.members)
-			ent.ScreenOptions[5] = {}
-			ent.ScreenOptions[5].text = ARCBank.Msgs.ATMMsgs.RemovePlayerGroup
-			ent.ScreenOptions[5].icon = "user_delete"
-			ent.ScreenOptions[5].func = function() 
-				ent:PlayerGroup(accountdata.members)
-			end
-			
-			ent.ScreenOptions[6] = {}
-			ent.ScreenOptions[6].text = ARCBank.Msgs.ATMMsgs.AddPlayerGroup
-			ent.ScreenOptions[6].icon = "user_add"
-			ent.ScreenOptions[6].func = function() 
-				ent:PlayerSearch(true)
-			end
-			
-			ent.ScreenOptions[7] = {}
-			ent.ScreenOptions[7].text = ARCBank.Msgs.ATMMsgs.CloseAccount
-			ent.ScreenOptions[7].icon = "bin"
-			ent.ScreenOptions[7].func = function() 
 				
-				ent:Question(string.Replace(ARCBank.Msgs.ATMMsgs.CloseNotice,"ARCBank",ARCBank.Settings.name),function()
-					ent.Loading = true
-					ARCBank.DeleteAccount(ent.RequestedAccount,ent,function(err,ent) 
-						ent:HomeScreen()
-						ent.Loading = false
-						ent:ThrowError(err) 
-					end)
-				end)
+				if accountdata.isgroup then
+					--PrintTable(accountdata.members)
+					ent.ScreenOptions[5] = {}
+					ent.ScreenOptions[5].text = ARCBank.Msgs.ATMMsgs.RemovePlayerGroup
+					ent.ScreenOptions[5].icon = "user_delete"
+					ent.ScreenOptions[5].func = function() 
+						ent:PlayerGroup(accountdata.members)
+					end
+					
+					ent.ScreenOptions[6] = {}
+					ent.ScreenOptions[6].text = ARCBank.Msgs.ATMMsgs.AddPlayerGroup
+					ent.ScreenOptions[6].icon = "user_add"
+					ent.ScreenOptions[6].func = function() 
+						ent:PlayerSearch(true)
+					end
+					
+					ent.ScreenOptions[7] = {}
+					ent.ScreenOptions[7].text = ARCBank.Msgs.ATMMsgs.CloseAccount
+					ent.ScreenOptions[7].icon = "bin"
+					ent.ScreenOptions[7].func = function() 
+						
+						ent:Question(string.Replace(ARCBank.Msgs.ATMMsgs.CloseNotice,"ARCBank",ARCBank.Settings.name),function()
+							ent.Loading = true
+							ARCBank.RemoveAccount(ent,ent.RequestedAccount,"ATM",function(err,ent) 
+								ent:HomeScreen()
+								ent.Loading = false
+								ent:ThrowError(err) 
+							end)
+						end)
+					end
+				end
+				ent.BackFunc = function() ent:HomeScreen() end
+				
+				ent:UpdateList()
+			
+				
 			end
-		end
-		ent.BackFunc = function() ent:HomeScreen() end
-		
-		ent:UpdateList()
+			ent.Loading = false
+		end)
 	end
 end
+
+function ENT:PlayerAccountSearch(ply)
+	self.Loading = true
+	ARCBank.GetAccessableAccounts(ply,function(err,data)
+		if err != ARCBANK_ERROR_NONE then
+			self.Percent = 0
+			self.Loading = false
+			self:ThrowError(err)
+		else
+			local names = {}
+			ARCLib.ForEachAsync(data,function(k,v,callback)
+				if string.StartWith( v, "personal_" ) then
+					callback()
+				else
+					ARCBank.GetAccountName(v,function(err,name)
+						if err == ARCBANK_ERROR_NONE then
+							names[#names + 1] = name
+						else
+							names[#names + 1] = v
+						end
+						callback()
+					end)
+				end
+			end,function()
+				self.OnHomeScreen = false
+				self.ScreenOptions = {}
+				self.ScreenOptions[1] = {}
+				self.ScreenOptions[1].text = ARCBank.Msgs.ATMMsgs.PersonalAccount
+				self.ScreenOptions[1].icon = "user"
+				self.ScreenOptions[1].func = function()
+					self:EnableInput(false,function(nummm)
+						self.Loading = true
+						ARCBank.Transfer(self,ply,self.RequestedAccount,"",nummm,"ATM Transfer",function(err,ent) 
+							ent:ThrowError(err) 
+							ARCBank.GetAccountProperties(self.Entity,self.RequestedAccount,ENT_AccountOptions)
+						end)
+					end)
+					
+					
+				end
+				
+				for ii = 1,#names do
+					self.ScreenOptions[ii+1] = {}
+					self.ScreenOptions[ii+1].text = names[ii]
+					self.ScreenOptions[ii+1].icon = "group"
+					self.ScreenOptions[ii+1].func = function(iconnum)
+						self:EnableInput(false,function(nummm)
+							self.Loading = true
+							ARCBank.Transfer(self,ply,self.RequestedAccount,self.ScreenOptions[iconnum].text,nummm,"ATM Transfer",function(err,ent) 
+								ent:ThrowError(err) 
+								ARCBank.GetAccountProperties(self.Entity,self.RequestedAccount,ENT_AccountOptions)
+							end)
+						end)
+						
+						
+					end
+				end
+				self.BackFunc = function() 
+					self.Loading = true
+					ARCBank.GetAccountProperties(self.Entity,self.RequestedAccount,ENT_AccountOptions)
+				end
+				self:UpdateList()
+				
+				self.Percent = 0
+				self.Loading = false
+			end)
+		end
+	end)
+end
+
 function ENT:PlayerSearch(addgroup)
 	local plys = player.GetAll()
 	self.ScreenOptions = {}
@@ -294,7 +369,7 @@ function ENT:PlayerSearch(addgroup)
 			self.ScreenOptions[i].icon = "user_add"
 			self.ScreenOptions[i].func = function() 
 				self.Loading = true
-				ARCBank.EditPlayerGroup(self.RequestedAccount,ARCBank.GetPlayerID(plys[i]),true,self.Entity,function(err,ent) 
+				ARCBank.GroupAddPlayer(self,self.RequestedAccount,plys[i],"",function(err,ent) 
 					ent.Loading = false
 					ent:ThrowError(err) 
 				end)
@@ -302,62 +377,7 @@ function ENT:PlayerSearch(addgroup)
 		else
 			self.ScreenOptions[i].icon = "user"
 			self.ScreenOptions[i].func = function() 
-				--Clicked one of the players
-
-				self.Loading = true
-				ARCBank.GroupList(ARCBank.GetPlayerID(plys[i]),self.Entity,function(data,per,_)
-					if data == ARCBANK_ERROR_DOWNLOADING then
-						self.Percent = per
-					elseif isnumber(data) then
-						self.Percent = 0
-						self.Loading = false
-						self:ThrowError(data)
-					else
-						self.OnHomeScreen = false
-						self.ScreenOptions = {}
-						self.ScreenOptions[1] = {}
-						self.ScreenOptions[1].text = ARCBank.Msgs.ATMMsgs.PersonalAccount
-						self.ScreenOptions[1].icon = "user"
-						self.ScreenOptions[1].func = function()
-							self:EnableInput(false,function(nummm)
-								self.Loading = true
-								ARCBank.TransferFunds(ARCBank.GetPlayerID(plys[i]),self.RequestedAccount,"",nummm,"ATM Transfer",self.Entity,function(err,ent) 
-									ent:ThrowError(err) 
-									ARCBank.GetAccountInformation(self.RequestedAccount,self.Entity,ENT_AccountOptions) 
-								end)
-							end)
-							
-							
-						end
-						
-						for ii = 1,#data do
-							self.ScreenOptions[ii+1] = {}
-							self.ScreenOptions[ii+1].text = data[ii]
-							self.ScreenOptions[ii+1].icon = "group"
-							self.ScreenOptions[ii+1].func = function()
-								self:EnableInput(false,function(nummm)
-									self.Loading = true
-									ARCBank.TransferFunds(ARCBank.GetPlayerID(plys[i]),self.RequestedAccount,self.ScreenOptions[ii+1].text,nummm,"ATM Transfer",self.Entity,function(err,ent) 
-										ent:ThrowError(err) 
-										ARCBank.GetAccountInformation(self.RequestedAccount,self.Entity,ENT_AccountOptions) 
-									end)
-								end)
-								
-								
-							end
-						end
-						
-						self.BackFunc = function() 
-							self.Loading = true
-							ARCBank.GetAccountInformation(self.RequestedAccount,self.Entity,ENT_AccountOptions) 
-						end
-						self:UpdateList()
-						
-						
-						self.Percent = 0
-						self.Loading = false
-					end
-				end)
+				self:PlayerAccountSearch(plys[i])
 			end
 		end
 	end
@@ -379,84 +399,25 @@ function ENT:PlayerSearch(addgroup)
 			end
 			self:Question(ARCBank.Msgs.ATMMsgs.SIDAsk,ENT_SID_Yes,ENT_SID_No)
 		else
-			--GO BACK HERE!
 			self:NewMsgBox(ARCBank.Settings.name,ARCBank.Msgs.ATMMsgs.EnterPlayer,nil,"information",1)
 		end
 		self:EnableInput(true,function(nummmmm)
 			self.Loading = true
+			local ENTSTEAMID = self.InputSID..nummmmm
 			if addgroup then
-				ARCBank.EditPlayerGroup(self.RequestedAccount,self.InputSID..nummmmm,true,self.Entity,function(err,ent) 
+				ARCBank.GroupAddPlayer(self,self.RequestedAccount,ENTSTEAMID,"",function(err,ent) 
 					ent.Loading = false
 					ent:ThrowError(err) 
 				end)
 			else
-				local ENTSTEAMID = self.InputSID..nummmmm
-				
-
-				self.Loading = true
-				ARCBank.GroupList(ENTSTEAMID,self.Entity,function(data,per,_)
-					if data == ARCBANK_ERROR_DOWNLOADING then
-						self.Percent = per
-					elseif isnumber(data) then
-						self.Percent = 0
-						self.Loading = false
-						self:ThrowError(data)
-					else
-						self.OnHomeScreen = false
-						self.ScreenOptions = {}
-						self.ScreenOptions[1] = {}
-						self.ScreenOptions[1].text = ARCBank.Msgs.ATMMsgs.PersonalAccount
-						self.ScreenOptions[1].icon = "user"
-						self.ScreenOptions[1].func = function()
-							self:EnableInput(false,function(nummm)
-								self.Loading = true
-								ARCBank.TransferFunds(ENTSTEAMID,self.RequestedAccount,"",nummm,"ATM Transfer",self.Entity,function(err,ent) 
-									ent:ThrowError(err) 
-									ARCBank.GetAccountInformation(self.RequestedAccount,self.Entity,ENT_AccountOptions) 
-								end)
-							end)
-							
-							
-						end
-						
-						for ii = 1,#data do
-							self.ScreenOptions[ii+1] = {}
-							self.ScreenOptions[ii+1].text = data[ii]
-							self.ScreenOptions[ii+1].icon = "group"
-							self.ScreenOptions[ii+1].func = function()
-								self:EnableInput(false,function(nummm)
-									self.Loading = true
-									ARCBank.TransferFunds(ENTSTEAMID,self.RequestedAccount,self.ScreenOptions[ii].text,nummm,"ATM Transfer",self.Entity,function(err,ent) 
-										ent:ThrowError(err) 
-										ARCBank.GetAccountInformation(self.RequestedAccount,self.Entity,ENT_AccountOptions) 
-									end)
-								end)
-								
-								
-							end
-						end
-						
-						self.BackFunc = function() 
-							self.Loading = true
-							ARCBank.GetAccountInformation(self.RequestedAccount,self.Entity,ENT_AccountOptions) 
-						end
-						self:UpdateList()
-						
-						
-						self.Percent = 0
-						self.Loading = false
-					end
-				end)
-			
-			
-			
+				self:PlayerAccountSearch(ENTSTEAMID)
 			end
 		end)
 	end
 	
 	self.BackFunc = function() 
 		self.Loading = true
-		ARCBank.GetAccountInformation(self.RequestedAccount,self.Entity,ENT_AccountOptions) 
+		ARCBank.GetAccountProperties(self.Entity,self.RequestedAccount,ENT_AccountOptions)
 	end
 	self:UpdateList()
 end
@@ -465,11 +426,11 @@ function ENT:PlayerGroup(members)
 	for i = 1,#members do 
 		local ply = ARCBank.GetPlayerByID(members[i])
 		self.ScreenOptions[i] = {}
-		self.ScreenOptions[i].text = tostring(ply:Nick()).."\n"..string.Replace(tostring(ARCBank.GetPlayerID(ply)),"STEAM_","")
+		self.ScreenOptions[i].text = tostring(ply:Nick()).."\n"..string.sub(ARCBank.GetPlayerID(plys[i]),#ARCBank.PlayerIDPrefix+1)
 		self.ScreenOptions[i].icon = "user_delete"
 		self.ScreenOptions[i].func = function() 
 			self.Loading = true
-			ARCBank.EditPlayerGroup(self.RequestedAccount,ARCBank.GetPlayerID(ply),false,self.Entity,function(err,ent) 
+			ARCBank.GroupRemovePlayer(self,self.RequestedAccount,ARCBank.GetPlayerID(ply),"",function(err,ent) 
 				ent:ThrowError(err)
 				ent.Loading = false
 			end)
@@ -478,7 +439,7 @@ function ENT:PlayerGroup(members)
 	
 	self.BackFunc = function() 
 		self.Loading = true
-		ARCBank.GetAccountInformation(self.RequestedAccount,self.Entity,ENT_AccountOptions)
+		ARCBank.GetAccountProperties(self.Entity,self.RequestedAccount,ENT_AccountOptions)
 	end
 	self:UpdateList()
 end
@@ -487,7 +448,7 @@ net.Receive( "ARCATM_COMM_CASH", function(length,ply)
 	if !IsValid(atm) or LocalPlayer().ARCBank_ATM != atm then return end
 	local errcode = net.ReadInt(ARCBANK_ERRORBITRATE)
 	atm.Loading = true
-	ARCBank.GetAccountInformation(atm.RequestedAccount,atm,ENT_AccountOptions)
+	ARCBank.GetAccountProperties(atm,atm.RequestedAccount,ENT_AccountOptions)
 	atm:ThrowError(errcode)
 end)
 function ENT:MoneyOptions()
@@ -541,7 +502,7 @@ function ENT:MoneyOptions()
 	end 
 	self.BackFunc = function() 
 		self.Loading = true
-		ARCBank.GetAccountInformation(self.RequestedAccount,self.Entity,ENT_AccountOptions) 
+		ARCBank.GetAccountProperties(self.Entity,self.RequestedAccount,ENT_AccountOptions)
 	end
 	self:UpdateList()
 end
@@ -556,7 +517,7 @@ local function ENT_AccountUpgrade(errcode,ent)
 	if errcode == ARCBANK_ERROR_NAME_DUPE then
 		ent:Question(ARCBank.Msgs.ATMMsgs.UpgradeAccount,function()
 			ent.Loading = true
-			ARCBank.UpgradeAccount(ent.RequestedAccount,ent,ENT_DoUpgrade)
+			ARCBank.UpgradeAccount(ent,ent.RequestedAccount,ENT_DoUpgrade)
 		end)
 	else
 		ent:ThrowError(errcode)
@@ -575,36 +536,52 @@ function ENT:HomeScreen()
 	self.ScreenOptions[1].icon = "group"
 	self.ScreenOptions[1].func = function() 
 		self.Loading = true
-		ARCBank.GroupList(ARCBank.GetPlayerID(LocalPlayer()),self.Entity,function(data,per,_)
-			if data == ARCBANK_ERROR_DOWNLOADING then
-				self.Percent = per
-			elseif isnumber(data) then
+		
+		
+		
+		
+		ARCBank.GetAccessableAccounts(LocalPlayer(),function(err,data)
+			if err != ARCBANK_ERROR_NONE then
 				self.Percent = 0
 				self.Loading = false
 				self:ThrowError(data)
 			else
-				if #data == 0 then
-					self:ThrowError(ARCBANK_ERROR_PLAYER_FOREVER_ALONE)
-				else
+				local names = {}
+				ARCLib.ForEachAsync(data,function(k,v,callback)
+					if string.StartWith( v, "personal_" ) then
+						callback()
+					else
+						ARCBank.GetAccountName(v,function(err,name)
+							if err == ARCBANK_ERROR_NONE then
+								names[#names + 1] = name
+							else
+								names[#names + 1] = v
+							end
+							callback()
+						end)
+					end
+				end,function()
 					self.OnHomeScreen = false
 					self.ScreenOptions = {}
-					for i = 1,#data do
+					
+					for i = 1,#names do
 						self.ScreenOptions[i] = {}
-						self.ScreenOptions[i].text = data[i]
+						self.ScreenOptions[i].text = names[i]
 						self.ScreenOptions[i].icon = "group"
-						self.ScreenOptions[i].func = function()
-							self.Loading = true
-							self.RequestedAccount = self.ScreenOptions[i].text
-							ARCBank.GetAccountInformation(self.RequestedAccount,self.Entity,ENT_AccountOptions)
+						self.ScreenOptions[i].func = function(iconnum)
+							self:EnableInput(false,function(nummm)
+								self.Loading = true
+								self.RequestedAccount = self.ScreenOptions[iconnum].text
+								ARCBank.GetAccountProperties(self.Entity,self.RequestedAccount,ENT_AccountOptions)
+							end)
 						end
 					end
-					
 					self.BackFunc = function() self:HomeScreen() end
 					self:UpdateList()
-				end
-				
-				self.Percent = 0
-				self.Loading = false
+					
+					self.Percent = 0
+					self.Loading = false
+				end)
 			end
 		end)
 	end
@@ -615,7 +592,7 @@ function ENT:HomeScreen()
 	self.ScreenOptions[2].func = function()
 		self.Loading = true
 		self.RequestedAccount = ""
-		ARCBank.GetAccountInformation(self.RequestedAccount,self.Entity,ENT_AccountOptions)
+		ARCBank.GetAccountProperties(self.Entity,self.RequestedAccount,ENT_AccountOptions)
 	end
 	
 	self.ScreenOptions[3] = {}
@@ -623,36 +600,55 @@ function ENT:HomeScreen()
 	self.ScreenOptions[3].icon = "group_edit"
 	self.ScreenOptions[3].func = function() 
 			self.Loading = true
-			ARCBank.GroupList(ARCBank.GetPlayerID(LocalPlayer()),self.Entity,function(data,per,_)
-				if data == ARCBANK_ERROR_DOWNLOADING then
-					self.Percent = per
-				elseif isnumber(data) then
-					self.Percent = 0
-					self.Loading = false
-					self:ThrowError(data)
-				else
+			
+		ARCBank.GetAccessableAccounts(LocalPlayer(),function(err,data)
+			if err != ARCBANK_ERROR_NONE then
+				self.Percent = 0
+				self.Loading = false
+				self:ThrowError(data)
+			else
+				local names = {}
+				ARCLib.ForEachAsync(data,function(k,v,callback)
+					if string.StartWith( v, "personal_" ) then
+						callback()
+					else
+						ARCBank.GetAccountName(v,function(err,name)
+							if err == ARCBANK_ERROR_NONE then
+								names[#names + 1] = name
+							else
+								names[#names + 1] = v
+							end
+							callback()
+						end)
+					end
+				end,function()
 					self.OnHomeScreen = false
 					self.ScreenOptions = {}
-					for i = 1,#data do
+					
+					for i = 1,#names do
 						self.ScreenOptions[i] = {}
-						self.ScreenOptions[i].text = data[i]
+						self.ScreenOptions[i].text = names[i]
 						self.ScreenOptions[i].icon = "group"
-						self.ScreenOptions[i].func = function()
-							self.Loading = true
-							self.RequestedAccount = self.ScreenOptions[i].text
-							ARCBank.CreateAccount(self.RequestedAccount,self.Entity,ENT_AccountUpgrade)
+						self.ScreenOptions[i].func = function(iconnum)
+							self:EnableInput(false,function(nummm)
+								self.Loading = true
+								self.RequestedAccount = self.ScreenOptions[iconnum].text
+								ARCBank.CreateAccount(self.Entity,self.RequestedAccount,ARCBANK_GROUPACCOUNTS_STANDARD,ENT_AccountUpgrade)
+								
+							end)
 						end
 					end
-					self.ScreenOptions[#data+1] = {}
-					self.ScreenOptions[#data+1].text = ARCBank.Msgs.ATMMsgs.CreateGroupAccount
-					self.ScreenOptions[#data+1].icon = "group_edit"
-					self.ScreenOptions[#data+1].func = function()
+					local i = #names + 1
+					self.ScreenOptions[i] = {}
+					self.ScreenOptions[i].text = ARCBank.Msgs.ATMMsgs.CreateGroupAccount
+					self.ScreenOptions[i].icon = "group_edit"
+					self.ScreenOptions[i].func = function()
 						Derma_StringRequest( ARCBank.Msgs.ATMMsgs.CreateGroupAccount, "Enter name", "", function(text)
 							self:EmitSoundTable(self.ATMType.PressSound,65)
 							ARCLib.PlaySoundOnOtherPlayers(table.Random(self.ATMType.PressSound),self,65)
 							self.Loading = true
 							self.RequestedAccount = text
-							ARCBank.CreateAccount(self.RequestedAccount,self.Entity,ENT_AccountUpgrade)
+							ARCBank.CreateAccount(self.Entity,self.RequestedAccount,ARCBANK_GROUPACCOUNTS_STANDARD,ENT_AccountUpgrade)
 						end) 
 					end
 					
@@ -660,11 +656,11 @@ function ENT:HomeScreen()
 					self.BackFunc = function() self:HomeScreen() end
 					self:UpdateList()
 					
-					
 					self.Percent = 0
 					self.Loading = false
-				end
-			end)
+				end)
+			end
+		end)
 	end
 	
 	self.ScreenOptions[4] = {}
@@ -673,8 +669,7 @@ function ENT:HomeScreen()
 	self.ScreenOptions[4].func = function() 
 		self.Loading = true
 		self.RequestedAccount = ""
-		ARCBank.CreateAccount(self.RequestedAccount,self.Entity,ENT_AccountUpgrade)
-	
+		ARCBank.CreateAccount(self.Entity,self.RequestedAccount,ARCBANK_PERSONALACCOUNTS_STANDARD,ENT_AccountUpgrade)
 	end
 	
 	
@@ -816,6 +811,39 @@ function ENT:OnRestore()
 end
 local outofdate = surface.GetTextureID( "arc/atm_base/screen/welcome_animated" ) 
 function ENT:Screen_Welcome()
+	if IsValid(self:GetARCBankUsePlayer()) and self:GetARCBankUsePlayer() != LocalPlayer() then
+		
+		local light = 255*ARCLib.BoolToNumber(ARCBank.ATM_DarkTheme)
+		local darkk = 255*ARCLib.BoolToNumber(!ARCBank.ATM_DarkTheme)
+		local halfres = math.Round(self.ATMType.Resolutionx*0.5)
+		ARCBank_Draw:Window_MsgBox((halfres*-1)+2,-150,self.ATMType.Resolutionx-24,ARCBank.Settings["name"],ARCBank.Settings["name_long"],ARCBank.ATM_DarkTheme,0,ARCLib.GetIcon(2,"application"),nil,self.ATMType.ForegroundColour)
+
+		for i = 1,8 do
+			--if self.ScreenOptions[i+(self.Page*8)] then
+				local xpos = 0
+				if i%2 == 0 then
+					xpos = (halfres*-1)+2
+				else
+					xpos = halfres - 136
+				end
+				local ypos = -80+((math.floor((i-1)/2))*61)
+				local fitstr = ARCLib.FitText(ARCBank.Msgs.ATMMsgs.LoadingMsg,"ARCBankATMNormal",98)
+				surface.SetDrawColor( darkk, darkk, darkk, 255 )
+				surface.DrawRect( xpos, ypos, 134, 40)
+				surface.SetDrawColor( light, light, light, 255 )
+				surface.DrawOutlinedRect( xpos, ypos, 134, 40)
+				for ii = 1,#fitstr do
+					draw.SimpleText( fitstr[ii], "ARCBankATMNormal",xpos+37+((i%2)*63), ypos+((ii-1)*12), Color(light,light,light,255), (i%2)*2 , TEXT_ALIGN_TOP  )
+				end
+				surface.SetDrawColor( 255, 255, 255, 255 )
+				surface.SetMaterial(ARCLib.GetIcon(2,"page"))
+				surface.DrawTexturedRect( xpos+2+((i%2)*98), ypos+4, 32, 32)
+			--end
+		end
+		
+		return
+	end
+
 	local welcomemsg = ARCBank.Msgs.ATMMsgs.Welcome
 	
 	if ARCBank.Outdated then
@@ -1622,8 +1650,9 @@ function ENT:PushScreen(butt)
 		end
 		return
 	end
-	if self.ScreenOptions[butt+(self.Page*8)] then
-		self.ScreenOptions[butt+(self.Page*8)].func()
+	local num = butt+(self.Page*8)
+	if self.ScreenOptions[num] then
+		self.ScreenOptions[num].func(num)
 		self:EmitSoundTable(self.ATMType.ClientPressSound)
 		ARCLib.PlaySoundOnOtherPlayers(table.Random(self.ATMType.PressSound),self,65)
 	else

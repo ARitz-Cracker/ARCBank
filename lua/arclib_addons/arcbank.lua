@@ -1,6 +1,6 @@
 -- This code is under copyright, and is bound to the agreement stated in the EULA.
 -- Any 3rd party content has been used as either public domain or with permission.
--- © Copyright 2014-2016 Aritz Beobide-Cardinal All rights reserved.
+-- © Copyright 2014-2017 Aritz Beobide-Cardinal All rights reserved.
 
 
 ARCBank = ARCBank or {}
@@ -16,19 +16,19 @@ function ARCBank.Msg(msg)
 end
 ARCBank.Msg("Running...\n ____ ____ _ ___ ___     ____ ____ ____ ____ _  _ ____ ____    ___  ____ _  _ _  _ _ _  _ ____ \n |__| |__/ |  |    /     |    |__/ |__| |    |_/  |___ |__/    |__] |__| |\\ | |_/  | |\\ | | __ \n |  | |  \\ |  |   /__    |___ |  \\ |  | |___ | \\_ |___ |  \\    |__] |  | | \\| | \\_ | | \\| |__] \n")
 ARCBank.Msg(table.Random({"I'm going to run out of letters in the alphabet if I keep these patches up!","Product of BlueStone Technological Enterprises Inc. (Even before that company existed)","tbh script enforcer is kinda shit.","I am embarrassed to say that there was a bug from v1.0 to v1.3 that made arguably one of the most important settings useless...","Eh, ARCLoad was a paranoid idiots dream anyway...","Super fukin' Sexy edition!","The most realistic ATM system you'll ever see!","Wohoo! Manual Updates!","...I can never get a vacation...","I love you.","Isn't this amazing?","That's one fiiiine addon you got there!","Update, Update, Update!","You can ACTUALLY use an ATM!","Fixin' Bugs!"}))
-ARCBank.Msg("© Copyright 2014-2016 Aritz Beobide-Cardinal (ARitz Cracker) All rights reserved.")
+ARCBank.Msg("© Copyright 2014-2017 Aritz Beobide-Cardinal (ARitz Cracker) All rights reserved.")
 
 
 ARCBank.Features = {}
 ARCBank.Features["hackapi"] = true
 
-ARCBank.Update = "November 25th 2016"
-ARCBank.Version = "1.4.0"
+ARCBank.Update = "January 13th 2017"
+ARCBank.Version = "1.4.0-beta1"
 
 
 ARCBank.About = [[      
              *** ARitz Cracker Bank ***
-    © Copyright Aritz Beobide-Cardinal 2014-2016
+    © Copyright Aritz Beobide-Cardinal 2014-2017
                 All rights reserved.
 				
 				
@@ -84,7 +84,19 @@ ARCBANK_TRANSACTION_GROUP_ADD = 32 -- Add member
 ARCBANK_TRANSACTION_GROUP_REMOVE = 64 -- Remove member
 ARCBANK_TRANSACTION_CREATE = 128 -- Create
 ARCBANK_TRANSACTION_DELETE = 256 -- Delete
+ARCBANK_TRANSACTION_OTHER = 32768
 ARCBANK_TRANSACTION_EVERYTHING = 65535 -- everything
+
+-- PERMISSIONS
+ARCBANK_PERMISSIONS_READ = 1
+ARCBANK_PERMISSIONS_READ_LOG = 2
+ARCBANK_PERMISSIONS_DEPOSIT = 4
+ARCBANK_PERMISSIONS_WITHDRAW = 8
+ARCBANK_PERMISSIONS_TRANSFER = 16
+ARCBANK_PERMISSIONS_RANK = 32
+ARCBANK_PERMISSIONS_MEMBERS = 64
+ARCBANK_PERMISSIONS_OTHER = 32768
+ARCBANK_PERMISSIONS_EVERYTHING = 65535 -- everything
 
 
 

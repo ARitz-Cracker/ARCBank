@@ -2,7 +2,7 @@
 
 -- This file is under copyright, and is bound to the agreement stated in the EULA.
 -- Any 3rd party content has been used as either public domain or with permission.
--- © Copyright 2014-2016 Aritz Beobide-Cardinal All rights reserved.
+-- © Copyright 2014-2017 Aritz Beobide-Cardinal All rights reserved.
 ARCBank.Loaded = false
 
 if CLIENT then
@@ -141,7 +141,8 @@ else
 
 				
 	hook.Add( "PlayerDeath", "ARCBank DeathTax", function( victim, inflictor, attacker )
-		local amount = ARCBank.PlayerGetMoney(victim) 
+		local amount = ARCBank.PlayerGetMoney(victim)
+		if !isnumber(amount) then return end
 		local dropped = math.ceil(amount * ARCBank.Settings["death_money_drop"] / 100)
 		if dropped > 0 then
 			local moneyprop = ents.Create( "sent_arc_cash" ) --I don't want to create another entity. 
@@ -159,7 +160,7 @@ else
 			timer.Simple(0.01,function()
 				pay = ply.DarkRPVars["money"] - pay 
 				if pay <= 0 then return end
-				ARCBank.AtmFunc(ply,pay,"",function(errcode)
+				ARCBank.AddFromWallet(ply,"",pay,"Salary",function(errcode)
 					if errcode == 0 then
 						ARCLib.NotifyPlayer(ply,string.Replace(ARCBank.Msgs.UserMsgs.Paycheck.." ("..string.Replace( string.Replace( ARCBank.Settings["money_format"], "$", ARCBank.Settings.money_symbol ) , "0", tostring(pay) )..")","ARCBank",ARCBank.Settings.name),NOTIFY_HINT,4,false)
 					elseif errcode != ARCBANK_ERROR_NIL_ACCOUNT then
@@ -176,7 +177,9 @@ else
 			timer.Simple(0.01,function()
 				pay = ply:getDarkRPVar("money") - pay 
 				if pay <= 0 then return end
-				ARCBank.AtmFunc(ply,pay,"",function(errcode)
+				
+				
+				ARCBank.AddFromWallet(ply,"",pay,"Salary",function(errcode)
 					if errcode == 0 then
 						ARCLib.NotifyPlayer(ply,string.Replace(ARCBank.Msgs.UserMsgs.Paycheck.." ("..string.Replace( string.Replace( ARCBank.Settings["money_format"], "$", ARCBank.Settings.money_symbol ) , "0", tostring(pay) )..")","ARCBank",ARCBank.Settings.name),NOTIFY_HINT,4,false)
 					elseif errcode != ARCBANK_ERROR_NIL_ACCOUNT then
@@ -210,28 +213,24 @@ else
 		end
 	end)
 	hook.Add( "PlayerInitialSpawn", "ARCBank RestoreArchivedAccount", function(ply)
-		local f = ARCBank.Dir.."/accounts_unused/"..string.lower(string.gsub(ARCBank.GetPlayerID(ply), "[^_%w]", "_"))..".txt"
-		if file.Exists(f,"DATA") then
-			local accounts = string.Explode( "\r\n", file.Read(f,"DATA"))
-			for i=1,#accounts do
-				if #accounts[i] > 2 && file.Exists(ARCBank.Dir.."/accounts_unused/"..accounts[i],"DATA") then
-					file.Write( ARCBank.Dir.."/accounts/"..accounts[i], file.Read(ARCBank.Dir.."/accounts_unused/"..accounts[i],"DATA") )
-					file.Delete( ARCBank.Dir.."/accounts_unused/"..accounts[i])
-					file.Delete(f)
-					--file.Append(ARCBank.Dir.."/accounts/logs/"..accounts[i], os.date("%d-%m-%Y %H:%M:%S").." > Account has been re-activated.\r\n")
-				end
-			end
-		end
 		ARCBank.CapAccountRank(ply);
 	end)
+	local function keepDeleting(ply,account)
+		ARCBank.RemoveAccount(ply,account,"Nutscript Character deleted",function(errcode)
+			if errcode == ARCBANK_ERROR_BUSY or errcode == ARCBANK_ERROR_NOT_LOADED then
+				timer.Simple(1,function() keepDeleting(ply,account) end)
+			end
+		end)
+	end
+	
     hook.Add("OnCharDelete","ARCBank NutScriptDeleteAccount",function(ply,charid,currentchar)
 		if (nut) then
 			local userid = ARCBank.PlayerIDPrefix..charid
-			ARCBank.EraseAccount(ARCBank.GetAccountID(userid),false,NULLFUNC) -- We'll just assume that the account has been successfully removed
-			ARCBank.GroupAccountOwner(ply,function(errorcode,accounts)
+			keepDeleting(userid,"")
+			ARCBank.GetOwnedAccounts(userid,function(errorcode,accounts)
 				if errorcode == ARCBANK_ERROR_NONE then
 					for k,v in ipairs(accounts) do
-						ARCBank.EraseAccount(accountdata.filename,true,NULLFUNC)
+						keepDeleting(userid,v)
 					end
 				else
 					ARCBank.Msg("Failed to get list of group accounts for deleted character "..userid.." - "..ARCBANK_ERRORSTRINGS[errorcode])
@@ -239,33 +238,7 @@ else
 			end)
 		end
     end)
-	--[[
-	-- This is now handeled in the ATM entity itself.
-	%%CONFIRMATION_HASH%%
-	hook.Add( "PreCleanupMap", "ARCBank PreCleanupATM", function()
-		for _, oldatms in pairs( ents.FindByClass("sent_arc_atm") ) do
-			oldatms.ARCBank_MapEntity = false
-			--oldatms:Remove()
-		end
-	end )
 
-	hook.Add( "PostCleanupMap", "ARCBank PostCleanupATM", function() timer.Simple(1,function() ARCBank.SpawnATMs() end ) end )
-	]]
-	--[[
-	hook.Add( "ARCLoad_OnLoaded", "ARCBank SpawnATMs", function(loaded)
-		if loaded != true && loaded != "ARCBank" then return end
-			ARCBank.Load()
-			ARCBank.SpawnATMs()
-	end )
-	hook.Add( "ARCLoad_OnUpdate", "ARCBank RemoveATMs",function(loaded)
-		if loaded != "ARCBank" then return end
-		for k,v in pairs(player.GetAll()) do 
-			ARCBank.MsgCL(v,"Updating...") 
-		end
-		ARCBank.SaveDisk()
-		ARCBank.ClearATMs()
-	end)
-	]]
 	hook.Add( "InitPostEntity", "ARCBank SpawnATMs", function()
 		ARCBank.SpawnATMs()
 	end )

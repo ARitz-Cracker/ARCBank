@@ -35,16 +35,49 @@ elseif system.IsWindows() then
 elseif system.IsOSX() then
 	ARCBank.Msg("Is there even such a thing as an OSX server? Can it run mysqloo?")
 end
+--1.3: arcbank_account_members arcbank_personal_account arcbank_personal_account
+local arcbank_log = [[CREATE TABLE IF NOT EXISTS arcbank_log
+(
+transaction_id UNSIGNED BIGINT NOT NULL AUTO_INCREMENT,
+timestamp UNSIGNED BIGINT NOT NULL,
+account1 varchar(255) NOT NULL,
+account2 varchar(255) NOT NULL,
+user1 varchar(255) NOT NULL,
+user2 varchar(255) NOT NULL,
+moneydiff BIGINT NOT NULL,
+money BIGINT,
+transaction_type UNSIGNED SMALLINT NOT NULL,
+comment varchar(255) NOT NULL
+);]]
 
+local arcbank_accounts = [[CREATE TABLE IF NOT EXISTS arcbank_accounts
+(
+account varchar(255) PRIMARY KEY,
+name varchar(255) NOT NULL,
+owner varchar(255) NOT NULL,
+rank UNSIGNED TINYINT NOT NULL
+);]]
+
+local arcbank_groups = [[CREATE TABLE IF NOT EXISTS arcbank_groups
+(
+account varchar(255) NOT NULL,
+user varchar(255) NOT NULL,
+CONSTRAINT pk_PersonID UNIQUE (account,user)
+);]]
+
+local arcbank_lock = [[CREATE TABLE arcbank_lock
+(
+account varchar(255) PRIMARY KEY
+}]]
 	
 ARCBank = ARCBank or {}
 ARCBank.Loaded = false
 ARCBank.MySQL = {}
 ARCBank.MySQL.EnableMySQL = false
-ARCBank.MySQL.Host = "127.0.0.1"
-ARCBank.MySQL.Username = "root" 
-ARCBank.MySQL.Password = "password"
-ARCBank.MySQL.DatabaseName = "arcbank"
+ARCBank.MySQL.Host = "192.168.0.2"
+ARCBank.MySQL.Username = "tester" 
+ARCBank.MySQL.Password = "tester123"
+ARCBank.MySQL.DatabaseName = "test_db"
 ARCBank.MySQL.DatabasePort = 3306
 
 function ARCBank.MySQL.Escape(str)
@@ -82,81 +115,66 @@ function ARCBank.MySQL.CreateQuery(str,succfunc,errfunc)
 				errfunc("ARCBank tmysql4 support error!",str)
 			end
 		end
-
 		ARCBank.DataBase:Query( str, onCompleted )
 	end
 end
 
---1.3: arcbank_account_members arcbank_personal_account arcbank_personal_account
+local function InitOnError( err, sql )
+	ARCBank.Msg( "FAILED!! "..tostring(err) )
+end
+local function InitOnSuccess( data )
+	ARCBank.Msg( "Everything appears to be A-OK!" )
+	ARCBank.Loaded = true
+	ARCBank.Busy = false
+	ARCBank.Msg("ARCBank is ready!")
+	ARCBank.ConvertOldAccounts()
+	ARCBank.CapAccountRank()
+end
+
+local function InitGroupSuccess( data )
+	ARCBank.Msg( "Checking if in-use accounts table exists..." )
+	ARCBank.MySQL.CreateQuery(arcbank_lock,InitOnSuccess,InitOnError)
+end
+
+local function InitAccountSuccess( data )
+	ARCBank.Msg( "Checking if group member table exists..." )
+	ARCBank.MySQL.CreateQuery(arcbank_groups,InitGroupSuccess,InitOnError)
+end
+
+local function InitLogSuccess( data )
+	ARCBank.Msg( "Checking if account properties table exists..." )
+	ARCBank.MySQL.CreateQuery(arcbank_accounts,InitAccountSuccess,InitOnError)
+end
+
 function ARCBank.MySQL.Connect()
 	ARCBank.Msg("INITIALIZING MYSQL SEQUENCE!")
 	if MYSQL_TYPE == 0 then
 		ARCBank.Msg("No suitable MySQL module has been found. This addon supports MySQLOO or tmysql4.")
-		ARCBank.Msg("You can download tmysql4 here: https://facepunch.com/showthread.php?t=1442438")
+		ARCBank.Msg("You can download MySQLOO v9 here: https://facepunch.com/showthread.php?t=1515853")
 		return 
 	end
 
-	local function onConnected()
-
-		ARCBank.Msg( "Database connected. Good, nothing broke" )
-		local function gqonSuccess( data )
-			ARCBank.Msg("Created/Verified Group account table!")
-			function pqonSuccess( data )
-				ARCBank.Msg("Created/Verified Personal account table!")
-				function aqonSuccess( data )
-					ARCBank.Msg("Created/Verified account members table!")
-					ARCBank.Loaded = true
-					ARCBank.Busy = false
-					ARCBank.Msg("ARCBank is ready!")
-					ARCBank.CapAccountRank();
-			
-				end
-				function aqonError( err, sql )
-					ARCBank.Msg( "Unable to create account members table. "..tostring(err) )
-				end
-				ARCBank.MySQL.CreateQuery("CREATE TABLE IF NOT EXISTS arcbank_account_members(filename varchar(255),steamid varchar(255));",aqonSuccess,aqonError)
-				--lua_run ARCBank.CreateAccount(player.GetAll()[1],1,1000,"",function(err) MsgN(err) end)
-			end
-	
-			function pqonError( err, sql )
-				ARCBank.Msg( "Unable to create personal account table. "..tostring(err) )
-			end
-			ARCBank.MySQL.CreateQuery("CREATE TABLE IF NOT EXISTS arcbank_personal_account(filename varchar(255),isgroup boolean,name varchar(255),money BIGINT,rank int);",pqonSuccess,pqonError)
-			
-		end
-	
-		local function gqonError( err, sql )
-			ARCBank.Msg( "Unable to create group account table. "..tostring(err) )
-		end
-		ARCBank.MySQL.CreateQuery("CREATE TABLE IF NOT EXISTS arcbank_group_account(filename varchar(255),isgroup boolean,name varchar(255),owner varchar(255),money BIGINT,rank int);",gqonSuccess,gqonError)
-	end
-
-
-	
-	
-	local function onConnectionFailed( err )
-
-		ARCBank.Msg( "...SOMETHING BROKE! "..tostring(err) )
-
-	end
 	
 	ARCBank.Msg("Connecting to database. Hopefully nothing blows up....")
 	if MYSQL_TYPE == 1 then
 		ARCBank.DataBase = mysqloo.connect( ARCBank.MySQL.Host, ARCBank.MySQL.Username, ARCBank.MySQL.Password, ARCBank.MySQL.DatabaseName, ARCBank.MySQL.DatabasePort )
 		function ARCBank.DataBase:onConnectionFailed( err )
-			onConnectionFailed(err)
+			ARCBank.Msg( "...SOMETHING BROKE! "..tostring(err) )
 		end
 		function ARCBank.DataBase:onConnected()
-			onConnected()
+			ARCBank.Msg( "Database connected. So far so good!" )
+			ARCBank.MySQL.CreateQuery(arcbank_log,InitLogSuccess,InitOnError)
 		end
 		ARCBank.DataBase:connect()
 	elseif MYSQL_TYPE == 2 then
 		local Database, err = tmysql.Connect(ARCBank.MySQL.Host, ARCBank.MySQL.Username, ARCBank.MySQL.Password, ARCBank.MySQL.DatabaseName, ARCBank.MySQL.DatabasePort, nil, CLIENT_MULTI_STATEMENTS)
 		if err then
-			onConnectionFailed(err)
+			ARCBank.Msg( "...SOMETHING BROKE! "..tostring(err) )
 		else
 			ARCBank.DataBase = Database
-			onConnected()
+			ARCBank.Msg( "Database connected. So far so good!" )
+			ARCBank.Msg( "Checking if log table exists..." )
+			ARCBank.MySQL.CreateQuery(arcbank_log,InitLogSuccess,InitOnError)
 		end
 	end
 	
@@ -229,7 +247,7 @@ function ARCBank.MySQL.RunCustomCommand(str)
 	ARCBank.MySQL.CreateQuery(str,onSuccess,onError)
 end
 
-ARCBank.Commands["mysql"] = {
+ARCBank.Commands["mysql"] = { --TODO: FINISH
 	command = function(ply,args) 
 		if !ARCBank.Loaded then ARCBank.MsgCL(ply,"System reset required!") return end -- This is just to check if the ARCBank system is working properly. 
 		if !ARCBank.IsMySQLEnabled() then ARCBank.MsgCL(ply,"MySQL must be enabled.") return end
@@ -238,62 +256,80 @@ ARCBank.Commands["mysql"] = {
 			return
 		end
 		if args[1] == "copy_to_database" then
-			ARCBank.GetAllAccountsUnordered(false,function(errcode,accounts)
-				ARCBank.Msg(ARCBank.Msgs.CommandOutput.MySQLCopy)
-				for _,plys in pairs(player.GetAll()) do
-					ARCBank.MsgCL(plys,ARCBank.Msgs.CommandOutput.MySQLCopy)
+			ARCBank.Msg(ARCBank.Msgs.CommandOutput.MySQLCopy)
+			for _,plys in pairs(player.GetAll()) do
+				ARCBank.MsgCL(plys,ARCBank.Msgs.CommandOutput.MySQLCopy)
+			end
+			ARCBank.Busy = true
+			timer.Simple(1,function()
+				local Queries = {}
+				table.insert(Queries,"DELETE FROM arcbank_log")
+				table.insert(Queries,"DELETE FROM arcbank_accounts")
+				table.insert(Queries,"DELETE FROM arcbank_groups")
+				local logs = file.Find( ARCBank.Dir.."/logs_1.4/*", "DATA")
+				local properties = file.Find( ARCBank.Dir.."/accounts_1.4/*", "DATA")
+				local groups = file.Find( ARCBank.Dir.."/groups_1.4/*", "DATA")
+				
+				
+			for k,v in ipairs(logs) do 
+				local line = string.Explode( "\r\n", file.Read(ARCBank.Dir.."/logs_1.4/"..v) or "")
+				line[#line] = nil --Last line of a log is always blank
+				for kk,vv in ipairs(line) do
+					local stuffs = string.Explode("\t",vv)
+					
+					local timestamp = tonumber(stuffs[2]) or 0
+					local account1 = stuffs[3]
+					local account2 = stuffs[4]
+					local transaction_type = tonumber(stuffs[9])
+					--local = stuffs[5]
+						data[datalen].user2 = stuffs[6]
+					if (ttype == 0 or bit.band(transaction_type,ttype) > 0) and timestamp >= timestampstart then
+						datalen = datalen + 1
+						data[datalen] = {}
+						data[datalen].transaction_id = tonumber(stuffs[1]) or 0
+						data[datalen].timestamp = tonumber(stuffs[2]) or 0
+						data[datalen].account1 = stuffs[3]
+						data[datalen].account2 = stuffs[4]
+						data[datalen].user1 = stuffs[5]
+						data[datalen].user2 = stuffs[6]
+						data[datalen].moneydiff = tonumber(stuffs[7]) or 0
+						data[datalen].money = tonumber(stuffs[8])
+						data[datalen].transaction_type = transaction_type
+						data[datalen].comment = stuffs[10]
+					end
 				end
-				ARCBank.Busy = true
-				if errcode == 0 then
-					local Queries = {}
-					table.insert(Queries,"DELETE FROM arcbank_account_members")
-					table.insert(Queries,"DELETE FROM arcbank_group_account")
-					table.insert(Queries,"DELETE FROM arcbank_personal_account")
-					for k,v in pairs(accounts) do
-						if v.isgroup then
-							for kk,vv in pairs(v.members) do
-								table.insert(Queries,"INSERT INTO arcbank_account_members (filename,steamid) VALUES ('"..v.filename.."','"..vv.."')")
+				coroutine.yield() 
+			end
+				
+				local iii = 1
+				
+				local function recrusivecopy(num)
+					if num > #Queries then 
+							ARCBank.Msg(ARCBANK_ERRORSTRINGS[0])
+							for _,plys in pairs(player.GetAll()) do
+								ARCBank.MsgCL(plys,ARCBANK_ERRORSTRINGS[0])
 							end
-							table.insert(Queries,"INSERT INTO arcbank_group_account (filename, isgroup, name, owner, money, rank) VALUES ('"..tostring(v.filename).."',"..tostring(v.isgroup)..",'"..ARCBank.MySQL.Escape(tostring(v.name)).."','"..tostring(v.owner).."',"..tonumber(v.money)..","..tostring(v.rank).."); ")
+							ARCBank.Busy = false
+						return 
+					end
+					ARCBank.MySQL.Query(Queries[num],function(didwork,reason)
+						if didwork then
+							ARCBank.Msg(ARCBank.Msgs.ATMMsgs.LoadingMsg.." (%"..tostring(math.floor((num/#Queries)*100))..")")
+							for _,plys in pairs(player.GetAll()) do
+								ARCBank.MsgCL(plys,ARCBank.Msgs.ATMMsgs.LoadingMsg.." (%"..tostring(math.floor((num/#Queries)*100))..")")
+							end
+							iii = iii + 1
+							recrusivecopy(iii)
 						else
-							table.insert(Queries,"INSERT INTO arcbank_personal_account (filename, isgroup, name, money, rank) VALUES ('"..tostring(v.filename).."',"..tostring(v.isgroup)..",'"..ARCBank.MySQL.Escape(tostring(v.name)).."',"..tonumber(v.money)..","..tostring(v.rank).."); ")
-						end
-					end
-					
-					local iii = 1
-					
-					local function recrusivecopy(num)
-						if num > #Queries then 
-								ARCBank.Msg(ARCBANK_ERRORSTRINGS[0])
-								for _,plys in pairs(player.GetAll()) do
-									ARCBank.MsgCL(plys,ARCBANK_ERRORSTRINGS[0])
-								end
-								ARCBank.Busy = false
-							return 
-						end
-						ARCBank.MySQL.Query(Queries[num],function(didwork,reason)
-							if didwork then
-								ARCBank.Msg(ARCBank.Msgs.ATMMsgs.LoadingMsg.." (%"..tostring(math.floor((num/#Queries)*100))..")")
-								for _,plys in pairs(player.GetAll()) do
-									ARCBank.MsgCL(plys,ARCBank.Msgs.ATMMsgs.LoadingMsg.." (%"..tostring(math.floor((num/#Queries)*100))..")")
-								end
-								iii = iii + 1
-								recrusivecopy(iii)
-							else
-								ARCBank.Loaded = false
-								ARCBank.Msg("[ERROR!] (%"..tostring(math.floor((num/#Queries)*100))..") Halting ARCBank. System reset required.")
-								for _,plys in pairs(player.GetAll()) do
-									ARCBank.MsgCL(plys,"[ERROR!] (%"..tostring(math.floor((num/#Queries)*100))..") Halting ARCBank. System reset required.")
-								end
+							ARCBank.Loaded = false
+							ARCBank.Msg("[ERROR!] (%"..tostring(math.floor((num/#Queries)*100))..") Halting ARCBank. System reset required.")
+							for _,plys in pairs(player.GetAll()) do
+								ARCBank.MsgCL(plys,"[ERROR!] (%"..tostring(math.floor((num/#Queries)*100))..") Halting ARCBank. System reset required.")
 							end
-						end)
-					end
-					timer.Simple(2,function() recrusivecopy(iii) end)
-					
-
-				else
-					ARCBank.Msg("Failed to get all accounts. Error code "..tostring(errcode))
+						end
+					end)
 				end
+				timer.Simple(2,function() recrusivecopy(iii) end)
 			end)
 		elseif args[1] == "copy_from_database" then
 			ARCBank.Msg(ARCBank.Msgs.CommandOutput.MySQLCopyFrom)
