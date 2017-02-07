@@ -42,9 +42,13 @@ function ENT:Initialize()
 		table.Merge( self, brokenATMs[enti] )
 		table.remove( brokenATMs, enti )
 	end
+	self.RequestedAccountName = ""
 	self.LogTable = {}
 	self.LogPage = 1
 	self.LogPageMax = 1
+	self.NewLogTable = {}
+	self.NewLogPage = 1
+	self.NewLogPageMax = 1
 	
 	self.Loading = false
 	self.Percent = 0
@@ -161,18 +165,28 @@ function ENT:UpdateList()
 end
 
 
+
 --local function ENT_AccountOptions(accountdata,ent)
 local function ENT_AccountOptions(errcode,accountdata,ent)
+	ent:AccountOptions(errcode,accountdata)
+end
+
+function ENT:AccountOptions(errcode,accountdata)
+	local ent = self
 	if errcode != ARCBANK_ERROR_NONE then
 		ent.Loading = false
 		ent:ThrowError(errcode)
 	else
 		accountdata.isgroup = accountdata.rank > ARCBANK_GROUPACCOUNTS_
 		ARCBank.GetBalance(ent,accountdata.account,function(err,money,ent)
-			if errcode != ARCBANK_ERROR_NONE then
-				ent:ThrowError(errcode)
+			if err != ARCBANK_ERROR_NONE then
+				ARCBank.Msg("ATM Error "..tostring(err).." was thrown while getting the account balance AFTER the account perperties were sucessfully retrieved!")
+				ent:ThrowError(err)
 			else
-				accountdata.money = num
+				accountdata.money = money
+				ent.RequestedAccount = accountdata.account
+				ent.RequestedAccountName = accountdata.name
+				
 				ent.OnHomeScreen = false
 				ent.Title = accountdata.name
 				ent.TitleText = ARCBank.Msgs.ATMMsgs.Balance..string.Replace( string.Replace( ARCBank.Settings["money_format"], "$", ARCBank.Settings.money_symbol ) , "0", tostring(money))
@@ -207,45 +221,43 @@ local function ENT_AccountOptions(errcode,accountdata,ent)
 				ent.ScreenOptions[4] = {}
 				ent.ScreenOptions[4].text = ARCBank.Msgs.ATMMsgs.ViewLog
 				ent.ScreenOptions[4].icon = "file_extension_log"
-				ent.ScreenOptions[4].func = function() 
-					--[[
-					ent.Loading = true
-					local accn = ""
-					if accountdata.isgroup then
-						accn = accountdata.name
-					end
-					ARCBank.Log(accn,ent,function(data,per,_)
-						
-						if !IsValid(ent) then return end
-						if data == ARCBANK_ERROR_DOWNLOADING then
-							ent.Percent = per*0.5
-						elseif isnumber(data) then
-							ent.Percent = 0
-							ent.Loading = false
-							ent:ThrowError(data)
-						else
-							data = string.Replace(data,"STEAM_0:0:0",LocalPlayer():Nick())
-							for k,v in pairs(player.GetAll()) do -- I don't know why I didn't think of this before...
-								data = string.Replace(data,ARCBank.GetPlayerID(v),v:Nick())
-							end
-							ARCLib.FitTextRealtime(data,"ARCBankATMSmall",274,function(per,tab)
-								if !IsValid(ent) then return end
-								if per == 1 then
-									ent.Percent = 1
-									ent.LogTable = tab
-									ent.LogPageMax = math.ceil(#ent.LogTable/20)
-									ent.LogPage = ent.LogPageMax
-									timer.Simple(math.Rand(1.5,3),function()
-										ent.Percent = 0
-										ent.Loading = false
-									end)
-								else
-									ent.Percent = 0.5 + per*0.5
-								end
-							end)
+				ent.ScreenOptions[4].func = function()
+					ent.TitleText = ARCBank.Msgs.ATMMsgs.ViewLog
+					ent.TitleIcon = "file_extension_log"
+					
+					local dayopt = {7,14,30,60,90,120}
+					local days = 0
+					
+					ent.ScreenOptions = {}
+					for i=1,3 do
+						local ii = i*2
+						ent.ScreenOptions[ii] = {}
+						ent.ScreenOptions[ii].text = dayopt[i].." "..ARCBank.Msgs.Time.days
+						ent.ScreenOptions[ii].icon = "table"
+						ent.ScreenOptions[ii].func = function()
+							ent:ViewLogOptions(dayopt[i],accountdata)
 						end
-					end)
-					]]
+						ii = ii - 1
+						ent.ScreenOptions[ii] = {}
+						ent.ScreenOptions[ii].text = dayopt[i+3].." "..ARCBank.Msgs.Time.days
+						ent.ScreenOptions[ii].icon = "table_multiple"
+						ent.ScreenOptions[ii].func = function()
+							ent:ViewLogOptions(dayopt[i+3],accountdata)
+						end
+					end
+					ent.ScreenOptions[7] = {}
+					ent.ScreenOptions[7].text = ARCBank.Msgs.ATMMsgs.OtherNumber
+					ent.ScreenOptions[7].icon = "textfield"
+					ent.ScreenOptions[7].func = function()
+						ent:EnableInput(false,function(nummm)
+							ent:ViewLogOptions(nummm,accountdata)
+						end)
+					end 
+					ent.BackFunc = function() 
+						ent.Loading = true
+						ARCBank.GetAccountProperties(ent,ent.RequestedAccount,ENT_AccountOptions)
+					end
+					ent:UpdateList()
 				end
 				
 				if accountdata.isgroup then
@@ -253,8 +265,16 @@ local function ENT_AccountOptions(errcode,accountdata,ent)
 					ent.ScreenOptions[5] = {}
 					ent.ScreenOptions[5].text = ARCBank.Msgs.ATMMsgs.RemovePlayerGroup
 					ent.ScreenOptions[5].icon = "user_delete"
-					ent.ScreenOptions[5].func = function() 
-						ent:PlayerGroup(accountdata.members)
+					ent.ScreenOptions[5].func = function()
+						ent.Loading = true
+						ARCBank.GroupGetPlayers(ent,ent.RequestedAccount,function(err,data)
+							if err == ARCBANK_ERROR_NONE then
+								ent:PlayerGroup(data)
+							else
+								ent:ThrowError(err) 
+							end
+							ent.Loading = false
+						end)
 					end
 					
 					ent.ScreenOptions[6] = {}
@@ -272,7 +292,9 @@ local function ENT_AccountOptions(errcode,accountdata,ent)
 						ent:Question(string.Replace(ARCBank.Msgs.ATMMsgs.CloseNotice,"ARCBank",ARCBank.Settings.name),function()
 							ent.Loading = true
 							ARCBank.RemoveAccount(ent,ent.RequestedAccount,"ATM",function(err,ent) 
-								ent:HomeScreen()
+								if err == ARCBANK_ERROR_NONE then
+									ent:HomeScreen()
+								end
 								ent.Loading = false
 								ent:ThrowError(err) 
 							end)
@@ -285,9 +307,64 @@ local function ENT_AccountOptions(errcode,accountdata,ent)
 			
 				
 			end
+			ent.Percent = 0
 			ent.Loading = false
 		end)
 	end
+end
+
+function ENT:ViewLogOptions(days,accountdata)
+	local transaction_type = ARCBANK_TRANSACTION_EVERYTHING
+	
+	local transaction_types = {1,2,4,24,96,384}
+
+
+	self.ScreenOptions = {}
+	for i=1,6 do
+		self.ScreenOptions[i] = {}
+		self.ScreenOptions[i].text = ARCBank.Msgs.AccountTransactions[transaction_types[i]]
+		self.ScreenOptions[i].icon = "check_box"
+		self.ScreenOptions[i].func = function(ii) 
+			if self.ScreenOptions[ii].icon == "check_box_uncheck" then
+				transaction_type = bit.bor(transaction_type,transaction_types[ii])
+				self.ScreenOptions[ii].icon = "check_box"
+			else
+				transaction_type = bit.band(transaction_type,bit.bnot(transaction_types[ii]))
+				self.ScreenOptions[ii].icon = "check_box_uncheck"
+			end
+		end
+	end
+	self.ScreenOptions[7] = {}
+	self.ScreenOptions[7].text = ARCBank.Msgs.ATMMsgs.ViewLog
+	self.ScreenOptions[7].icon = "file_extension_log"
+	self.ScreenOptions[7].func = function()
+		self.Loading = true
+		local accn = ""
+		if accountdata.isgroup then
+			accn = accountdata.name
+		end
+		MsgN(transaction_type)
+		ARCBank.GetLog(self,accn,os.time()-(days*86400),transaction_type,function(err,prog,tab,self)
+			if err == ARCBANK_ERROR_DOWNLOADING then
+				self.Percent = prog
+			elseif err == ARCBANK_ERROR_NONE then
+				self.Percent = 1
+				self.NewLogTable = tab
+				self.NewLogPageMax = math.ceil(#tab/5)
+				self.NewLogPage = self.NewLogPageMax
+				ARCBank.GetAccountProperties(self.Entity,self.RequestedAccount,ENT_AccountOptions) --This will make sure that your account info will be displayed after you close the log
+				if #tab == 0 then
+					self:ThrowError(ARCBANK_ERROR_LOG_EMPTY)
+				end
+			else
+				self.Percent = 0
+				self.Loading = false
+				self:ThrowError(err)
+			end
+		end)
+	end
+
+	self:UpdateList()
 end
 
 function ENT:PlayerAccountSearch(ply)
@@ -300,7 +377,7 @@ function ENT:PlayerAccountSearch(ply)
 		else
 			local names = {}
 			ARCLib.ForEachAsync(data,function(k,v,callback)
-				if string.StartWith( v, "personal_" ) then
+				if string.StartWith( v, "_" ) then --TODO: Since the names aren't lost like in 1.4.0-beta1 can't we decode them instead of asking the server for them?
 					callback()
 				else
 					ARCBank.GetAccountName(v,function(err,name)
@@ -426,13 +503,23 @@ function ENT:PlayerGroup(members)
 	for i = 1,#members do 
 		local ply = ARCBank.GetPlayerByID(members[i])
 		self.ScreenOptions[i] = {}
-		self.ScreenOptions[i].text = tostring(ply:Nick()).."\n"..string.sub(ARCBank.GetPlayerID(plys[i]),#ARCBank.PlayerIDPrefix+1)
+		self.ScreenOptions[i].text = tostring(ply:Nick()).."\n"..string.sub(ARCBank.GetPlayerID(ply),#ARCBank.PlayerIDPrefix+1)
 		self.ScreenOptions[i].icon = "user_delete"
 		self.ScreenOptions[i].func = function() 
 			self.Loading = true
-			ARCBank.GroupRemovePlayer(self,self.RequestedAccount,ARCBank.GetPlayerID(ply),"",function(err,ent) 
-				ent:ThrowError(err)
-				ent.Loading = false
+			ARCBank.GroupRemovePlayer(self,self.RequestedAccount,members[i],"",function(err,ent) 
+				if err == ARCBANK_ERROR_NONE then
+					ARCBank.GroupGetPlayers(ent,ent.RequestedAccount,function(err,data)
+						if err == ARCBANK_ERROR_NONE then
+							ent:PlayerGroup(data)
+						else
+							ent:ThrowError(err) 
+						end
+						ent.Loading = false
+					end)
+				else
+					ent:ThrowError(err)
+				end
 			end)
 		end
 	end
@@ -449,7 +536,9 @@ net.Receive( "ARCATM_COMM_CASH", function(length,ply)
 	local errcode = net.ReadInt(ARCBANK_ERRORBITRATE)
 	atm.Loading = true
 	ARCBank.GetAccountProperties(atm,atm.RequestedAccount,ENT_AccountOptions)
-	atm:ThrowError(errcode)
+	if errcode != ARCBANK_ERROR_NONE then
+		atm:ThrowError(errcode)
+	end
 end)
 function ENT:MoneyOptions()
 	self.ScreenOptions = {}
@@ -548,7 +637,7 @@ function ENT:HomeScreen()
 			else
 				local names = {}
 				ARCLib.ForEachAsync(data,function(k,v,callback)
-					if string.StartWith( v, "personal_" ) then
+					if string.StartWith( v, "_" ) then --TODO: Since the names aren't lost like in 1.4.0-beta1 can't we decode them instead of asking the server for them?
 						callback()
 					else
 						ARCBank.GetAccountName(v,function(err,name)
@@ -569,11 +658,9 @@ function ENT:HomeScreen()
 						self.ScreenOptions[i].text = names[i]
 						self.ScreenOptions[i].icon = "group"
 						self.ScreenOptions[i].func = function(iconnum)
-							self:EnableInput(false,function(nummm)
-								self.Loading = true
-								self.RequestedAccount = self.ScreenOptions[iconnum].text
-								ARCBank.GetAccountProperties(self.Entity,self.RequestedAccount,ENT_AccountOptions)
-							end)
+							self.Loading = true
+							self.RequestedAccount = self.ScreenOptions[iconnum].text
+							ARCBank.GetAccountProperties(self.Entity,self.RequestedAccount,ENT_AccountOptions)
 						end
 					end
 					self.BackFunc = function() self:HomeScreen() end
@@ -609,7 +696,7 @@ function ENT:HomeScreen()
 			else
 				local names = {}
 				ARCLib.ForEachAsync(data,function(k,v,callback)
-					if string.StartWith( v, "personal_" ) then
+					if string.StartWith( v, "_" ) then --TODO: Since the names aren't lost like in 1.4.0-beta1 can't we decode them instead of asking the server for them?
 						callback()
 					else
 						ARCBank.GetAccountName(v,function(err,name)
@@ -630,12 +717,9 @@ function ENT:HomeScreen()
 						self.ScreenOptions[i].text = names[i]
 						self.ScreenOptions[i].icon = "group"
 						self.ScreenOptions[i].func = function(iconnum)
-							self:EnableInput(false,function(nummm)
-								self.Loading = true
-								self.RequestedAccount = self.ScreenOptions[iconnum].text
-								ARCBank.CreateAccount(self.Entity,self.RequestedAccount,ARCBANK_GROUPACCOUNTS_STANDARD,ENT_AccountUpgrade)
-								
-							end)
+							self.Loading = true
+							self.RequestedAccount = self.ScreenOptions[iconnum].text
+							ARCBank.CreateAccount(self.Entity,self.RequestedAccount,ARCBANK_GROUPACCOUNTS_STANDARD,ENT_AccountUpgrade)
 						end
 					end
 					local i = #names + 1
@@ -891,6 +975,147 @@ function ENT:Screen_Number()
 	surface.DrawOutlinedRect( -100, 1  - shiftup, 200, 18)
 	--draw.SimpleText( self.InputMsg, "ARCBankATM",0, 125, Color(255,255,255,255), TEXT_ALIGN_CENTER , TEXT_ALIGN_CENTER  ) 
 end
+
+local transactionIcons = {}
+transactionIcons[1] = "wallet"
+transactionIcons[2] = "user_go"
+transactionIcons[3] = "group_go" -- 2 but with group
+transactionIcons[4] = "bank"
+transactionIcons[8] = "add"
+transactionIcons[16] = "delete"
+transactionIcons[32] = "user_add"
+transactionIcons[64] = "user_delete"
+transactionIcons[128] = "new"
+transactionIcons[256] = "bin"
+--[[
+	self.NewLogTable = {}
+	self.NewLogPage = 1
+	self.NewLogPageMax = 1
+]]
+--money_add,money_delete,textfield,money
+function ENT:Screen_NewLog()
+	local textcol = 255*ARCLib.BoolToNumber(ARCBank.ATM_DarkTheme)
+	local text_color = Color(textcol,textcol,textcol,255)
+	
+	--local filltextcol = 255*ARCLib.BoolToNumber(!ARCBank.ATM_DarkTheme)
+	
+	ARCBank_Draw:Window(-137,-150,254,280,self.RequestedAccountName.." - ("..self.NewLogPage.."/"..self.NewLogPageMax..")",ARCBank.ATM_DarkTheme,ARCLib.GetWebIcon16("file_extension_log"),self.ATMType.ForegroundColour)
+	
+	for i=1,5 do
+		local y = (i-1)*48
+		local entry = self.NewLogTable[(self.NewLogPage-1)*5+i]
+		if entry then
+			surface.SetDrawColor( 255,255,255,255 )
+			surface.SetMaterial(ARCLib.GetWebIcon16("time"))
+			surface.DrawTexturedRect( -135, -129+y, 12, 12)
+			surface.SetDrawColor( text_color )
+			surface.DrawOutlinedRect( -137, -131+y, 104, 16)
+			draw.SimpleText(os.date("%Y-%m-%d %H:%M:%S",tonumber(entry.timestamp)),"ARCBankATMSmall", -36, -129+y, text_color, TEXT_ALIGN_RIGHT , TEXT_ALIGN_TOP  )
+			
+			surface.SetDrawColor( 255,255,255,255 )
+			if entry.moneydiff < 0 then
+				surface.SetMaterial(ARCLib.GetWebIcon16("money_delete"))
+			else
+				surface.SetMaterial(ARCLib.GetWebIcon16("money_add"))
+			end
+			surface.DrawTexturedRect( -32, -129+y, 12, 12)
+			surface.SetDrawColor( text_color )
+			surface.DrawOutlinedRect( -34, -131+y, 69, 16)
+			draw.SimpleText(math.abs(entry.moneydiff),"ARCBankATMSmall", 32, -129+y, text_color, TEXT_ALIGN_RIGHT , TEXT_ALIGN_TOP  )
+			
+			surface.SetDrawColor( 255,255,255,255 )
+			surface.SetMaterial(ARCLib.GetWebIcon16("money"))
+			surface.DrawTexturedRect( 36, -129+y, 12, 12)
+			surface.SetDrawColor( text_color )
+			surface.DrawOutlinedRect( 34, -131+y, 103, 16)
+
+			draw.SimpleText(entry.money or "","ARCBankATMSmall", 134, -129+y, text_color, TEXT_ALIGN_RIGHT , TEXT_ALIGN_TOP  )
+			
+			surface.SetDrawColor( 255,255,255,255 )
+			surface.SetMaterial(ARCLib.GetWebIcon16(transactionIcons[entry.transaction_type+ARCLib.BoolToNumber(entry.transaction_type == 2 and string.sub(entry.account2,1,1) != "_")]))
+			surface.DrawTexturedRect( -32, -129+15+y, 12, 12)
+			surface.SetDrawColor( text_color )
+			surface.DrawOutlinedRect( -137, -131+15+y, 104, 16)
+			
+			local txt = ""
+			if entry.transaction_type == 1 then
+				if entry.moneydiff < 0 then
+					txt = ARCBank.Msgs.ATMMsgs.Withdrawal
+				else
+					txt = ARCBank.Msgs.ATMMsgs.Deposit
+				end
+			elseif entry.transaction_type == 2 then
+				if string.sub(entry.account2,1,1) == "_" then
+					txt = ARCLib.basexx.from_base32(string.upper(string.sub(entry.account2,2,#entry.account2-1)))
+				else
+					txt = ARCLib.basexx.from_base32(string.upper(string.sub(entry.account2,1,#entry.account2-1)))
+				end
+			elseif entry.transaction_type == 4 then
+				txt = ARCBank.Msgs.AccountTransactions[4]
+			elseif entry.transaction_type == 8 then
+				txt = ARCBank.Msgs.LogMsgs.Upgraded
+			elseif entry.transaction_type == 16 then
+				txt = ARCBank.Msgs.LogMsgs.Downgraded
+			elseif entry.transaction_type == 32 or entry.transaction_type == 64 then
+				local otherply = ARCBank.GetPlayerByID(entry.user2)
+				if IsValid(otherply) then
+					txt = otherply:Nick()
+				else
+					txt = entry.user2
+				end
+			elseif entry.transaction_type == 128 then
+				txt = ARCBank.Msgs.LogMsgs.Created
+			elseif entry.transaction_type == 256 then
+				txt = ARCBank.Msgs.LogMsgs.Deleted
+			end
+			draw.SimpleText(ARCLib.CutOutText(txt,"ARCBankATMSmall",252),"ARCBankATMSmall", -32+14, -129+15+y, text_color, TEXT_ALIGN_LEFT , TEXT_ALIGN_TOP  )
+			
+			
+			surface.SetDrawColor( 255,255,255,255 )
+			surface.SetMaterial(ARCLib.GetWebIcon16("user"))
+			surface.DrawTexturedRect( -135, -129+15+y, 12, 12)
+			surface.SetDrawColor( text_color )
+			local name = entry.user1
+			local ply = ARCBank.GetPlayerByID(name)
+			if IsValid(ply) then
+				name = ply:Nick()
+			end
+			draw.SimpleText(ARCLib.CutOutText(name,"ARCBankATMSmall",88),"ARCBankATMSmall", -135 + 14, -129+15+y, text_color, TEXT_ALIGN_LEFT , TEXT_ALIGN_TOP  )
+			
+			surface.SetDrawColor( 255,255,255,255 )
+			surface.SetMaterial(ARCLib.GetWebIcon16("textfield"))
+			surface.DrawTexturedRect( -135, -129+30+y, 12, 12)
+			surface.SetDrawColor( text_color )
+			surface.DrawOutlinedRect( -137, -131+30+y, 274, 16)
+			draw.SimpleText(ARCLib.CutOutText(entry.comment,"ARCBankATMSmall",252),"ARCBankATMSmall", -135 + 14, -129+30+y, text_color, TEXT_ALIGN_LEFT , TEXT_ALIGN_TOP  )
+			
+			surface.SetDrawColor( text_color )
+			surface.DrawRect( -137, -131+46+y, 274, 2)
+		end
+		surface.DrawRect( -137, -131+240, 274, 3)
+	end
+	
+	--[[
+	surface.SetDrawColor( 255,255,255,255 )
+	surface.SetMaterial(ARCLib.GetWebIcon16("money_add"))
+	surface.DrawTexturedRect( -135, -129, 12, 12)
+	surface.SetDrawColor( text_color )
+	surface.DrawOutlinedRect( -137, -131, 16, 16)
+	surface.SetDrawColor( 255,255,255,255 )
+	surface.SetMaterial(ARCLib.GetWebIcon16("textfield"))
+	surface.DrawTexturedRect( -135, -129+15, 12, 12)
+	surface.SetDrawColor( text_color )
+	surface.DrawOutlinedRect( -137, -131+15, 16, 16)
+	
+	]]
+	
+	
+	surface.SetDrawColor( textcol, textcol, textcol, 255 )
+	surface.DrawOutlinedRect( -137, 112, 274, 20)
+	draw.SimpleText("<< "..ARCBank.Msgs.ATMMsgs.FilePrev,"ARCBankATMBigger", -135, 122, Color(textcol,textcol,textcol,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_CENTER  )
+	draw.SimpleText(ARCBank.Msgs.ATMMsgs.FileNext.." >>","ARCBankATMBigger", 135, 122, Color(textcol,textcol,textcol,255), TEXT_ALIGN_RIGHT , TEXT_ALIGN_CENTER  )
+	draw.SimpleText(ARCBank.Msgs.ATMMsgs.FileClose,"ARCBankATMBigger", 0, 140, Color(textcol,textcol,textcol,255), TEXT_ALIGN_CENTER , TEXT_ALIGN_CENTER  )
+end
 function ENT:Screen_Log()
 	local textcol = 255*ARCLib.BoolToNumber(ARCBank.ATM_DarkTheme)
 	--self.LogPage = 1
@@ -1103,8 +1328,10 @@ function ENT:Screen_Main()
 		end
 		
 		if self.InUse then
-			if #self.LogTable > 0 then
+			if self.LogTable[1] != nil then
 				self:Screen_Log()
+			elseif self.NewLogTable[1] != nil then
+				self:Screen_NewLog()
 			else
 				self:Screen_Options()
 			end
@@ -1267,7 +1494,7 @@ function ENT:Screen_Touch()
 				surface.SetMaterial(ARCLib.GetIcon(1,touchPadIcons[i]))
 				surface.DrawTexturedRect( 37 + 8, i*32 + 8, 16, 16)
 			end
-		elseif #self.LogTable > 0 then
+		elseif self.LogTable[1] != nil or self.NewLogTable[1] != nil then
 			len = len + 1
 			self.TouchIcons[len] = self.TouchIcons[len] || {}
 			self.TouchIcons[len].x = 8
@@ -1557,6 +1784,10 @@ function ENT:PushNumber(num)
 		self:EmitSoundTable(self.ATMType.PressNoSound,65)
 		return
 	end
+	if #self.NewLogTable > 0 then
+		self:EmitSoundTable(self.ATMType.PressNoSound,65)
+		return
+	end
 	if !self.InputtingNumber then
 		self:EmitSoundTable(self.ATMType.PressNoSound,65)
 		return
@@ -1598,6 +1829,9 @@ function ENT:PushEnter()
 	if #self.LogTable > 0 then
 		return
 	end
+	if #self.NewLogTable > 0 then
+		return
+	end
 end
 
 function ENT:PushCancel()
@@ -1611,6 +1845,10 @@ function ENT:PushCancel()
 	end
 	if #self.LogTable > 0 then
 		self.LogTable = {}
+		return
+	end
+	if #self.NewLogTable > 0 then
+		self.NewLogTable = {}
 		return
 	end
 	if self.OnHomeScreen then
@@ -1644,6 +1882,24 @@ function ENT:PushScreen(butt)
 			ARCLib.PlaySoundOnOtherPlayers(table.Random(self.ATMType.PressSound),self,65)
 			if self.LogPage > 1 then
 				self.LogPage = self.LogPage - 1
+			end
+		else
+			self:EmitSoundTable(self.ATMType.PressNoSound,65)
+		end
+		return
+	end
+	if #self.NewLogTable > 0 then
+		if butt == 7 then --Next
+			self:EmitSoundTable(self.ATMType.ClientPressSound)
+			ARCLib.PlaySoundOnOtherPlayers(table.Random(self.ATMType.PressSound),self,65)
+			if self.NewLogPage < self.NewLogPageMax then
+				self.NewLogPage = self.NewLogPage + 1
+			end
+		elseif butt == 8 then --Prev
+			self:EmitSoundTable(self.ATMType.ClientPressSound)
+			ARCLib.PlaySoundOnOtherPlayers(table.Random(self.ATMType.PressSound),self,65)
+			if self.NewLogPage > 1 then
+				self.NewLogPage = self.NewLogPage - 1
 			end
 		else
 			self:EmitSoundTable(self.ATMType.PressNoSound,65)

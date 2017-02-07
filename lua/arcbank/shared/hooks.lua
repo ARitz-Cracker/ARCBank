@@ -249,6 +249,61 @@ else
 		end
 		ARCBank.SaveDisk()
 	end)
-
+	
+	hook.Add("ARCBank_OnHackBegin","ARCBank OnHackBegin",function(ply,hackent,hackedent,amount,stealth)
+		ARCBank.Msg(ply:Nick().." ("..ply:SteamID()..") started hacking "..tostring(hackedent).." for "..amount..". Stealth: "..tostring(stealth))
+	end)
+	hook.Add("ARCBank_OnHackSuccess","ARCBank OnHackSuccess",function(ply,hackent,hackedent)
+		local msg = ply:Nick().." ("..ply:SteamID()..") successfully hacked "..tostring(hackedent).."."
+		if hackedent:GetClass() == "sent_arc_atm" then
+			msg = msg.." find user1 == \"__UNKNOWN\" in the transaction logs to see the account that has been hacked."
+		end
+		ARCBank.Msg(msg)
+	end)
+	hook.Add("ARCBank_OnHackBroken","ARCBank OnHackBroken",function(ply,hackent,hero)
+		ARCBank.Msg(ply:Nick().." ("..ply:SteamID()..") destroyed "..ply:Nick().." ("..ply:SteamID()..")'s hacking device")
+	end)
+	hook.Add("ARCBank_OnHackEnd","ARCBank OnHackEnd",function(ply,hackent)
+		ARCBank.Msg(ply:Nick().." ("..ply:SteamID()..") stopped hacking.")
+	end)
+	--[[
+	
+	ARCBANK_TRANSACTION_WITHDRAW_OR_DEPOSIT = 1 -- Withdraw/deposit
+ARCBANK_TRANSACTION_TRANSFER = 2 -- Transfer
+ARCBANK_TRANSACTION_INTEREST = 4 -- Interest
+ARCBANK_TRANSACTION_UPGRADE = 8 -- Upgrade
+ARCBANK_TRANSACTION_DOWNGRADE = 16 -- Downgrade
+ARCBANK_TRANSACTION_GROUP_ADD = 32 -- Add member
+ARCBANK_TRANSACTION_GROUP_REMOVE = 64 -- Remove member
+ARCBANK_TRANSACTION_CREATE = 128 -- Create
+ARCBANK_TRANSACTION_DELETE = 256 -- Delete
+	]]
+	hook.Add("ARCBank_OnTransaction","ARCBank OnHackEnd",function(transaction_type,account1,account2,user1,user2,money_difference,money,comment)
+		if transaction_type == ARCBANK_TRANSACTION_WITHDRAW_OR_DEPOSIT then
+			local msg = ARCBank.GetPlayerByID(user1):Nick().." ("..user1..")"
+			if money_difference < 0 then
+				msg = msg.." withdrew "..tostring(-money_difference).." from "
+			else
+				msg = msg.." deposited "..tostring(money_difference).." into "
+			end
+			ARCBank.Msg(msg..account1)
+		elseif transaction_type == ARCBANK_TRANSACTION_TRANSFER then
+			ARCBank.Msg(ARCBank.GetPlayerByID(user1):Nick().." ("..user1..") transfered "..money_difference.." to "..ARCBank.GetPlayerByID(user2):Nick().." ("..user2..") "..account1.." -> "..account2)
+		elseif transaction_type == ARCBANK_TRANSACTION_INTEREST then
+			--We really don't need this
+		elseif transaction_type == ARCBANK_TRANSACTION_UPGRADE then
+			ARCBank.Msg(ARCBank.GetPlayerByID(user1):Nick().." ("..user1..") upgraded account "..account1)
+		elseif transaction_type == ARCBANK_TRANSACTION_DOWNGRADE then
+			ARCBank.Msg(ARCBank.GetPlayerByID(user1):Nick().." ("..user1..") downgraded account "..account1)
+		elseif transaction_type == ARCBANK_TRANSACTION_GROUP_ADD then
+			ARCBank.Msg(ARCBank.GetPlayerByID(user1):Nick().." ("..user1..") added "..ARCBank.GetPlayerByID(user2):Nick().." ("..user2..") to account "..account1)
+		elseif transaction_type == ARCBANK_TRANSACTION_GROUP_REMOVE then
+			ARCBank.Msg(ARCBank.GetPlayerByID(user1):Nick().." ("..user1..") removed "..ARCBank.GetPlayerByID(user2):Nick().." ("..user2..") from account "..account1)
+		elseif transaction_type == ARCBANK_TRANSACTION_CREATE then
+			ARCBank.Msg(ARCBank.GetPlayerByID(user1):Nick().." ("..user1..") created "..account1.." with a starting balance of "..money_difference)
+		elseif transaction_type == ARCBANK_TRANSACTION_DELETE then
+			ARCBank.Msg(ARCBank.GetPlayerByID(user1):Nick().." ("..user1..") deleted "..account1)
+		end
+	end)
 end
 

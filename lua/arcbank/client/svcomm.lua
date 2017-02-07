@@ -481,9 +481,9 @@ local ARCBank_AccountDelete_Place = -1
 function ARCBank.RemoveAccount(ent,groupname,reason,callback)
 	assert(isentity(ent) and IsValid(ent),"ARCBank.RemoveAccount: Argument #1 is not a valid entity")
 	assert(isstring(groupname),"ARCBank.RemoveAccount: Argument #2 is not a string")
-	assert(isstring(groupname),"ARCBank.RemoveAccount: Argument #3 is not a string")
-	assert(isfunction(callback),"ARCBank.RemoveAccount: Argument #3 is not a function")
-	ARCBank_AccountDelete_Args[#ARCBank_AccountDelete_Args + 1] = {ent,groupname,callback}
+	assert(isstring(reason),"ARCBank.RemoveAccount: Argument #3 is not a string")
+	assert(isfunction(callback),"ARCBank.RemoveAccount: Argument 4 is not a function")
+	ARCBank_AccountDelete_Args[#ARCBank_AccountDelete_Args + 1] = {ent,groupname,reason,callback}
 	if ARCBank_AccountDelete_Place == -1 then
 		net.Start("arcbank_comm_delete")
 		net.WriteEntity(ARCBank_AccountDelete_Args[1][1])
@@ -520,7 +520,7 @@ local ARCBank_AccountPlyAdd_Place = -1
 function ARCBank.GroupAddPlayer(ent,account,otherply,comment,callback)
 	assert(isentity(ent) and IsValid(ent),"ARCBank.GroupAddPlayer: Argument #1 is not a valid entity")
 	assert(isstring(account),"ARCBank.GroupAddPlayer: Argument #2 is not a string")
-	assert(isstring(plyto) or (IsValid(plyto) and plyto:IsPlayer()),"ARCBank.Transfer: Argument #3 is not a string or player")
+	assert(isstring(otherply) or (IsValid(otherply) and otherply:IsPlayer()),"ARCBank.GroupAddPlayer: Argument #3 is not a string or player")
 	assert(isstring(comment),"ARCBank.GroupAddPlayer: Argument #4 is not a string")
 	assert(isfunction(callback),"ARCBank.GroupAddPlayer: Argument #5 is not a function")
 	ARCBank_AccountPlyAdd_Args[#ARCBank_AccountPlyAdd_Args + 1] = {ent,account,otherply,comment,callback}
@@ -572,7 +572,7 @@ local ARCBank_AccountPlyRemove_Place = -1
 function ARCBank.GroupRemovePlayer(ent,account,otherply,comment,callback)
 	assert(isentity(ent) and IsValid(ent),"ARCBank.GroupRemovePlayer: Argument #1 is not a valid entity")
 	assert(isstring(account),"ARCBank.GroupRemovePlayer: Argument #2 is not a string")
-	assert(isstring(plyto) or (IsValid(plyto) and plyto:IsPlayer()),"ARCBank.Transfer: Argument #3 is not a string or player")
+	assert(isstring(otherply) or (IsValid(otherply) and otherply:IsPlayer()),"ARCBank.GroupRemovePlayer: Argument #3 is not a string or player")
 	assert(isstring(comment),"ARCBank.GroupRemovePlayer: Argument #4 is not a string")
 	assert(isfunction(callback),"ARCBank.GroupRemovePlayer: Argument #5 is not a function")
 	ARCBank_AccountPlyRemove_Args[#ARCBank_AccountPlyRemove_Args + 1] = {ent,account,otherply,comment,callback}
@@ -661,7 +661,6 @@ function ARCBank.GetAccessableAccounts(plyto,callback)
 		net.Start("arcbank_comm_get_accounts")
 		net.WriteBool(isentity(ARCBank_AccountAccess_Args[1][1]))
 		if isentity(ARCBank_AccountAccess_Args[1][1]) then
-			MsgN("WRITING ENT"..tostring(ARCBank_AccountAccess_Args[1][1]))
 			net.WriteEntity(ARCBank_AccountAccess_Args[1][1])
 		else
 			net.WriteString(ARCBank_AccountAccess_Args[1][1])
@@ -711,8 +710,8 @@ end)
 local ARCBank_AdminSearch_Args = {}
 local ARCBank_AdminSearch_Place = -1
 function ARCBank.AdminSearch(search,term,callback)
-	assert(isstring(search),"ARCBank.AdminSearch: Argument #1 is not a string")
-	assert(isnumber(term),"ARCBank.AdminSearch: Argument #2 is not a number")
+	assert(isnumber(search),"ARCBank.AdminSearch: Argument #1 is not a number")
+	assert(isstring(term),"ARCBank.AdminSearch: Argument #2 is not a string")
 	assert(isfunction(callback),"ARCBank.AdminSearch: Argument #3 is not a function")
 	ARCBank_AdminSearch_Args[#ARCBank_AdminSearch_Args + 1] = {search,term,callback}
 	if ARCBank_AdminSearch_Place == -1 then
@@ -727,7 +726,12 @@ end
 net.Receive( "arcbank_comm_admin_search", function(length)
 	local errcode = net.ReadInt(ARCBANK_ERRORBITRATE)
 	local callback = ARCBank_AdminSearch_Args[ARCBank_AdminSearch_Place][3]
-	timer.Simple(0.00001,function() callback(errcode) end)
+	local tab = {}
+	local tablen = net.ReadUInt(32)
+	for i=1,tablen do
+		tab[i] = net.ReadString()
+	end
+	timer.Simple(0.00001,function() callback(errcode,tab) end)
 	ARCBank_AdminSearch_Place = ARCBank_AdminSearch_Place + 1
 	if istable(ARCBank_AdminSearch_Args[ARCBank_AdminSearch_Place]) then
 		net.Start("arcbank_comm_admin_search")

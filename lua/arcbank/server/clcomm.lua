@@ -16,8 +16,7 @@ net.Receive( "arcbank_comm_check", function(length,ply)
 end)
 
 local function isValidPermissions(ply,ent,perm)
-	if not isfunction(ent.GetARCBankUsePlayer) then return end
-	return table.HasValue(ARCBank.Settings.admins,string.lower(ply:GetUserGroup())) or (ent:GetARCBankUsePlayer() == ply and bit.band(tonumber(ent.ARCBank_Permissions) or 0,perm) > 0)
+	return table.HasValue(ARCBank.Settings.admins,string.lower(ply:GetUserGroup())) or (isfunction(ent.GetARCBankUsePlayer) and ent:GetARCBankUsePlayer() == ply and bit.band(tonumber(ent.ARCBank_Permissions) or 0,perm)) > 0
 end
 --[[
 ARCBANK_PERMISSIONS_READ = 1
@@ -182,13 +181,13 @@ if !ARCLib.IsVersion("1.6.2") then return end -- ARCLib.AddThinkFunc is only ava
 
 ARCLib.AddThinkFunc("ARCBank SendUserLogs",function()
 	local i = 1
-	while i < #readLogs do
+	while i <= #readLogs do
 		local entries = readLogs[i]
 		local ply = table.remove(entries)
 		--local ent = table.remove(entries)
 		local bigstring = ""
-		for k,v in iparis(entries) do 
-			bigstring = bigstring + v.transaction_id.."\t"..v.timestamp.."\t"..v.account1.."\t"..v.account2.."\t"..v.user1.."\t"..v.user2.."\t"..v.moneydiff.."\t"..(v.money or "").."\t"..v.transaction_type.."\t"..string.Replace( v.comment, "\r\n", " " ).."\r\n"
+		for k,v in ipairs(entries) do 
+			bigstring = bigstring .. v.transaction_id.."\t"..v.timestamp.."\t"..v.account1.."\t"..v.account2.."\t"..v.user1.."\t"..v.user2.."\t"..v.moneydiff.."\t"..(v.money or "").."\t"..v.transaction_type.."\t"..string.Replace( v.comment, "\r\n", " " ).."\r\n"
 			coroutine.yield()
 			if !IsValid(ply) then break end
 		end
@@ -399,7 +398,7 @@ util.AddNetworkString( "arcbank_comm_accname" )
 net.Receive( "arcbank_comm_accname", function(length,ply)
 	local account = net.ReadString()
 	ARCBank.GetAccountName(account,function(err,name)
-		net.Start("arcbank_comm_downgrade")
+		net.Start("arcbank_comm_accname")
 		net.WriteInt(err,ARCBANK_ERRORBITRATE)
 		net.WriteString(name or "")
 		net.Send(ply)
@@ -426,7 +425,6 @@ net.Receive( "arcbank_comm_get_accounts", function(length,ply)
 	else
 		plyto = net.ReadString()
 	end
-	MsgN(plyto)
 	ARCBank.GetAccessableAccounts(plyto,function(err,accounts)
 		net.Start("arcbank_comm_get_accounts")
 		net.WriteInt(err,ARCBANK_ERRORBITRATE)
@@ -444,14 +442,20 @@ end)
 -- Admin search account?
 --1 Account owner (UserID)
 --2 Group Member (UserID)
---3 Accessable accounts (UserID) (Group member and account owner combined)
+--3 Accessible accounts (UserID) (Group member and account owner combined)
 --4 Balance equal
 --5 Balance more
 --6 Balance less
+--7 rank
+--8 name search
+local comparefuncsbal = {}
+comparefuncsbal[4] = function(a,b) return a==b end
+comparefuncsbal[5] = function(a,b) return a>b end
+comparefuncsbal[6] = function(a,b) return a<b end
+
 local comparefuncs = {}
-comparefuncs[4] = function(a,b) return a==b end
-comparefuncs[5] = function(a,b) return a>b end
-comparefuncs[6] = function(a,b) return a<b end
+comparefuncs[7] = function(a,b) return a.rank==(tonumber(b) or 0) end
+comparefuncs[8] = function(a,b) return string.find( utf8.lower(a.name), utf8.lower(b), 1, true )!=nil end
 
 util.AddNetworkString( "arcbank_comm_admin_search" )
 net.Receive( "arcbank_comm_admin_search", function(length,ply)
@@ -473,6 +477,8 @@ net.Receive( "arcbank_comm_admin_search", function(length,ply)
 			for i=1,len do
 				net.WriteString(list[i])
 			end
+		else 
+			net.WriteUInt(0,32)
 		end
 		net.Send(ply)
 	end
@@ -483,19 +489,36 @@ net.Receive( "arcbank_comm_admin_search", function(length,ply)
 	elseif search == 2 then -- Group Member (UserID)
 		ARCBank.GetGroupAccounts(term,callback)
 	elseif search == 3 then -- Accessable accounts (UserID) (Group member and account owner combined)
-		ARCBank.GetAccessableAccounts("__SYSTEM",term,callback)
-	elseif isfunction(comparefuncs[search]) then
-		term = tonumber(term)
+	elseif isfunction(comparefuncsbal[search]) then
+		term = tonumber(term) or 0
 		ARCBank.ReadAllAccountProperties(function(err,data)
 			if err == ARCBANK_ERROR_NONE then
 				local list = {}
-				ARCLib.ForEachAsync(tab,function(k,v,callback)
+				ARCLib.ForEachAsync(data,function(k,v,cb)
 					ARCBank.ReadBalance(v.account,function(err,amount)
-						if err == ARCBANK_ERROR_NONE and comparefuncs[search](amount,term) then
+						if err == ARCBANK_ERROR_NONE and comparefuncsbal[search](amount,term) then
 							list[#list + 1] = v.account
 						end
-						callback()
+						cb()
 					end,true)
+				end,function()
+					callback(ARCBANK_ERROR_NONE,list)
+				end)
+			else
+				net.Start("arcbank_comm_admin_search")
+				net.WriteInt(err,ARCBANK_ERRORBITRATE)
+				net.Send(ply)
+			end
+		end)
+	elseif isfunction(comparefuncs[search]) then
+		ARCBank.ReadAllAccountProperties(function(err,data)
+			if err == ARCBANK_ERROR_NONE then
+				local list = {}
+				ARCLib.ForEachAsync(data,function(k,v,cb)
+					if comparefuncs[search](v,term) then
+						list[#list + 1] = v.account
+					end
+					cb()
 				end,function()
 					callback(ARCBANK_ERROR_NONE,list)
 				end)

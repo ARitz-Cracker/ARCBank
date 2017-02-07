@@ -12,6 +12,7 @@ ARCBank.Msgs.UserMsgs = ARCBank.Msgs.UserMsgs or {}
 ARCBank.Msgs.Hack = ARCBank.Msgs.Hack or {}
 ARCBank.Msgs.AdminMenu = ARCBank.Msgs.AdminMenu or {}
 ARCBank.Msgs.AccountRank = ARCBank.Msgs.AccountRank or {}
+ARCBank.Msgs.AccountTransactions = ARCBank.Msgs.AccountTransactions or {}
 ARCBank.Msgs.Commands = ARCBank.Msgs.Commands or {}
 ARCBank.Msgs.CommandOutput = ARCBank.Msgs.CommandOutput or {}
 ARCBank.Msgs.Items = ARCBank.Msgs.Items or {}
@@ -77,6 +78,8 @@ ARCBANK_ERRORSTRINGS[17] = "Mmm yes. You are a very good hacker. Totally."
 ARCBANK_ERRORSTRINGS[18] = "Download failed. Data is corrupted."
 ARCBANK_ERRORSTRINGS[19] = "Bank account is corrupt"
 ARCBANK_ERRORSTRINGS[20] = "The account is locked. This is usually caused by the server shutting down while a transaction was in progress."
+ARCBANK_ERRORSTRINGS[21] = "You cannot deposit or withdraw more than 2147483647 in a transaction"
+ARCBANK_ERRORSTRINGS[22] = "The result from the log search is empty."
 
 ARCBANK_ERRORSTRINGS[32] = "Account with the same or a similar name already exists."
 ARCBANK_ERRORSTRINGS[33] = "Account name is too long."
@@ -88,7 +91,6 @@ ARCBANK_ERRORSTRINGS[36] = "Cannot create/upgrade account. Account rank is too h
 ARCBANK_ERRORSTRINGS[37] = "You've reached the limit of accounts you can have."
 ARCBANK_ERRORSTRINGS[38] = "There are too many players in this group."
 ARCBANK_ERRORSTRINGS[39] = "You cannot close a personal account."
-ARCBANK_ERRORSTRINGS[40] = "A group account's name must not start with \"personal\""
 
 ARCBANK_ERRORSTRINGS[-127] = "The ARCBank system failed to load."
 ARCBANK_ERRORSTRINGS[-128] = "Unknown Error. Try again."
@@ -100,6 +102,12 @@ ARCBank.Msgs.LogMsgs.AddMoney = "(%PLAYER%) added %VALUE% to the account. "
 ARCBank.Msgs.LogMsgs.RemoveMoney = "(%PLAYER%) subtracted %VALUE% from the account. "
 ARCBank.Msgs.LogMsgs.GiveMoney = "(%PLAYER1%) gave %VALUE% to (%PLAYER2%) (From this account to %ACCOUNT%)"
 ARCBank.Msgs.LogMsgs.TakeMoney = "(%PLAYER1%) gave %VALUE% to (%PLAYER2%) (From %ACCOUNT% to this account)"
+
+ARCBank.Msgs.LogMsgs.Upgraded = "Account upgraded"
+ARCBank.Msgs.LogMsgs.Downgraded = "Account downgraded"
+
+ARCBank.Msgs.LogMsgs.Created = "Account created"
+ARCBank.Msgs.LogMsgs.Deleted = "Account deleted"
 
 ARCBank.Msgs.ATMCreator.NoName = "Your custom ATM needs a name."
 ARCBank.Msgs.ATMCreator.InUse = "The ATM Creator is already in use!"
@@ -362,7 +370,11 @@ ARCBank.Msgs.AdminMenu.SearchRank = "Search by Rank"
 ARCBank.Msgs.AdminMenu.Settings = "System Settings"
 ARCBank.Msgs.AdminMenu.Commands = "Commands"
 ARCBank.Msgs.AdminMenu.Owner = "Owner: "
-ARCBank.Msgs.AdminMenu.SearchSID = "Search by Steam ID"
+
+ARCBank.Msgs.AdminMenu.AccountOwner = "Account owner"
+ARCBank.Msgs.AdminMenu.AccountMember = "Account member"
+ARCBank.Msgs.AdminMenu.AccountMemberOwner = "Account member or owner"
+ARCBank.Msgs.AdminMenu.SearchUser = "Search by User"
 ARCBank.Msgs.AdminMenu.ChooseSetting = "Choose a setting"
 ARCBank.Msgs.AdminMenu.Name = "Name: "
 ARCBank.Msgs.AdminMenu.SearchName = "Search by Name"
@@ -380,6 +392,12 @@ ARCBank.Msgs.AdminMenu.Add = "Add"
 ARCBank.Msgs.AdminMenu.Description = "Description:"
 ARCBank.Msgs.AdminMenu.Enable = "Enable"
 
+ARCBank.Msgs.AdminMenu.TransactionLog = "Transaction Log"
+ARCBank.Msgs.AdminMenu.StartTime = "Starting time"
+ARCBank.Msgs.AdminMenu.InvalidStartTime = "The transaction starting time is not in the correct format."
+ARCBank.Msgs.AdminMenu.OpenATM = "View account on ATM"
+ARCBank.Msgs.AdminMenu.NoATM = "You must insert your card in an ATM to do this"
+
 ARCBank.Msgs.AccountRank[0] = "Personal"
 ARCBank.Msgs.AccountRank[1] = "Personal - Basic"
 ARCBank.Msgs.AccountRank[2] = "Personal - Bronze"
@@ -388,6 +406,44 @@ ARCBank.Msgs.AccountRank[4] = "Personal - Gold"
 ARCBank.Msgs.AccountRank[5] = "Group"
 ARCBank.Msgs.AccountRank[6] = "Group - Standard"
 ARCBank.Msgs.AccountRank[7] = "Group - Premium"
+--[[
+1 - Withdraw/deposit
+2 - Transfer
+4 - Interest
+8 - Upgrade
+16 - Downgrade
+32 - Add member
+64 - Remove member
+128 - Create
+256 - Delete
+65535 - everything
+]]
+ARCBank.Msgs.AccountTransactions[1] = "Cash Withdraw/Deposit"
+ARCBank.Msgs.AccountTransactions[2] = "Transfer"
+ARCBank.Msgs.AccountTransactions[4] = "Interest received"
+ARCBank.Msgs.AccountTransactions[8] = "Account upgrades"
+ARCBank.Msgs.AccountTransactions[16] = "Account downgrades"
+ARCBank.Msgs.AccountTransactions[24] = "Account upgrades/downgrades"
+ARCBank.Msgs.AccountTransactions[32] = "Group member added"
+ARCBank.Msgs.AccountTransactions[64] = "Group member removed"
+ARCBank.Msgs.AccountTransactions[96] = "Group members added/removed"
+ARCBank.Msgs.AccountTransactions[128] = "Account creation"
+ARCBank.Msgs.AccountTransactions[256] = "Account deletion"
+ARCBank.Msgs.AccountTransactions[384] = "Account creation/deletion"
+ARCBank.Msgs.AccountTransactions[65535] = "All transactions"
+ARCBank.Msgs.AdminMenu.Logs = {}
+ARCBank.Msgs.AdminMenu.Logs[1] = "Transaction ID"
+ARCBank.Msgs.AdminMenu.Logs[2] = "Timestamp"
+ARCBank.Msgs.AdminMenu.Logs[3] = "Account 1"
+ARCBank.Msgs.AdminMenu.Logs[4] = "Account 2"
+ARCBank.Msgs.AdminMenu.Logs[5] = "User 1"
+ARCBank.Msgs.AdminMenu.Logs[6] = "User 2"
+ARCBank.Msgs.AdminMenu.Logs[7] = "Credit/Debit"
+ARCBank.Msgs.AdminMenu.Logs[8] = "Balance"
+ARCBank.Msgs.AdminMenu.Logs[9] = "Comment"
+ARCBank.Msgs.AdminMenu.LogsAccount = "Account 1: (Leave blank for all transactions)"
+ARCBank.Msgs.AdminMenu.LogsAccount = "Amount of days ago"
+
 ARCBank.Msgs.Commands["atm_save"] = "Save and freeze all ATMs"
 ARCBank.Msgs.Commands["atm_unsave"] = "Unsave and unfreeze all ATMs"
 ARCBank.Msgs.Commands["atm_respawn"] = "Respawn frozen ATMs"
@@ -424,6 +480,8 @@ ARCBank.SettingsDesc["atm_hack_max"] = "The maximum amount a player can hack the
 ARCBank.SettingsDesc["atm_hack_min"] = "The minimum amount a player can hack the ATM with an ATM hacker"
 
 ARCBank.SettingsDesc["language"] = "Which language to use. If you want a custom language, create your own file in SERVER/garrysmod/data/_arcbank/languages"
+ARCBank.SettingsDesc["syslog_delete_time"] = "System logs (not transaction logs) older than this many days will be deleted."
+
 ARCBank.SettingsDesc["use_bank_for_payday"] = "Payday checks will be sent to your Bank account."
 ARCBank.SettingsDesc["atm_holo"] = "Floating sign above the ATM"
 

@@ -18,7 +18,7 @@ TOOL.ClientConVar = {
 WireToolSetup.SetupLinking(true)
 
 function TOOL.BuildCPanel(panel)
-	ModelPlug_AddToCPanel(panel, "Misc_Tools", "arcbank_cmc", nil, 1)
+	ModelPlug_AddToCPanel(panel, "Misc_Tools", "wire_arcbank_cmc", nil, 1)
 	panel:Help("ARCStuff, man")
 end
 WireToolSetup.close()

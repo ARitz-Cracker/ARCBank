@@ -21,7 +21,7 @@ function ARCBank.CapAccountRank(ply)
 				if data.rank > maxrank then
 					ARCBank.WriteAccountProperties(data[i],nil,nil,maxrank,function(err)
 						if err == ARCBANK_ERROR_NONE then
-							ARCBank.WriteTransaction(data[i],nil,ply,nil,0,nil,ARCBANK_TRANSACTION_DOWNGRADE,nil,NULLFUNC)
+							ARCBank.WriteTransaction(data[i],nil,ply,nil,0,nil,ARCBANK_TRANSACTION_DOWNGRADE,"Usergroup Cap",NULLFUNC)
 						end
 					end)
 				end

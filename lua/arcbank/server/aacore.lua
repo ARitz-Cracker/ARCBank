@@ -22,7 +22,7 @@ ARCBank.Disk.BlindPlayers = {}
 ARCBank.Disk.OldPlayers = {} 
 ARCBank.Disk.ProperShutdown = false
 
-function ARCBank.FuckIdiotPlayer(ply,reason)
+function ARCBank.FuckIdiotPlayer(ply,reason) --Created by an edgy teenager. I'm not sure if this function gets called anymore as people developing their own DLC for ARCBank wouldn't like to be kicked from their own server just because they set their stuff up wrong.
 	ARCBank.Msg("ARCBANK ANTI-CHEAT WARNING: Some stupid shit by the name of "..ply:Nick().." ("..ARCBank.GetPlayerID(ply)..") tried to use an exploit: ["..tostring(reason).."]")
 	if ply.ARCBank_AFuckingIdiot then
 		ply:Ban(ARCBank.Settings["autoban_time"])
@@ -187,33 +187,39 @@ function ARCBank.Load()
 				end
 
 			end
-			
-			ARCBank.LogFile = ARCBank.Dir.."/syslogs/"..os.time()..".log.txt"
+			local f,d = file.Find( ARCBank.Dir.."/systemlog*", "DATA", "datedesc" )
+			for k,v in ipairs(f) do
+				file.Delete( ARCBank.Dir.."/"..v ) -- Delete inaccessible logs
+			end
+			f,d = file.Find( ARCBank.Dir.."/systemlog/*.log.txt", "DATA", "datedesc" )
+			for k,v in ipairs(f) do
+				if file.Time( ARCBank.Dir.."/systemlog/"..v, "DATA" ) < (os.time()-ARCBank.Settings["syslog_delete_time"]*86400) then 
+					file.Delete( ARCBank.Dir.."/systemlog/"..v ) -- Delete old logs
+				end
+			end
+			ARCBank.LogFile = ARCBank.Dir.."/syslogs/"..os.date("%Y-%m-%d")..".log.txt"
 			file.Write(ARCBank.LogFile,"***ARCBank System Log***\r\n"..table.Random({"Oh my god. You're reading this!","WINDOWS LOVES TYPEWRITER COMMANDS IN TXT FILES","What you're refeering to as 'Linux' is in fact GNU/Linux.","... did you mess something up this time?"}).."\r\nDates are in DD-MM-YYYY\r\n")
 			ARCBank.LogFileWritten = true
 			ARCBank.Msg("Log File Created at "..ARCBank.LogFile)
 			
 			timer.Create( "ARCBANK_SAVEDISK", 300, 0, function() 
-				if ARCBank.Settings["interest_time"] < 1 then
-					ARCBank.Msg("interest_time cannot be less than 1 hour. Will not give out interest")
-				else
-					if !ARCBank.Disk.LastInterestTime then
-						ARCBank.Disk.LastInterestTime = os.time() - ARCBank.Settings["interest_time"]*3600
+				if !ARCBank.Disk.LastInterestTime then
+					ARCBank.Disk.LastInterestTime = os.time() - ARCBank.Settings["interest_time"]*3600
+				end
+				local missedtimes = math.floor((os.time() - ARCBank.Disk.LastInterestTime)/(ARCBank.Settings["interest_time"]*3600))
+				if missedtimes > 0 then
+					if missedtimes > 1 then
+						ARCBank.Msg("MISSED "..missedtimes.." INTEREST PAYMENTS! Looks like we'll have to catch up!")
 					end
-					local missedtimes = math.floor((os.time() - ARCBank.Disk.LastInterestTime)/(ARCBank.Settings["interest_time"]*3600))
-					if missedtimes > 0 then
-						if missedtimes > 1 then
-							ARCBank.Msg("MISSED "..missedtimes.." INTEREST PAYMENTS! Looks like we'll have to catch up!")
-						end
-						for i=1,missedtimes do
-							timer.Simple(i*2,ARCBank.AddAccountInterest)
-						end
-						
-						ARCBank.Disk.LastInterestTime = os.time()
-						
-						timer.Simple((missedtimes+1)*2,function()
+					ARCBank.Disk.LastInterestTime = os.time()
+					local recursiveCallback
+					recursiveCallback = function()
+						if missedtimes > 0 then
+							ARCBank.AddAccountInterest(recursiveCallback)
+							missedtimes = missedtimes - 1
+						else
 							ARCBank.Msg("Interest will be given next on "..os.date( "%X - %d-%m-%Y", ARCBank.Disk.LastInterestTime+ARCBank.Settings["interest_time"]*3600 ))
-						end)
+						end
 					end
 				end
 				file.Write(ARCBank.Dir.."/__data.txt", util.TableToJSON(ARCBank.Disk) )

@@ -11,7 +11,7 @@ function ARCBank.Msg(msg)
 		Msg("ARCBank: "..tostring(msg).."\n")
 	end
 	if ARCBank.LogFileWritten then
-		file.Append(ARCBank.LogFile, os.date("%d-%m-%Y %H:%M:%S").." > "..tostring(msg).."\r\n")
+		file.Append(ARCBank.LogFile, os.date("%Y-%m-%d %H:%M:%S").." > "..tostring(msg).."\r\n")
 	end
 end
 ARCBank.Msg("Running...\n ____ ____ _ ___ ___     ____ ____ ____ ____ _  _ ____ ____    ___  ____ _  _ _  _ _ _  _ ____ \n |__| |__/ |  |    /     |    |__/ |__| |    |_/  |___ |__/    |__] |__| |\\ | |_/  | |\\ | | __ \n |  | |  \\ |  |   /__    |___ |  \\ |  | |___ | \\_ |___ |  \\    |__] |  | | \\| | \\_ | | \\| |__] \n")
@@ -22,11 +22,11 @@ ARCBank.Msg("© Copyright 2014-2017 Aritz Beobide-Cardinal (ARitz Cracker) All r
 ARCBank.Features = {}
 ARCBank.Features["hackapi"] = true
 
-ARCBank.Update = "January 13th 2017"
-ARCBank.Version = "1.4.0-beta1"
+ARCBank.Update = "February 7th 2017"
+ARCBank.Version = "1.4.0-rc1"
 
 
-ARCBank.About = [[      
+ARCBank.About = [[
              *** ARitz Cracker Bank ***
     © Copyright Aritz Beobide-Cardinal 2014-2017
                 All rights reserved.
@@ -67,7 +67,6 @@ Special Thanks:
  *    Noddy (Senior Crayfish) - For inspiring me to create this and place this on CoderHire.
  *    My family - For supporting me.
  *    Snow Lou - I wouldn't be who I am without you.
- *    Laura MacEwen - You deserve a mention here too
  *    You - For supporting me by using this addon
 	
 Originally made for:
@@ -95,6 +94,7 @@ ARCBANK_PERMISSIONS_WITHDRAW = 8
 ARCBANK_PERMISSIONS_TRANSFER = 16
 ARCBANK_PERMISSIONS_RANK = 32
 ARCBANK_PERMISSIONS_MEMBERS = 64
+ARCBANK_PERMISSIONS_CREATE = 128
 ARCBANK_PERMISSIONS_OTHER = 32768
 ARCBANK_PERMISSIONS_EVERYTHING = 65535 -- everything
 
@@ -126,6 +126,9 @@ ARCBANK_ERROR_EXPLOIT = 17
 ARCBANK_ERROR_DOWNLOAD_FAILED = 18
 ARCBANK_ERROR_CORRUPT_ACCOUNT = 19
 ARCBANK_ERROR_DEADLOCK = 20
+ARCBANK_ERROR_MONEYDIFF_TOO_BIG = 21
+ARCBANK_ERROR_LOG_EMPTY = 22
+
 --CREATION ERRORS
 ARCBANK_ERROR_NAME_DUPE = 32
 ARCBANK_ERROR_NAME_TOO_LONG = 33
@@ -136,6 +139,7 @@ ARCBANK_ERROR_TOO_MANY_ACCOUNTS = 37
 ARCBANK_ERROR_TOO_MANY_PLAYERS = 38
 ARCBANK_ERROR_DELETE_REFUSED = 39
 ARCBANK_ERROR_PREFIX_CONFLICT = 40
+ARCBANK_ERROR_POSTFIX_CONFLICT = 41
 
 --OTHER ERRORS
 ARCBANK_ERROR_NOT_LOADED = -127

@@ -158,40 +158,25 @@ function ENT:HackComplete(ply,amount,rand)
 		----MsgN("HACK ERORR:"..tostring(accounts))
 		--self:StopHack()
 		self.args = {}
-		self.args.money = amount
 		self.UsePlayer = ply
 		self:SetARCBankUsePlayer(ply)
-		ARCBank.GetAllAccounts(amount,function(ercode,accounts)
-			if ercode == 0 then
-				local accounttable
-				if rand then
-					accounttable = "*STEAL FROM MULTIPLE ACCOUNTS!!*"
-				else
-					accounttable = accounts[ARCLib.RandomExp(1,#accounts)]
+		local nextper = 0
+		ARCBank.StealMoney(ply,rand,amount,function(err,progress,amount)
+			if err == ARCBANK_ERROR_DOWNLOADING then
+				if progress > nextper then
+					ARCBank.MsgCL(ply,ARCBank.Msgs.Items.Hacker..": (%"..math.floor(progress*100)..")")
+					nextper = nextper + 0.01
 				end
-				local nextper = 0.1
-				ARCBank.StealMoney(ply,amount,accounttable,false,function(errcode,per)
-					if errcode == ARCBANK_ERROR_DOWNLOADING then
-						if per > nextper then
-							ARCBank.MsgCL(ply,ARCBank.Msgs.Items.Hacker..": (%"..math.floor(per)..")")
-							nextper = nextper + 0.1
-						end
-					elseif errcode == 0 then
-						ARCBank.MsgCL(ply,ARCBank.Msgs.Items.Hacker..": (%100)")
-						self:WithdrawAnimation()
-						timer.Simple(self.ATMType.PauseBeforeWithdrawAnimation + self.ATMType.PauseAfterWithdrawAnimation + self.ATMType.WithdrawAnimationLength,function()
-							if !IsValid(self) then return end
-							self.PlayerNeedsToDoSomething = true
-							self.Beep = true
-						end)
-					else
-						ARCLib.NotifyPlayer(ply,ARCBank.Msgs.Items.Hacker..": "..ARCBANK_ERRORSTRINGS[errcode],NOTIFY_ERROR,6,true)
-						self.DoingSomething = false
-						-- SHIT HAPPENED, BRAH
-					end
+			elseif err == 0 then
+				ARCBank.MsgCL(ply,ARCBank.Msgs.Items.Hacker..": (%100)")
+				self:WithdrawAnimation()
+				timer.Simple(self.ATMType.PauseBeforeWithdrawAnimation + self.ATMType.PauseAfterWithdrawAnimation + self.ATMType.WithdrawAnimationLength,function()
+					if !IsValid(self) then return end
+					self.PlayerNeedsToDoSomething = true
+					self.Beep = true
 				end)
 			else
-				ARCLib.NotifyPlayer(ply,ARCBank.Msgs.Items.Hacker..": "..ARCBANK_ERRORSTRINGS[ercode],NOTIFY_ERROR,6,true)
+				ARCLib.NotifyPlayer(ply,ARCBank.Msgs.Items.Hacker..": "..ARCBANK_ERRORSTRINGS[err],NOTIFY_ERROR,6,true)
 				self.DoingSomething = false
 				-- SHIT HAPPENED, BRAH
 			end
@@ -629,8 +614,13 @@ net.Receive( "ARCATM_COMM_CASH", function(length,ply)
 	atm.args.name = acc
 	if take then
 		--atm.TakingMoney = true
-		ARCBank.CanAfford(atm.UsePlayer,amount,acc,function(errc)
+		--ARCBank.CanAfford(atm.UsePlayer,amount,acc,function(errc)
+		ARCBank.GetBalance(ply,account,function(errc,currentbalance)
+			if errc == ARCBANK_ERROR_NONE and (currentbalance - amount) + ARCBank.Settings.account_debt_limit < 0 then
+				errc = ARCBANK_ERROR_NO_CASH
+			end
 			atm.errorc = errc
+			
 			if atm.errorc == ARCBANK_ERROR_NONE then
 				atm:WithdrawAnimation()
 				
