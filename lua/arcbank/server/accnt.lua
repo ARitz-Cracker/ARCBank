@@ -948,7 +948,7 @@ function ARCBank.WriteBalanceMultiply(account1,account2,user1,user2,amount,trans
 					if total + ARCBank.Settings.account_debt_limit*ARCLib.BoolToNumber(allowdebt) < 0 then
 						ARCBank.UnlockAccount(account1,NULLFUNC) -- Hope it works
 						callback(ARCBANK_ERROR_NO_CASH)
-					elseif total > (maxcash or 99999999999999) then
+					elseif amount > 1 and total > (maxcash or 99999999999999) then
 						ARCBank.UnlockAccount(account1,NULLFUNC) -- Hope it works
 						callback(ARCBANK_ERROR_TOO_MUCH_CASH)
 					else
@@ -982,7 +982,7 @@ function ARCBank.WriteBalanceAdd(account1,account2,user1,user2,amount,transactio
 					if total + ARCBank.Settings.account_debt_limit*ARCLib.BoolToNumber(allowdebt) < 0 then
 						ARCBank.UnlockAccount(account1,NULLFUNC) -- Hope it works
 						callback(ARCBANK_ERROR_NO_CASH)
-					elseif total > (maxcash or 99999999999999) then
+					elseif amount > 0 and total > (maxcash or 99999999999999) then
 						ARCBank.UnlockAccount(account1,NULLFUNC) -- Hope it works
 						callback(ARCBANK_ERROR_TOO_MUCH_CASH)
 					else
