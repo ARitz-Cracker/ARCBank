@@ -98,8 +98,8 @@ function ARCBank.Load()
 		timer.Simple(1,function()
 
 		ARCBank.Msg("Post-loading ARCBank...")
-		if not ARCLib.IsVersion("1.6.2") then
-			ARCBank.Msg("CRITICAL ERROR! This addon requires ARCLib 1.6.2 or later!")
+		if not ARCLib.IsVersion("1.7.0") then
+			ARCBank.Msg("CRITICAL ERROR! This addon requires ARCLib 1.7.0 or later!")
 			ARCBank.Msg("LOADING FALIURE!")
 			return
 		end
