@@ -185,34 +185,47 @@ function ARCBank.MySQL.Connect()
 	
 
 end
-local ignorableErrors = {}
+local ignorableErrors = {"Duplicate entry "}
 local resetErrors = {}
 function ARCBank.MySQL.Query(str,callback)
 	local function onSuccess( data )
 		callback(nil,data)
 	end
-	
 	local function onError( err, sqlq )
-		if not ignorableErrors[err] then
+		local ignoreError = false
+		for k,v in ipairs(ignorableErrors) do
+			if string.Left( err, #v ) == v then
+				ignoreError = true
+			end			
+		end
+		if ignoreError then
+			ARCBank.Msg( "Ignoring MySQL Error: \""..tostring(err).."\" Query: \""..tostring(sqlq).."\"")
+		else
 			for _,plys in pairs(player.GetAll()) do
 				ARCBank.MsgCL(plys,ARCBank.Msgs.CommandOutput.MySQL1)
 				ARCBank.MsgCL(plys,ARCBank.Msgs.CommandOutput.MySQL2)
 			end
 		
 			ARCBank.Msg( "MySQL ERROR: "..tostring(err))
-			ARCBank.Msg( "In Query ("..tostring(sqlq)..")")
+			ARCBank.Msg( "In Query \""..tostring(sqlq).."\"")
 			ARCBank.Msg(tostring(#err).." - "..tostring(#sqlq))
-		
-			if resetErrors[err] then
+			local resetError = false
+			for k,v in ipairs(resetErrors) do
+				if string.Left( err, #v ) == v then
+					resetError = true
+				end			
+			end
+			if resetError then
 				for _,plys in pairs(player.GetAll()) do
 					ARCBank.MsgCL(plys,ARCBank.Msgs.CommandOutput.MySQL3)
 				end
 				ARCBank.Msg( "This error can be corrected by re-connecting to the MySQL server (which I am about to do)" )
 				ARCBank.Msg( "If you're getting errors like this very consistently (like every 5 or 10 minutes) try increasing the connection time limit on the MySQL server" )
+				ARCBank.Busy = true
 				timer.Simple(5,function()
 					if ARCBank.Loaded then return end
 					ARCBank.MySQL.Connect()
-					timer.Simple(5,function()
+					timer.Simple(15,function()
 						if !ARCBank.Loaded then
 							for _,plys in pairs(player.GetAll()) do
 								ARCBank.MsgCL(plys,ARCBank.Msgs.CommandOutput.MySQL4)

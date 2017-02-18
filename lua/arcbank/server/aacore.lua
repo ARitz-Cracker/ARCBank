@@ -119,6 +119,40 @@ function ARCBank.Load()
 			ARCBank.Msg("LOADING FALIURE!")
 			return
 		end
+		if !file.IsDir( ARCBank.Dir.."/groups_1.4","DATA" ) then
+			ARCBank.Msg("Created Folder: "..ARCBank.Dir.."/groups_1.4")
+			file.CreateDir(ARCBank.Dir.."/groups_1.4")
+		end
+		if !file.IsDir( ARCBank.Dir.."/accounts_1.4","DATA" ) then
+			ARCBank.Msg("Created Folder: "..ARCBank.Dir.."/accounts_1.4")
+			file.CreateDir(ARCBank.Dir.."/accounts_1.4")
+		end
+		if !file.IsDir( ARCBank.Dir.."/logs_1.4","DATA" ) then
+			ARCBank.Msg("Created Folder: "..ARCBank.Dir.."/logs_1.4")
+			file.CreateDir(ARCBank.Dir.."/logs_1.4")
+		end
+		if !file.IsDir( ARCBank.Dir.."/syslogs","DATA" ) then
+			ARCBank.Msg("Created Folder: "..ARCBank.Dir.."/syslogs")
+			file.CreateDir(ARCBank.Dir.."/syslogs")
+		end
+		
+		if !file.IsDir( ARCBank.Dir.."/saved_atms","DATA" ) then
+			ARCBank.Msg("Created Folder: "..ARCBank.Dir.."/saved_atms")
+			file.CreateDir(ARCBank.Dir.."/saved_atms")
+		end
+		if !file.IsDir( ARCBank.Dir.."/custom_atms","DATA" ) then
+			ARCBank.Msg("Created Folder: "..ARCBank.Dir.."/custom_atms")
+			file.CreateDir(ARCBank.Dir.."/custom_atms")
+		end
+		
+		ARCBank.LogFile = ARCBank.Dir.."/syslogs/"..os.date("%Y-%m-%d")..".log.txt"
+		if not file.Exists(ARCBank.LogFile,"DATA") then
+			file.Write(ARCBank.LogFile,"***ARCBank System Log***\r\n"..table.Random({"Oh my god. You're reading this!","WINDOWS LOVES TYPEWRITER COMMANDS IN TXT FILES","What you're referring to as 'Linux' is in fact GNU/Linux.","... did you mess something up this time?"}).."\r\nDates are in YYYY-MM-DD\r\n")
+			ARCBank.LogFileWritten = true
+			ARCBank.Msg("Log File Created at "..ARCBank.LogFile)
+		end
+		
+		
 		if file.Exists(ARCBank.Dir.."/__data.txt","DATA") then
 			ARCBank.Disk = util.JSONToTable(file.Read( ARCBank.Dir.."/__data.txt","DATA" ))
 			if (!ARCBank.Disk) then
@@ -139,34 +173,6 @@ function ARCBank.Load()
 			ARCLib.AddonAddSettingMultichoice("ARCBank","language",langChoices)
 			ARCLib.AddonLoadSettings("ARCBank",{hack_max = "atm_hack_max", hack_min = "atm_hack_min", standard_interest = "interest_1_standard", bronze_interest = "interest_2_bronze", silver_interest = "interest_3_silver", gold_interest = "interest_4_gold", group_standard_interest = "interest_6_group_standard", group_premium_interest = "interest_7_group_premium", standard_requirement = "usergroup_1_standard", bronze_requirement = "usergroup_2_bronze", silver_requirement = "usergroup_3_silver", gold_requirement = "usergroup_4_gold", group_standard_requirement = "usergroup_6_group_standard", group_premium_requirement = "usergroup_7_group_premium", everything_requirement = "usergroup_all", starting_cash = "account_starting_cash", debt_limit = "account_debt_limit", starting_cash = "account_starting_cash", group_account_limit = "account_group_limit",perpetual_debt = "interest_perpetual_debt"})
 			ARCLib.SetAddonLanguage("ARCBank")
-			
-			
-			
-			if !file.IsDir( ARCBank.Dir.."/groups_1.4","DATA" ) then
-				ARCBank.Msg("Created Folder: "..ARCBank.Dir.."/groups_1.4")
-				file.CreateDir(ARCBank.Dir.."/groups_1.4")
-			end
-			if !file.IsDir( ARCBank.Dir.."/accounts_1.4","DATA" ) then
-				ARCBank.Msg("Created Folder: "..ARCBank.Dir.."/accounts_1.4")
-				file.CreateDir(ARCBank.Dir.."/accounts_1.4")
-			end
-			if !file.IsDir( ARCBank.Dir.."/logs_1.4","DATA" ) then
-				ARCBank.Msg("Created Folder: "..ARCBank.Dir.."/logs_1.4")
-				file.CreateDir(ARCBank.Dir.."/logs_1.4")
-			end
-			if !file.IsDir( ARCBank.Dir.."/syslogs/","DATA" ) then
-				ARCBank.Msg("Created Folder: "..ARCBank.Dir.."/syslogs/")
-				file.CreateDir(ARCBank.Dir.."/syslogs/")
-			end
-			
-			if !file.IsDir( ARCBank.Dir.."/saved_atms","DATA" ) then
-				ARCBank.Msg("Created Folder: "..ARCBank.Dir.."/saved_atms")
-				file.CreateDir(ARCBank.Dir.."/saved_atms")
-			end
-			if !file.IsDir( ARCBank.Dir.."/custom_atms","DATA" ) then
-				ARCBank.Msg("Created Folder: "..ARCBank.Dir.."/custom_atms")
-				file.CreateDir(ARCBank.Dir.."/custom_atms")
-			end
 
 			if ARCBank.DefaultATM then
 				file.Write(ARCBank.Dir.."/custom_atms/default.txt", ARCBank.DefaultATM )
@@ -197,11 +203,6 @@ function ARCBank.Load()
 					file.Delete( ARCBank.Dir.."/systemlog/"..v ) -- Delete old logs
 				end
 			end
-			ARCBank.LogFile = ARCBank.Dir.."/syslogs/"..os.date("%Y-%m-%d")..".log.txt"
-			file.Write(ARCBank.LogFile,"***ARCBank System Log***\r\n"..table.Random({"Oh my god. You're reading this!","WINDOWS LOVES TYPEWRITER COMMANDS IN TXT FILES","What you're refeering to as 'Linux' is in fact GNU/Linux.","... did you mess something up this time?"}).."\r\nDates are in DD-MM-YYYY\r\n")
-			ARCBank.LogFileWritten = true
-			ARCBank.Msg("Log File Created at "..ARCBank.LogFile)
-			
 			timer.Create( "ARCBANK_SAVEDISK", 300, 0, function() 
 				if !ARCBank.Disk.LastInterestTime then
 					ARCBank.Disk.LastInterestTime = os.time() - ARCBank.Settings["interest_time"]*3600

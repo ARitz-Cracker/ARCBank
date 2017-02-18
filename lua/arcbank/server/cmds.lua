@@ -200,6 +200,22 @@ ARCBank.Commands = { --Make sure they are less then 16 chars long.$
 		adminonly = false,
 		hidden = true
 	},
+	["unlock"] = {
+		command = function(ply,args)
+			if !ARCBank.Loaded then ARCBank.MsgCL(ply,ARCBank.Msgs.CommandOutput.SysReset) return end
+			ARCBank.UnDeadlock(account,function(err)
+				if err == ARCBANK_ERROR_NIL_ACCOUNT then
+					ARCBank.MsgCL(ply,"unlock: The account was not locked.")
+				else
+					ARCBank.MsgCL(ply,"unlock: "..ARCBANK_ERRORSTRINGS[err])
+				end
+			end)
+		end,
+		usage = " <accountid(str)>",
+		description = "Unlocks an account that has been deadlocked",
+		adminonly = true,
+		hidden = false
+	},
 	["purge_accounts"] = {
 		command = function(ply,args) 
 			if (IsValid(ply) && ply:IsPlayer() && !ply:IsListenServerHost()) then

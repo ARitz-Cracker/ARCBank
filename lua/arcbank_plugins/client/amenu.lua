@@ -27,11 +27,11 @@ local function NewLogWindow(account,t)
 	AppList:SetSize( 775-10,475 )
 	
 	AppList:SetMultiSelect( false )
-	for i=1,9 do
+	for i=1,10 do
 		AppList:AddColumn(ARCBank.Msgs.AdminMenu.Logs[i])
 	end
 	local checkboxes = {}
-	for i=0,8 do
+	for i=0,9 do
 	
 		checkboxes[i] = vgui.Create( "DCheckBoxLabel", MainPanel )
 		checkboxes[i]:SetPos( 5+math.floor(i/3)*200, 511+(i%3)*16 )
@@ -108,7 +108,7 @@ local function NewLogWindow(account,t)
 		SearchButton:SetVisible(false)
 		local transaction_type = 0
 		--transaction_type
-		for i=0,8 do
+		for i=0,9 do
 			if checkboxes[i]:GetChecked() then
 				transaction_type = bit.bor(transaction_type,2^i)
 			end
@@ -166,7 +166,7 @@ ARCLib.AddThinkFunc("ARCBank ShowAdminMenuLogs",function()
 			if IsValid(ply2) then
 				user2 = ply2:Nick()
 			end
-			AppList:AddLine( v.transaction_id, os.date("%Y-%m-%d %H:%M:%S",v.timestamp), v.account1, v.account2, user1, user2, v.moneydiff, v.money or "", v.comment )
+			AppList:AddLine( v.transaction_id, os.date("%Y-%m-%d %H:%M:%S",v.timestamp), ARCBank.Msgs.AccountTransactions[v.transaction_type], v.account1, v.account2, user1, user2, v.moneydiff, v.money or "", v.comment )
 			if IsValid(SearchProgress) then
 				SearchProgress:SetFraction( 0.75+(k/loglen*0.25) )
 			end

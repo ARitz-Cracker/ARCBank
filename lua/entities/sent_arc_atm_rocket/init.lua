@@ -22,6 +22,7 @@ function ENT:Initialize()
 	self.OldPos = Vector(0,0,0)
 	self.Speed = 0
 	self.SpeedTime = CurTime() + 15
+	self.LastPhysUpdate = CurTime()
 end
 function ENT:SpawnFunction( ply, tr )
  	if ( !tr.Hit ) then return end
@@ -42,6 +43,7 @@ function ENT:Think()
 	if self.NextBeep < 0.00000001 then
 		if self.StopTime > CurTime() then
 			if self.Waiting then
+				self.LastPhysUpdate = CurTime()
 				self.phys:Wake()
 				self.RocketSound = CreateSound( self, "^thrusters/rocket04.wav" ) 
 				self.Waiting = false
@@ -92,8 +94,10 @@ function ENT:Think()
 end
 
 function ENT:PhysicsUpdate( phys )
+	local diff = CurTime() - self.LastPhysUpdate
+	self.LastPhysUpdate = CurTime()
 	if self.StopTime > CurTime() && self.NextBeep < 0.00000001 then
-		self.phys:ApplyForceCenter(self:GetUp()*phys:GetMass()*15) 
+		self.phys:ApplyForceCenter(self:GetUp()*phys:GetMass()*700*diff) 
 	end
 end
 
@@ -107,7 +111,9 @@ function ENT:OnRemove()
 		util.Effect( "entity_remove", effectdata )
 		self:EmitSound("Airboat.FireGunRevDown")
 		timer.Simple(0.01,function()
-			self:Remove()
+			if IsValid(self) then
+				self:Remove()
+			end
 		end)
 	end
 	local OldVel = self.phys:GetVelocity()	

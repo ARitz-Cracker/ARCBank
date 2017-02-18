@@ -316,7 +316,7 @@ end
 function ENT:ViewLogOptions(days,accountdata)
 	local transaction_type = ARCBANK_TRANSACTION_EVERYTHING
 	
-	local transaction_types = {1,2,4,24,96,384}
+	local transaction_types = {1,2,4,24,96,512}
 
 
 	self.ScreenOptions = {}
@@ -633,7 +633,7 @@ function ENT:HomeScreen()
 			if err != ARCBANK_ERROR_NONE then
 				self.Percent = 0
 				self.Loading = false
-				self:ThrowError(data)
+				self:ThrowError(err)
 			else
 				local names = {}
 				ARCLib.ForEachAsync(data,function(k,v,callback)
@@ -692,7 +692,7 @@ function ENT:HomeScreen()
 			if err != ARCBANK_ERROR_NONE then
 				self.Percent = 0
 				self.Loading = false
-				self:ThrowError(data)
+				self:ThrowError(err)
 			else
 				local names = {}
 				ARCLib.ForEachAsync(data,function(k,v,callback)
@@ -987,6 +987,7 @@ transactionIcons[32] = "user_add"
 transactionIcons[64] = "user_delete"
 transactionIcons[128] = "new"
 transactionIcons[256] = "bin"
+transactionIcons[512] = "user_suit"
 --[[
 	self.NewLogTable = {}
 	self.NewLogPage = 1
@@ -1067,6 +1068,8 @@ function ENT:Screen_NewLog()
 				txt = ARCBank.Msgs.LogMsgs.Created
 			elseif entry.transaction_type == 256 then
 				txt = ARCBank.Msgs.LogMsgs.Deleted
+			elseif entry.transaction_type == 512 then
+				txt = ARCBank.Msgs.LogMsgs.Salary
 			end
 			draw.SimpleText(ARCLib.CutOutText(txt,"ARCBankATMSmall",252),"ARCBankATMSmall", -32+14, -129+15+y, text_color, TEXT_ALIGN_LEFT , TEXT_ALIGN_TOP  )
 			
@@ -2040,12 +2043,12 @@ net.Receive( "ARCATM_USE", function(length)
 			gui.EnableScreenClicker( true ) 
 		end
 		atm.Loading = true
-		timer.Simple(math.Rand(2,5),function()
+		timer.Simple(atm.ATMType.CardInsertAnimationLength,function()
 			if IsValid(atm) then
 				atm:HomeScreen()
 			end
 		end)
-		timer.Simple(6,function()
+		timer.Simple(atm.ATMType.CardInsertAnimationLength+0.5,function()
 			if IsValid(atm) then
 				atm.Loading = false
 			end

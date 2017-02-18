@@ -138,8 +138,12 @@ function ENT:HackComplete(ply,amount,rand)
 				moneyprop:SetAngles( self:LocalToWorldAngles(self.ATMType.WithdrawAnimationAng) )
 				moneyprop:SetValue(1000)
 				moneyprop:Spawn()
-				moneyprop:GetPhysicsObject():SetVelocity(moneyprop:GetForward()*self.ATMType.WithdrawAnimationSpeed.x + moneyprop:GetRight()*self.ATMType.WithdrawAnimationSpeed.y + moneyprop:GetUp()*self.ATMType.WithdrawAnimationSpeed.z)
-			
+				timer.Simple(0,function()
+					if IsValid(moneyprop) then
+						moneyprop:GetPhysicsObject():SetVelocity((moneyprop:GetForward()*self.ATMType.WithdrawAnimationSpeed.x + moneyprop:GetRight()*self.ATMType.WithdrawAnimationSpeed.y + moneyprop:GetUp()*self.ATMType.WithdrawAnimationSpeed.z*10 )* 10)
+					end
+				end)
+				constraint.NoCollide( self, moneyprop, 0, 0 ) 
 			end)
 		end)
 		timer.Simple(11,function() 

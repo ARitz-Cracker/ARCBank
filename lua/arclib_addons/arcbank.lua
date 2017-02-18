@@ -22,8 +22,8 @@ ARCBank.Msg("© Copyright 2014-2017 Aritz Beobide-Cardinal (ARitz Cracker) All r
 ARCBank.Features = {}
 ARCBank.Features["hackapi"] = true
 
-ARCBank.Update = "February 7th 2017"
-ARCBank.Version = "1.4.0-rc2"
+ARCBank.Update = "February 17th 2017"
+ARCBank.Version = "1.4.0-rc6"
 
 
 ARCBank.About = [[
@@ -60,7 +60,10 @@ ALPHA Testers:
  *    Drew dawg 2000
  *    Slashll
  *    UTNerd24
-	
+
+Guinea Pigs
+ *    Ventz - Thanks for letting me test future ARCBank updates on your Civil Gamers community.
+ 
 Special Thanks:
  *    Everyone who participated in the public BETA by buying ARCBank before March 31st 2014.
  *    All my great customers, and my future customers.
@@ -83,6 +86,7 @@ ARCBANK_TRANSACTION_GROUP_ADD = 32 -- Add member
 ARCBANK_TRANSACTION_GROUP_REMOVE = 64 -- Remove member
 ARCBANK_TRANSACTION_CREATE = 128 -- Create
 ARCBANK_TRANSACTION_DELETE = 256 -- Delete
+ARCBANK_TRANSACTION_SALARY = 512
 ARCBANK_TRANSACTION_OTHER = 32768
 ARCBANK_TRANSACTION_EVERYTHING = 65535 -- everything
 

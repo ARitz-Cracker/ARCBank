@@ -160,13 +160,13 @@ else
 			timer.Simple(0.01,function()
 				pay = ply.DarkRPVars["money"] - pay 
 				if pay <= 0 then return end
-				ARCBank.AddFromWallet(ply,"",pay,"Salary",function(errcode)
+				ARCBank.AddFromWallet(ply,"",pay,team.GetName( ply:Team() ),function(errcode)
 					if errcode == 0 then
 						ARCLib.NotifyPlayer(ply,string.Replace(ARCBank.Msgs.UserMsgs.Paycheck.." ("..string.Replace( string.Replace( ARCBank.Settings["money_format"], "$", ARCBank.Settings.money_symbol ) , "0", tostring(pay) )..")","ARCBank",ARCBank.Settings.name),NOTIFY_HINT,4,false)
 					elseif errcode != ARCBANK_ERROR_NIL_ACCOUNT then
 						ARCLib.NotifyPlayer(ply,string.Replace(ARCBank.Msgs.UserMsgs.PaycheckFail,"ARCBank",ARCBank.Settings.name).." ("..ARCBANK_ERRORSTRINGS[errcode]..")",NOTIFY_ERROR,4,true)
 					end
-				end)
+				end,ARCBANK_TRANSACTION_SALARY)
 			end)
 		end
 	end)
@@ -179,13 +179,13 @@ else
 				if pay <= 0 then return end
 				
 				
-				ARCBank.AddFromWallet(ply,"",pay,"Salary",function(errcode)
+				ARCBank.AddFromWallet(ply,"",pay,team.GetName( ply:Team() ),function(errcode)
 					if errcode == 0 then
 						ARCLib.NotifyPlayer(ply,string.Replace(ARCBank.Msgs.UserMsgs.Paycheck.." ("..string.Replace( string.Replace( ARCBank.Settings["money_format"], "$", ARCBank.Settings.money_symbol ) , "0", tostring(pay) )..")","ARCBank",ARCBank.Settings.name),NOTIFY_HINT,4,false)
 					elseif errcode != ARCBANK_ERROR_NIL_ACCOUNT then
 						ARCLib.NotifyPlayer(ply,string.Replace(ARCBank.Msgs.UserMsgs.PaycheckFail,"ARCBank",ARCBank.Settings.name).." ("..ARCBANK_ERRORSTRINGS[errcode]..")",NOTIFY_ERROR,4,true)
 					end
-				end)
+				end,ARCBANK_TRANSACTION_SALARY)
 			end)
 		end
 	end)
