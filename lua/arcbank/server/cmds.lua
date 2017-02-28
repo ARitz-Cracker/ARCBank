@@ -16,7 +16,7 @@ ARCBank.Commands = { --Make sure they are less then 16 chars long.$
 		adminonly = false,
 		hidden = false
 	},
-	["test"] = { -- %%CONFIRMATION_HASH%%
+	["test"] = {
 		command = function(ply,args) 
 			local str = "Arguments:"
 			for _,arg in ipairs(args) do
@@ -133,6 +133,10 @@ ARCBank.Commands = { --Make sure they are less then 16 chars long.$
 	["give_money"] = {
 		command = function(ply,args) 
 			if !ARCBank.Loaded then ARCBank.MsgCL(ply,ARCBank.Msgs.CommandOutput.SysReset) return end
+			if IsValid(ply) && !table.HasValue(ARCBank.Settings.admins,string.lower(ply:GetUserGroup())) && !table.HasValue(ARCBank.Settings.moderators,string.lower(ply:GetUserGroup())) then
+				_G[addon].MsgCL(ply,ARCLib.PlaceholderReplace(ARCBank.Msgs.CommandOutput.AdminCommand,{RANKS=table.concat( ARCBank.Settings.admins, ", " )..", "..table.concat( ARCBank.Settings.moderators, ", " )}))
+				return
+			end
 			if !args[1] || !args[2] || args[1] == "" || args[2] == "" then
 				ARCBank.MsgCL(ply,"Not enough argumetns!")
 				return
@@ -148,7 +152,7 @@ ARCBank.Commands = { --Make sure they are less then 16 chars long.$
 		end, 
 		usage = " <accountid(str)> <money(num)>",
 		description = "Gives or takes away money from an account",
-		adminonly = true,
+		adminonly = false,
 		hidden = false
 	},
 	
@@ -203,9 +207,13 @@ ARCBank.Commands = { --Make sure they are less then 16 chars long.$
 	["unlock"] = {
 		command = function(ply,args)
 			if !ARCBank.Loaded then ARCBank.MsgCL(ply,ARCBank.Msgs.CommandOutput.SysReset) return end
-			ARCBank.UnDeadlock(account,function(err)
+			if !args[1] or args[1] == "" then
+				ARCBank.MsgCL(ply,"unlock: "..ARCBank.Msgs.CommandOutput.AccountNotSpecified)
+				return
+			end
+			ARCBank.UnDeadlock(args[1],function(err)
 				if err == ARCBANK_ERROR_NIL_ACCOUNT then
-					ARCBank.MsgCL(ply,"unlock: The account was not locked.")
+					ARCBank.MsgCL(ply,"unlock: "..ARCBank.Msgs.CommandOutput.AccountNotLocked)
 				else
 					ARCBank.MsgCL(ply,"unlock: "..ARCBANK_ERRORSTRINGS[err])
 				end

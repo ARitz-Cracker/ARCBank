@@ -10,6 +10,10 @@ util.AddNetworkString( "ARCBank_Admin_GUI" )
 ARCBank.Commands["admin_gui"] = {
 	command = function(ply,args) 
 		--if !ARCBank.Loaded then ARCBank.MsgCL(ply,ARCBank.Msgs.CommandOutput.SysReset) return end
+		if IsValid(ply) && !table.HasValue(ARCBank.Settings.admins,string.lower(ply:GetUserGroup())) && !table.HasValue(ARCBank.Settings.moderators,string.lower(ply:GetUserGroup())) then
+			_G[addon].MsgCL(ply,ARCLib.PlaceholderReplace(ARCBank.Msgs.CommandOutput.AdminCommand,{RANKS=table.concat( ARCBank.Settings.admins, ", " )..", "..table.concat( ARCBank.Settings.moderators, ", " )}))
+			return
+		end
 		if ply then
 			if !args[1] then
 				net.Start( "ARCBank_Admin_GUI" )
@@ -38,7 +42,7 @@ ARCBank.Commands["admin_gui"] = {
 	end, 
 	usage = "",
 	description = "Opens the admin interface.",
-	adminonly = true,
+	adminonly = false,
 	hidden = false
 }
 

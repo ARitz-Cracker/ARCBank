@@ -13,8 +13,8 @@ Ventz: cos its useful to find ppl who somehow glitched money
 Ventz: if that ever happens#
 ]]
 
-local function specialAccess(ply)
-	return (isentity(ply) and IsValid(ply) and ply:IsPlayer() and table.HasValue(ARCBank.Settings.admins,string.lower(ply:GetUserGroup()))) or ply == "__SYSTEM" or ply == "__UNKNOWN"
+local function specialAccess(ply,readPerm)
+	return (isentity(ply) and IsValid(ply) and ply:IsPlayer() and (table.HasValue(ARCBank.Settings.admins,string.lower(ply:GetUserGroup())) or (table.HasValue(ARCBank.Settings.moderators,string.lower(ply:GetUserGroup())) and (readPerm or not ARCBank.Settings.moderators_read_only) ))) or ply == "__SYSTEM" or ply == "__UNKNOWN"
 end
 
 local function sterilizePlayerAccount(ply,accnt)
@@ -343,11 +343,11 @@ function ARCBank.Transfer(plyfrom,plyto,accountfrom,accountto,amount,comment,cal
 				else
 					callback(err)
 				end
-			end)
+			end,true)
 		else
 			callback(err)
 		end
-	end)
+	end,true)
 end
 
 function ARCBank.AddMoney(ply,account,amount,transaction_type,comment,callback)
@@ -363,7 +363,7 @@ function ARCBank.AddMoney(ply,account,amount,transaction_type,comment,callback)
 		else
 			callback(err)
 		end
-	end)
+	end,true)
 end
 function ARCBank.GetBalance(ply,account,callback)
 	if ARCBank.Busy then callback(ARCBANK_ERROR_BUSY) return end
@@ -425,7 +425,7 @@ end
 
 function ARCBank.GroupGetPlayers(ply,account,callback)
 	if ARCBank.Busy then callback(ARCBANK_ERROR_BUSY) return end
-	local sa = specialAccess(ply)
+	local sa = specialAccess(ply,true)
 	ply, account = sterilizePlayerAccount(ply,account)
 	if #account >= 255 then
 		timer.Simple(0.0001, function() callback(ARCBANK_ERROR_NAME_TOO_LONG) end)
@@ -643,9 +643,9 @@ function ARCBank.RemoveAccount(ply,account,comment,callback)
 end
 
 
-function ARCBank.CanAccessAccount(ply,account,callback)
+function ARCBank.CanAccessAccount(ply,account,callback,sa_internal)
 	if ARCBank.Busy then callback(ARCBANK_ERROR_BUSY) return end
-	local sc = specialAccess(ply)
+	local sc = specialAccess(ply,not sa_internal)
 	ply, account = sterilizePlayerAccount(ply,account)
 	if #account >= 255 then
 		timer.Simple(0.0001, function() callback(ARCBANK_ERROR_NAME_TOO_LONG) end)
@@ -685,6 +685,7 @@ function ARCBank.IntergrityCheck(callback)
 	-- Check if created account logs have properties or deleted log entries
 	-- Check if group members match up with logs
 	-- Check for locked accounts
+	callback(ARCBANK_ERROR_NONE)
 end
 
 local function accountInterest(accounts,i,callback)
@@ -1154,7 +1155,7 @@ function ARCBank.UnDeadlock(account,callback)
 		if err == ARCBANK_ERROR_NONE then
 			if table.HasValue(accounts,account) then
 				ARCBank.ReadBalance(account,function(err,data)
-					if data.transaction_type == ARCBANK_TRANSACTION_TRANSFER then
+					if data.transaction_type == ARCBANK_TRANSACTION_TRANSFER and data.user2 != "" and data.user2 != "__SYSTEM" and data.user2 != "__UNKNOWN" then
 						if data.moneydiff >= 0 then -- Money is taken from the giver before given to the receiver. If we've received the money, we can assume the transaction was completed.
 							ARCBank.UnlockAccount(account,function(err)
 								if err == ARCBANK_ERROR_NONE then

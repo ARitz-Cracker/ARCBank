@@ -95,7 +95,9 @@ function ENT:HackStop()
 	self.InUse = false
 	timer.Simple((CurTime()-self.StartHackTime)*0.5,function()
 		if !IsValid(self) then return end
-		self:Reboot(3)
+		if self.Broken then
+			self:Reboot(3)
+		end
 	end)
 end
 function ENT:HackStart()
@@ -191,6 +193,9 @@ function ENT:HackComplete(ply,amount,rand)
 end
 
 function ENT:Reboot(t)
+	if self.InUse and IsValid(self.UsePlayer) then
+		self:ATM_USE(self.UsePlayer)
+	end
 	self.RebootTime = CurTime() + 8 + (t||0)
 	self.Broken = false
 	net.Start("arcbank_atm_reboot")
@@ -368,7 +373,9 @@ function ENT:Use( ply, caller )
 						if self.ATMType.UseMoneyModel and IsValid(self.moneyprop) then
 							self.moneyprop:Remove()
 						end
-						self:EmitSound("foley/alyx_hug_eli.wav",65,math.random(225,255))
+						if errc == ARCBANK_ERROR_NONE then
+							self:EmitSound("foley/alyx_hug_eli.wav",65,math.random(225,255))
+						end
 						self.PlayerNeedsToDoSomething = false
 					end)
 				end

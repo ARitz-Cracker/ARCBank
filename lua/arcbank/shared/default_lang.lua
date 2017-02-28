@@ -78,7 +78,7 @@ ARCBANK_ERRORSTRINGS[17] = "Mmm yes. You are a very good hacker. Totally."
 ARCBANK_ERRORSTRINGS[18] = "Download failed. Data is corrupted."
 ARCBANK_ERRORSTRINGS[19] = "Bank account is corrupt"
 ARCBANK_ERRORSTRINGS[20] = "The account is locked. This is usually caused by the server shutting down while a transaction was in progress."
-ARCBANK_ERRORSTRINGS[21] = "You cannot deposit or withdraw more than 2147483647 in a transaction"
+ARCBANK_ERRORSTRINGS[21] = "The entity you're using does not have access to this operation."
 ARCBANK_ERRORSTRINGS[22] = "The result from the log search is empty."
 
 ARCBANK_ERRORSTRINGS[32] = "Account with the same or a similar name already exists."
@@ -94,14 +94,6 @@ ARCBANK_ERRORSTRINGS[39] = "You cannot close a personal account."
 
 ARCBANK_ERRORSTRINGS[-127] = "The ARCBank system failed to load."
 ARCBANK_ERRORSTRINGS[-128] = "Unknown Error. Try again."
-
-ARCBank.Msgs.LogMsgs.Interest = "Added %VALUE% interest to account."
-ARCBank.Msgs.LogMsgs.AddUser = "Added (%PLAYER%) to group."
-ARCBank.Msgs.LogMsgs.RemoveUser = "Removed (%PLAYER%) from group."
-ARCBank.Msgs.LogMsgs.AddMoney = "(%PLAYER%) added %VALUE% to the account. "
-ARCBank.Msgs.LogMsgs.RemoveMoney = "(%PLAYER%) subtracted %VALUE% from the account. "
-ARCBank.Msgs.LogMsgs.GiveMoney = "(%PLAYER1%) gave %VALUE% to (%PLAYER2%) (From this account to %ACCOUNT%)"
-ARCBank.Msgs.LogMsgs.TakeMoney = "(%PLAYER1%) gave %VALUE% to (%PLAYER2%) (From %ACCOUNT% to this account)"
 
 ARCBank.Msgs.LogMsgs.Upgraded = "Account upgraded"
 ARCBank.Msgs.LogMsgs.Downgraded = "Account downgraded"
@@ -223,6 +215,8 @@ ARCBank.Msgs.ATMCreator.TooltipSound = "Edit more interface sounds"
 
 ARCBank.Msgs.CommandOutput.SysReset = "System reset required!"
 ARCBank.Msgs.CommandOutput.SysSetting = "%SETTING% has been changed to %VALUE%"
+ARCBank.Msgs.CommandOutput.AccountNotLocked = "The account was not locked."
+ARCBank.Msgs.CommandOutput.AccountNotSpecified = "You must specify the account"
 ARCBank.Msgs.CommandOutput.AdminCommand = "You must be one of these ranks to use this command: %RANKS%"
 ARCBank.Msgs.CommandOutput.SettingsSaved = "Settings have been saved!"
 ARCBank.Msgs.CommandOutput.SettingsError = "Error saving settings."
@@ -233,21 +227,21 @@ ARCBank.Msgs.CommandOutput.ATMDError = "An error occurred while detaching ATMs f
 ARCBank.Msgs.CommandOutput.ATMRespawn = "ATMs re-spawned!"
 ARCBank.Msgs.CommandOutput.ATMRError = "No ATMs associated with this map. (Non-existent/Corrupt file)"
 ARCBank.Msgs.CommandOutput.ResetYes = "System reset!"
-ARCBank.Msgs.CommandOutput.ResetNo = "Error. Check server console for details. Or look at the latest system log located in garrysmod/data/_arcbank on the server."
+ARCBank.Msgs.CommandOutput.ResetNo = "Error. Check server console for details. Or look at the latest system log located in garrysmod/data/_arcbank/syslogs on the server."
 ARCBank.Msgs.CommandOutput.MySQL1 = "A MySQL Error occurred. Tell your server owner to check the logs."
 ARCBank.Msgs.CommandOutput.MySQL2 = "The logs can be found in garrysmod/data/_arcbank/syslogs on the server."
 ARCBank.Msgs.CommandOutput.MySQL3 = "ARCBank will re-activate in 5 seconds."
 ARCBank.Msgs.CommandOutput.MySQL4 = "ARCBank failed to restart. Contact your server owner."
-ARCBank.Msgs.CommandOutput.MySQLCopy = "Copying all accounts to MySQL database. This might take a while..."
-ARCBank.Msgs.CommandOutput.MySQLCopyFrom = "Copying all accounts from MySQL database. The server might freeze for a bit."
-
-ARCBank.Msgs.ATMMsgs.NetworkErrorTitle = "Server ARCBank Error"
-ARCBank.Msgs.ATMMsgs.NetworkError = "ARCBank failed to load! The most common cause of this is incorrect configuration.\nPlease enter \"arcbank reset\" in console to reload ARCBank."
-ARCBank.Msgs.ATMMsgs.HackingError = "I'm out-of-service :(\nINVALID_MEMORY_OPERATION\nPlease visit a different terminal."
+ARCBank.Msgs.CommandOutput.MySQLCopy = "Copying all accounts to MySQL database. The server will freeze for a little while."
+ARCBank.Msgs.CommandOutput.MySQLCopyFrom = "Copying all accounts from MySQL database. This will take a long time."
 
 ARCBank.Msgs.Items.Hacker = "ATM Hacking Unit"
 ARCBank.Msgs.Items.Card = "Keycard"
 ARCBank.Msgs.Items.PinMachine = "Card Machine"
+
+ARCBank.Msgs.ATMMsgs.NetworkErrorTitle = "Server ARCBank Error"
+ARCBank.Msgs.ATMMsgs.NetworkError = "ARCBank failed to load! The most common cause of this is incorrect configuration.\nPlease enter \"arcbank reset\" in console to reload ARCBank."
+ARCBank.Msgs.ATMMsgs.HackingError = "I'm out-of-service :(\nINVALID_MEMORY_OPERATION\nPlease visit a different terminal."
 
 ARCBank.Msgs.ATMMsgs.Welcome = "Welcome"
 ARCBank.Msgs.ATMMsgs.Loading = "Loading..."
@@ -304,7 +298,7 @@ ARCBank.Msgs.ATMMsgs.OpenAccount = "Would you like to open a personal account?"
 ARCBank.Msgs.ATMMsgs.UpgradeAccount = "Are you sure you want to upgrade this account?" 
 
 ARCBank.Msgs.ATMMsgs.CreateGroupAccount = "*Create Group Account"
-ARCBank.Msgs.ATMMsgs.PersonalAccount = "*Personal Account             "
+ARCBank.Msgs.ATMMsgs.PersonalAccount = "*Personal Account"
 ARCBank.Msgs.ATMMsgs.OfflinePlayer = "Offline Player"
 ARCBank.Msgs.ATMMsgs.EnterPlayer = "Please enter the player's card number"
 
@@ -320,7 +314,7 @@ ARCBank.Msgs.CardMsgs.Charge = "How much do you want to charge?"
 ARCBank.Msgs.CardMsgs.NoAccount = "You don't have a personal bank account!"
 
 ARCBank.Msgs.Hack.StealthMode = "Stealth Mode"
-ARCBank.Msgs.Hack.Descript = "Hacks multiple accounts and withdraws smaller values from each account. Also makes it harder for cops to detect."
+ARCBank.Msgs.Hack.Descript = "Hacks multiple accounts and withdraws smaller values from each account. Also makes it harder for the police to detect."
 ARCBank.Msgs.Hack.Power = "Hacking Power: "
 ARCBank.Msgs.Hack.Chance = "Chance of success: "
 ARCBank.Msgs.Hack.NoEnergy = "Not enough Energy"
@@ -407,18 +401,7 @@ ARCBank.Msgs.AccountRank[4] = "Personal - Gold"
 ARCBank.Msgs.AccountRank[5] = "Group"
 ARCBank.Msgs.AccountRank[6] = "Group - Standard"
 ARCBank.Msgs.AccountRank[7] = "Group - Premium"
---[[
-1 - Withdraw/deposit
-2 - Transfer
-4 - Interest
-8 - Upgrade
-16 - Downgrade
-32 - Add member
-64 - Remove member
-128 - Create
-256 - Delete
-65535 - everything
-]]
+
 ARCBank.Msgs.AccountTransactions[1] = "Cash Withdraw/Deposit"
 ARCBank.Msgs.AccountTransactions[2] = "Transfer"
 ARCBank.Msgs.AccountTransactions[4] = "Interest received"
@@ -445,7 +428,6 @@ ARCBank.Msgs.AdminMenu.Logs[8] = "Credit/Debit"
 ARCBank.Msgs.AdminMenu.Logs[9] = "Balance"
 ARCBank.Msgs.AdminMenu.Logs[10] = "Comment"
 ARCBank.Msgs.AdminMenu.LogsAccount = "Account 1: (Leave blank for all transactions)"
-ARCBank.Msgs.AdminMenu.LogsAccount = "Amount of days ago"
 
 ARCBank.Msgs.Commands["atm_save"] = "Save and freeze all ATMs"
 ARCBank.Msgs.Commands["atm_unsave"] = "Unsave and unfreeze all ATMs"
@@ -505,6 +487,8 @@ ARCBank.SettingsDesc["death_money_drop_model"] = "The model of the dropped money
 
 ARCBank.SettingsDesc["interest_time"] = "The interval time of the giving of interest. (hours)"
 ARCBank.SettingsDesc["interest_enable"] = "The bank will give players interest."
+ARCBank.SettingsDesc["account_interest_time_limit"] = "If a player doesn't use their account for this many days, they'll stop receiving interest"
+
 
 ARCBank.SettingsDesc["interest_1_standard"] = "The % of interest a standard account will gain when the next 'interest time' comes."
 ARCBank.SettingsDesc["interest_2_bronze"] = "The % of interest a bronze account will gain when the next 'interest time' comes."
@@ -532,7 +516,9 @@ ARCBank.SettingsDesc["usergroup_all"] = "People of these ranks can create any ac
 
 ARCBank.SettingsDesc["atm_darkmode_default"] = "Dark Mode will be enabled on the ATM by default."
 
-ARCBank.SettingsDesc["admins"] = "List of in game rank(s) that can use the admin GUI and the admin commands."
+ARCBank.SettingsDesc["admins"] = "List of in game rank(s) that can who can view the admin_gui, transaction logs, accounts, edit accounts, use the admin-only commands, and change the configuration settings."
+ARCBank.SettingsDesc["moderators"] = "List of in game rank(s) who can view the admin_gui, transaction logs, accounts, but are unable to use the admin-only commands or change the configurations settings."
+ARCBank.SettingsDesc["moderators_read_only"] = "If enabled, players specified in the \"moderators\" setting will be unable to edit account information"
 
 ARCBank.SettingsDesc["atm_fast_amount_1"] = "The 1st quick-pick option on the atm deposit/withdraw screen"
 ARCBank.SettingsDesc["atm_fast_amount_2"] = "The 2nd quick-pick option on the atm deposit/withdraw screen"

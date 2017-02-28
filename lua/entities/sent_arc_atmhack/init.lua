@@ -124,7 +124,14 @@ function ENT:HackStop()
 	self.GottaStop = true
 end
 
-function ENT:Break()
+function ENT:Break(hero)
+	if IsValid(hero) then
+		self.Hero = hero
+	end
+	if self.GottaStop then
+		self.GottaBreak = true
+		return
+	end
 	if self.spark && self.spark != NULL && !self.Broken then
 		self.Broken = true
 		self.spark:Fire( "SparkOnce","",0.01 )
@@ -153,6 +160,7 @@ function ENT:Break()
 			util.Effect( "cball_explode", effectdata )	
 			self:Remove()
 		end)
+		self:HackStop()
 		hook.Call("ARCBank_OnHackBroken",GM,self.Hacker,self,self.Hero)
 	end
 
@@ -168,7 +176,7 @@ function ENT:OnTakeDamage(dmg)
 		self.Hero = dmg:GetAttacker()
 		if self.Hacking then
 			local attname
-			if self.Hero :IsPlayer() then
+			if self.Hero:IsPlayer() then
 				attname = dmg:GetAttacker():Nick()
 			elseif IsEntity(self.Hero ) then
 				attname = self.Hero:GetClass()
@@ -183,16 +191,12 @@ function ENT:OnTakeDamage(dmg)
 			
 		end
 		
-		if self.GottaStop then
-			self.GottaBreak = true
-		else
-			self:Break()
-		end
+		self:Break()
 		net.Start( "arcbank_hacker_status" )
 		net.WriteUInt(self:EntIndex(),16)
 		net.WriteUInt(6,4)
 		net.Broadcast()
-		self:HackStop()
+		
 	end
 
 end
@@ -359,7 +363,7 @@ function ENT:Think()
 		if self.HackSound then
 			self.HackSound:Stop()
 		end
-		hook.Call("ARCBank_OnHackSuccess",GM,self.Hacker,self,self:GetParent())
+		timer.Simple(0,function() hook.Call("ARCBank_OnHackSuccess",GM,self.Hacker,self,self:GetParent()) end)
 		return true
 	end
 	

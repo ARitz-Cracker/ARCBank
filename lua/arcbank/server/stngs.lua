@@ -135,7 +135,10 @@ function ARCBank.SettingsReset() --DO NOT EDIT THIS!!!!
 	ARCBank.Settings["usergroup_6_group_standard"] = {"vip"} --DO NOT EDIT THIS!!!!
 	ARCBank.Settings["usergroup_7_group_premium"] = {"donator","admin"} --DO NOT EDIT THIS!!!!
 	ARCBank.Settings["usergroup_all"] = {"operator","owner","superadmin"} --DO NOT EDIT THIS!!!!
-	ARCBank.Settings["admins"] = {"owner","superadmin","admin"} --DO NOT EDIT THIS!!!!
+	ARCBank.Settings["admins"] = {"owner","superadmin"} --DO NOT EDIT THIS!!!!
+	ARCBank.Settings["moderators"] = {"admin"} --DO NOT EDIT THIS!!!!
+	ARCBank.Settings["moderators_read_only"] = true
+	
 	ARCBank.Settings["atm_hack_min_hackerstoppers"] = 1 --DO NOT EDIT THIS!!!!
 	ARCBank.Settings["atm_darkmode_default"] = false --DO NOT EDIT THIS!!!!
 	

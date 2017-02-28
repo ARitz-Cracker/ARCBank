@@ -91,7 +91,7 @@ if ARCBank then
 			end
 			
 			local AddRemoveSounds = function(value)
-				assert(isstring(value),"I needu string got "..type(value).."u")
+				assert(isstring(value),"I needu string got "..type(value).."urru")
 
 				local SettingsContainer = vgui.Create( "DFrame" )
 				SettingsContainer:SetPos( ScrW()/2 - 265/2, ScrH()/2 - 20/2 )
@@ -202,7 +202,7 @@ if ARCBank then
 				ATMThing.ATMType.Screen.z = value
 			end
 			local ScrSliderSD = vgui.Create( "DLabel", ScreenPlacement )
-			ScrSliderSD:SetText( ARCBank.Msgs.ATMCreator.ScreenSize )
+			ScrSliderSD:SetText( ARCBank.Msgs.ATMCreator.ScreenSize2 )
 			ScrSliderSD:SetPos( 10, 80 )
 			ScrSliderSD:SizeToContents()
 			ScrSliderSD:SetDark(true)

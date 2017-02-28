@@ -16,7 +16,8 @@ net.Receive( "arcbank_comm_check", function(length,ply)
 end)
 
 local function isValidPermissions(ply,ent,perm)
-	return table.HasValue(ARCBank.Settings.admins,string.lower(ply:GetUserGroup())) or (isfunction(ent.GetARCBankUsePlayer) and ent:GetARCBankUsePlayer() == ply and bit.band(tonumber(ent.ARCBank_Permissions) or 0,perm)) > 0
+	local readPerm = bit.band(perm,bit.bor(ARCBANK_PERMISSIONS_DEPOSIT,ARCBANK_PERMISSIONS_WITHDRAW,ARCBANK_PERMISSIONS_TRANSFER,ARCBANK_PERMISSIONS_RANK,ARCBANK_PERMISSIONS_CREATE,ARCBANK_PERMISSIONS_MEMBERS)) == 0
+	return table.HasValue(ARCBank.Settings.admins,string.lower(ply:GetUserGroup())) or (table.HasValue(ARCBank.Settings.moderators,string.lower(ply:GetUserGroup())) and (readPerm or not ARCBank.Settings.moderators_read_only)) or (isfunction(ent.GetARCBankUsePlayer) and ent:GetARCBankUsePlayer() == ply and bit.band(tonumber(ent.ARCBank_Permissions) or 0,perm)) > 0
 end
 --[[
 ARCBANK_PERMISSIONS_READ = 1
@@ -30,7 +31,7 @@ ARCBANK_PERMISSIONS_MEMBERS = 128
 ARCBANK_PERMISSIONS_OTHER = 32768
 ARCBANK_PERMISSIONS_EVERYTHING = 65535 -- everything
 
-
+ARCBANK_ERROR_ENTITY_NO_ACCESS
 ]]
 -- Account Properties --
 util.AddNetworkString( "arcbank_comm_get_account_properties" )
@@ -460,9 +461,9 @@ comparefuncs[8] = function(a,b) return string.find( utf8.lower(a.name), utf8.low
 util.AddNetworkString( "arcbank_comm_admin_search" )
 net.Receive( "arcbank_comm_admin_search", function(length,ply)
 	--local
-	if !table.HasValue(ARCBank.Settings.admins,string.lower(ply:GetUserGroup())) then
+	if not table.HasValue(ARCBank.Settings.admins,string.lower(ply:GetUserGroup())) and not table.HasValue(ARCBank.Settings.moderators,string.lower(ply:GetUserGroup())) then
 		net.Start("arcbank_comm_admin_search")
-		net.WriteInt(ARCBANK_ERROR_EXPLOIT,ARCBANK_ERRORBITRATE)
+		net.WriteInt(ARCBANK_ERROR_NO_ACCESS,ARCBANK_ERRORBITRATE)
 		net.Send(ply)
 		return
 	end
