@@ -88,7 +88,26 @@ function ARCBank.GetAccountName(account,callback)
 		end
 	end)
 end
-
+function ARCBank.ChangeAccountName(ply,account,name,callback)
+	if ARCBank.Busy then callback(ARCBANK_ERROR_BUSY) return end
+	local sc = specialAccess(ply)
+	ply, account = sterilizePlayerAccount(ply,account)
+	if #name >= 255 then
+		timer.Simple(0.0001, function() callback(ARCBANK_ERROR_NAME_TOO_LONG) end)
+	end
+	if !ply then callback(ARCBANK_ERROR_NIL_PLAYER) return end
+	ARCBank.ReadAccountProperties(account,function(err,data)
+		if err == ARCBANK_ERROR_NONE then
+			if data.owner == ply or sc then
+				ARCBank.WriteAccountProperties(account,name,nil,nil,callback)
+			else
+				callback(ARCBANK_ERROR_NO_ACCESS)
+			end
+		else
+			callback(err)
+		end
+	end)
+end
 function ARCBank.UpgradeAccount(ply,account,callback)
 	if ARCBank.Busy then callback(ARCBANK_ERROR_BUSY) return end
 	local sc = specialAccess(ply)

@@ -32,7 +32,9 @@ if CLIENT then
 		end
 	end)
 else
-
+	hook.Add( "PlayerSpawn", "ARCBank UpdateName", function(ply)
+		ARCBank.ChangeAccountName(ply,"",ply:Nick(),NULLFUNC)
+	end	)
 	hook.Add( "CanTool", "ARCBank Tool", function( ply, tr, tool )
 		if IsValid(tr.Entity) then -- Overrides shitty FPP
 			if tr.Entity.ARCBank_MapEntity then return false end 
@@ -45,6 +47,7 @@ else
 			]]
 		end
 	end)
+	--
 	hook.Add( "CanPlayerUnfreeze", "ARCBank BlockUnfreeze", function( ply, ent, phys )
 		if ent.ARCBank_MapEntity then return false end 
 	end )
