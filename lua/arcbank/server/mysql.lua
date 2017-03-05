@@ -10,24 +10,24 @@ local MYSQL_TYPE = 0
 
 if system.IsLinux() then
 	ARCBank.Msg(table.Random{"You know, I created a skin using LXDE that made ubuntu look like, sound like, and feel like windows 98.","GANOO/LOONIX","I <3 Linux","Linux is best","I don't like systemd."})
-	if file.Exists( "lua/bin/gmsv_tmysql4_linux.dll", "MOD") then
-		MYSQL_TYPE = 2
-		require( "tmysql4" )
-	elseif file.Exists( "lua/bin/gmsv_mysqloo_linux.dll", "MOD") then
+	if file.Exists( "lua/bin/gmsv_mysqloo_linux.dll", "MOD") then
 		MYSQL_TYPE = 1
 		require( "mysqloo" )
+	elseif file.Exists( "lua/bin/gmsv_tmysql4_linux.dll", "MOD") then
+		MYSQL_TYPE = 2
+		require( "tmysql4" )
 	end
 	if file.Exists( "lua/bin/gmsv_mysqloo_win32.dll", "MOD") || file.Exists( "lua/bin/gmsv_tmysql4_win32.dll", "MOD") then
 		ARCBank.Msg("...You do realize that you tried to install a windows .dll on a linux machine, right?")
 	end
 elseif system.IsWindows() then
 	ARCBank.Msg(table.Random{"Windows server... >_>","I hope you aren't using a windows server by choice.","Once you learn a little bit more about computers in general, you'll hate windows server. (Unless you're an idiot.)"})
-	if file.Exists( "lua/bin/gmsv_tmysql4_win32.dll", "MOD") then
-		MYSQL_TYPE = 2
-		require( "tmysql4" )
-	elseif file.Exists( "lua/bin/gmsv_mysqloo_win32.dll", "MOD") then
+	if file.Exists( "lua/bin/gmsv_mysqloo_win32.dll", "MOD") then
 		MYSQL_TYPE = 1
 		require( "mysqloo" )
+	elseif file.Exists( "lua/bin/gmsv_tmysql4_win32.dll", "MOD") then
+		MYSQL_TYPE = 2
+		require( "tmysql4" )
 	end
 	if file.Exists( "lua/bin/gmsv_mysqloo_linux.dll", "MOD") || file.Exists( "lua/bin/gmsv_tmysql4_linux.dll", "MOD") then
 		ARCBank.Msg("...You do realize that you tried to install a linux .dll on a windows machine, right?")
