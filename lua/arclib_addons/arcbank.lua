@@ -1,6 +1,6 @@
 -- This code is under copyright, and is bound to the agreement stated in the EULA.
 -- Any 3rd party content has been used as either public domain or with permission.
--- © Copyright 2014-2016 Aritz Beobide-Cardinal All rights reserved.
+-- © Copyright 2014-2017 Aritz Beobide-Cardinal All rights reserved.
 
 
 ARCBank = ARCBank or {}
@@ -11,24 +11,24 @@ function ARCBank.Msg(msg)
 		Msg("ARCBank: "..tostring(msg).."\n")
 	end
 	if ARCBank.LogFileWritten then
-		file.Append(ARCBank.LogFile, os.date("%d-%m-%Y %H:%M:%S").." > "..tostring(msg).."\r\n")
+		file.Append(ARCBank.LogFile, os.date("%Y-%m-%d %H:%M:%S").." > "..tostring(msg).."\r\n")
 	end
 end
 ARCBank.Msg("Running...\n ____ ____ _ ___ ___     ____ ____ ____ ____ _  _ ____ ____    ___  ____ _  _ _  _ _ _  _ ____ \n |__| |__/ |  |    /     |    |__/ |__| |    |_/  |___ |__/    |__] |__| |\\ | |_/  | |\\ | | __ \n |  | |  \\ |  |   /__    |___ |  \\ |  | |___ | \\_ |___ |  \\    |__] |  | | \\| | \\_ | | \\| |__] \n")
 ARCBank.Msg(table.Random({"I'm going to run out of letters in the alphabet if I keep these patches up!","Product of BlueStone Technological Enterprises Inc. (Even before that company existed)","tbh script enforcer is kinda shit.","I am embarrassed to say that there was a bug from v1.0 to v1.3 that made arguably one of the most important settings useless...","Eh, ARCLoad was a paranoid idiots dream anyway...","Super fukin' Sexy edition!","The most realistic ATM system you'll ever see!","Wohoo! Manual Updates!","...I can never get a vacation...","I love you.","Isn't this amazing?","That's one fiiiine addon you got there!","Update, Update, Update!","You can ACTUALLY use an ATM!","Fixin' Bugs!"}))
-ARCBank.Msg("© Copyright 2014-2016 Aritz Beobide-Cardinal (ARitz Cracker) All rights reserved.")
+ARCBank.Msg("© Copyright 2014-2017 Aritz Beobide-Cardinal (ARitz Cracker) All rights reserved.")
 
 
 ARCBank.Features = {}
 ARCBank.Features["hackapi"] = true
 
-ARCBank.Update = "November 25th 2016"
+ARCBank.Update = "February 27th 2017"
 ARCBank.Version = "1.4.0"
 
 
-ARCBank.About = [[      
+ARCBank.About = [[
              *** ARitz Cracker Bank ***
-    © Copyright Aritz Beobide-Cardinal 2014-2016
+    © Copyright Aritz Beobide-Cardinal 2014-2017
                 All rights reserved.
 				
 				
@@ -60,14 +60,16 @@ ALPHA Testers:
  *    Drew dawg 2000
  *    Slashll
  *    UTNerd24
-	
+
+Guinea Pigs
+ *    Ventz - Thanks for letting me test future ARCBank updates on your Civil Gamers community.
+ 
 Special Thanks:
  *    Everyone who participated in the public BETA by buying ARCBank before March 31st 2014.
  *    All my great customers, and my future customers.
  *    Noddy (Senior Crayfish) - For inspiring me to create this and place this on CoderHire.
  *    My family - For supporting me.
  *    Snow Lou - I wouldn't be who I am without you.
- *    Laura MacEwen - You deserve a mention here too
  *    You - For supporting me by using this addon
 	
 Originally made for:
@@ -84,7 +86,21 @@ ARCBANK_TRANSACTION_GROUP_ADD = 32 -- Add member
 ARCBANK_TRANSACTION_GROUP_REMOVE = 64 -- Remove member
 ARCBANK_TRANSACTION_CREATE = 128 -- Create
 ARCBANK_TRANSACTION_DELETE = 256 -- Delete
+ARCBANK_TRANSACTION_SALARY = 512
+ARCBANK_TRANSACTION_OTHER = 32768
 ARCBANK_TRANSACTION_EVERYTHING = 65535 -- everything
+
+-- PERMISSIONS
+ARCBANK_PERMISSIONS_READ = 1
+ARCBANK_PERMISSIONS_READ_LOG = 2
+ARCBANK_PERMISSIONS_DEPOSIT = 4
+ARCBANK_PERMISSIONS_WITHDRAW = 8
+ARCBANK_PERMISSIONS_TRANSFER = 16
+ARCBANK_PERMISSIONS_RANK = 32
+ARCBANK_PERMISSIONS_MEMBERS = 64
+ARCBANK_PERMISSIONS_CREATE = 128
+ARCBANK_PERMISSIONS_OTHER = 32768
+ARCBANK_PERMISSIONS_EVERYTHING = 65535 -- everything
 
 
 
@@ -114,6 +130,9 @@ ARCBANK_ERROR_EXPLOIT = 17
 ARCBANK_ERROR_DOWNLOAD_FAILED = 18
 ARCBANK_ERROR_CORRUPT_ACCOUNT = 19
 ARCBANK_ERROR_DEADLOCK = 20
+ARCBANK_ERROR_ENTITY_NO_ACCESS = 21
+ARCBANK_ERROR_LOG_EMPTY = 22
+
 --CREATION ERRORS
 ARCBANK_ERROR_NAME_DUPE = 32
 ARCBANK_ERROR_NAME_TOO_LONG = 33
@@ -123,7 +142,6 @@ ARCBANK_ERROR_INVALID_RANK = 36
 ARCBANK_ERROR_TOO_MANY_ACCOUNTS = 37
 ARCBANK_ERROR_TOO_MANY_PLAYERS = 38
 ARCBANK_ERROR_DELETE_REFUSED = 39
-ARCBANK_ERROR_PREFIX_CONFLICT = 40
 
 --OTHER ERRORS
 ARCBANK_ERROR_NOT_LOADED = -127

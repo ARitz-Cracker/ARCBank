@@ -1,6 +1,6 @@
 -- This file is under copyright, and is bound to the agreement stated in the EULA.
 -- Any 3rd party content has been used as either public domain or with permission.
--- © Copyright 2014-2016 Aritz Beobide-Cardinal All rights reserved.
+-- © Copyright 2014-2017 Aritz Beobide-Cardinal All rights reserved.
 AddCSLuaFile("cl_init.lua")
 AddCSLuaFile("shared.lua")
 include('shared.lua')
@@ -86,23 +86,27 @@ function ENT:Use(ply,caller)
 				end)
 			else
 				if self.Status == 0 then
-					ARCBank.AccountExists(ARCBank.GetAccountID(ARCBank.GetPlayerID(ply)),false,function(yes)
-						if yes then
-						--if true then
-							self:EmitSound("buttons/button18.wav",75,255)
-							ARCBank.GroupAccountAcces(ply,function(errcode,accounts)
-								if errcode == 0 then
+				
+					ARCBank.CanAccessAccount(ply,"",function(err)
+						if err == ARCBANK_ERROR_NONE then
+							ARCBank.GetGroupAccounts(ply,function(err,accounts)
+								if err == ARCBANK_ERROR_NONE then
+									for i=1,#accounts do
+										accounts[i] = ARCLib.basexx.from_base32(string.upper(string.sub(accounts[i],1,#accounts[i]-1)))
+									end
 									table.insert( accounts, 1, ARCBank.Msgs.ATMMsgs.PersonalAccount )
 									net.Start( "ARCCHIPMACHINE_MENU_OWNER" )
 									net.WriteEntity(self.Entity)
 									net.WriteTable(accounts)
 									net.Send(ply)
 								else
-									ARCLib.NotifyPlayer(ply,ARCBANK_ERRORSTRINGS[errcode],NOTIFY_ERROR,5,true)
+									ARCLib.NotifyPlayer(ply,ARCBANK_ERRORSTRINGS[err],NOTIFY_ERROR,5,true)
 								end
 							end)
-						else
+						elseif err == ARCBANK_ERROR_NIL_ACCOUNT then
 							ARCLib.NotifyPlayer(ply,ARCBank.Msgs.CardMsgs.NoAccount,NOTIFY_ERROR,5,true)
+						else
+							ARCLib.NotifyPlayer(ply,ARCBANK_ERRORSTRINGS[err],NOTIFY_ERROR,5,true)
 						end
 					end)
 				end
@@ -114,8 +118,11 @@ function ENT:Use(ply,caller)
 end
 function ENT:ATM_USE(ply)
 	if self.DemandingMoney then
-		ARCBank.GroupAccountAcces(ply,function(errcode,accounts)
+		ARCBank.GetGroupAccounts(ply,function(errcode,accounts)
 			if errcode == 0 then
+				for i=1,#accounts do
+					accounts[i] = ARCLib.basexx.from_base32(string.upper(string.sub(accounts[i],1,#accounts[i]-1)))
+				end
 				table.insert( accounts, 1, ARCBank.Msgs.ATMMsgs.PersonalAccount )
 				net.Start( "ARCCHIPMACHINE_MENU_CUSTOMER" )
 				net.WriteEntity(self.Entity)
@@ -168,8 +175,9 @@ net.Receive( "ARCCHIPMACHINE_MENU_CUSTOMER", function(length,ply)
 	ARCBank.Transfer(ply,ent._Owner,ent.FromAccount,ent.ToAccount,ent.EnteredAmount,ent.Reason,function(errorcode)
 		local errormsg = ARCBANK_ERRORSTRINGS[errorcode]
 		ent:SetScreenMsg(tostring(errorcode),errormsg)
-		ARCLib.NotifyPlayer(ply,tostring(errorcode).." - "..errormsg,math.Clamp(errorcode,0,1),5,true)
-		ARCLib.NotifyPlayer(ent._Owner,tostring(errorcode).." - "..errormsg.." ("..ply:Nick()..")",math.Clamp(errorcode,0,1),5,true)
+		local dollah = string.Replace( string.Replace( ARCBank.Settings["money_format"], "$", ARCBank.Settings.money_symbol ) , "0", tostring(ent.EnteredAmount))
+		ARCLib.NotifyPlayer(ply,dollah.." - "..errormsg,math.Clamp(errorcode,0,1),5,true)
+		ARCLib.NotifyPlayer(ent._Owner,dollah.." - "..errormsg.." ("..ply:Nick()..")",math.Clamp(errorcode,0,1),5,true)
 		ent.EnteredAmount = 0
 		if errorcode == 0 then
 			ent.Status = 1

@@ -1,6 +1,6 @@
 -- This file is under copyright, and is bound to the agreement stated in the EULA.
 -- Any 3rd party content has been used as either public domain or with permission.
--- © Copyright 2014-2016 Aritz Beobide-Cardinal All rights reserved.
+-- © Copyright 2014-2017 Aritz Beobide-Cardinal All rights reserved.
 include('shared.lua')
 language.Add("sent_arc_atm","ARCBank ATM")
 local hexarr = {"0","1","2","3","4","5","6","7","8","9","A","B","C","D","E","F"}

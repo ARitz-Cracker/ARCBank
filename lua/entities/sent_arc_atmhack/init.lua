@@ -29,6 +29,7 @@ function ENT:Initialize()
 	self.CopRefresh = CurTime()
 	self.whirang = 0
 	self.RebootTime = CurTime() + 6
+	self.Hero = NULL
 end
 function ENT:SpawnFunction( ply, tr )
  	if ( !tr.Hit ) then return end
@@ -123,7 +124,14 @@ function ENT:HackStop()
 	self.GottaStop = true
 end
 
-function ENT:Break()
+function ENT:Break(hero)
+	if IsValid(hero) then
+		self.Hero = hero
+	end
+	if self.GottaStop then
+		self.GottaBreak = true
+		return
+	end
 	if self.spark && self.spark != NULL && !self.Broken then
 		self.Broken = true
 		self.spark:Fire( "SparkOnce","",0.01 )
@@ -152,6 +160,8 @@ function ENT:Break()
 			util.Effect( "cball_explode", effectdata )	
 			self:Remove()
 		end)
+		self:HackStop()
+		hook.Call("ARCBank_OnHackBroken",GM,self.Hacker,self,self.Hero)
 	end
 
 end
@@ -161,13 +171,15 @@ function ENT:OnTakeDamage(dmg)
 	--if self.GottaStop then return end
 	self:TakePhysicsDamage(dmg); -- React physically when getting shot/blown
 	self.OurHealth = self.OurHealth - dmg:GetDamage(); -- Reduce the amount of damage took from our health-variable
+	MsgN(self.OurHealth)
 	if(self.OurHealth <= 0) then -- If our health-variable is zero or below it
+		self.Hero = dmg:GetAttacker()
 		if self.Hacking then
 			local attname
-			if dmg:GetAttacker():IsPlayer() then
+			if self.Hero:IsPlayer() then
 				attname = dmg:GetAttacker():Nick()
-			elseif IsEntity(dmg:GetAttacker()) then
-				attname = dmg:GetAttacker():GetClass()
+			elseif IsEntity(self.Hero ) then
+				attname = self.Hero:GetClass()
 			else
 				attname "UNKNOWN"
 			end
@@ -178,16 +190,13 @@ function ENT:OnTakeDamage(dmg)
 			
 			
 		end
-		if self.GottaStop then
-			self.GottaBreak = true
-		else
-			self:Break()
-		end
+		
+		self:Break()
 		net.Start( "arcbank_hacker_status" )
 		net.WriteUInt(self:EntIndex(),16)
 		net.WriteUInt(6,4)
 		net.Broadcast()
-		self:HackStop()
+		
 	end
 
 end
@@ -256,6 +265,7 @@ function ENT:Think()
 					net.Send(self.Cops)
 				end
 				self.Hacking = true
+				hook.Call("ARCBank_OnHackBegin",GM,self.Hacker,self,self:GetParent(),self.HackAmount,self.HackRandom)
 			end)
 			self.Rotate = false
 		end
@@ -303,6 +313,7 @@ function ENT:Think()
 			if self.GottaBreak then
 				self:Break()
 			end
+			hook.Call("ARCBank_OnHackEnd",GM,self.Hacker,self)
 		end
 		return
 	end
@@ -352,6 +363,7 @@ function ENT:Think()
 		if self.HackSound then
 			self.HackSound:Stop()
 		end
+		timer.Simple(0,function() hook.Call("ARCBank_OnHackSuccess",GM,self.Hacker,self,self:GetParent()) end)
 		return true
 	end
 	

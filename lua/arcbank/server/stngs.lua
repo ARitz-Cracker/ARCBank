@@ -1,9 +1,8 @@
 --stngs.lua - default settings
 
--- This file is under a Creative Commons Attribution 4.0 International Licence
--- http://creativecommons.org/licenses/by/4.0/
--- You can mess around with it, mod it to your liking, and even redistribute it.
--- However, you must credit me.
+-- This file is under copyright, and is bound to the agreement stated in the EULA.
+-- Any 3rd party content has been used as either public domain or with permission.
+-- © Copyright 2014-2017 Aritz Beobide-Cardinal All rights reserved.
 
 ARCBank.Loaded = false
 ARCBank.Settings = {}
@@ -92,13 +91,14 @@ function ARCBank.SettingsReset() --DO NOT EDIT THIS!!!!
 	ARCBank.Settings["atm_hack_noob_chat"] = true --DO NOT EDIT THIS!!!!
 	
 	ARCBank.Settings["language"] = "en_ca" --DO NOT EDIT THIS!!!!
-	
+	ARCBank.Settings["syslog_delete_time"] = 14 --DO NOT EDIT THIS!!!!
 	
 	ARCBank.Settings["use_bank_for_payday"] = true --DO NOT EDIT THIS!!!!
 	ARCBank.Settings["atm_holo"] = true --DO NOT EDIT THIS!!!!
 	ARCBank.Settings["atm_holo_rotate"] = true --DO NOT EDIT THIS!!!!
 	ARCBank.Settings["atm_holo_text"] = "$$ ATM $$" --DO NOT EDIT THIS!!!!
 	ARCBank.Settings["account_group_limit"] = 4 --DO NOT EDIT THIS!!!!
+	ARCBank.Settings["account_group_member_limit"] = 32 --DO NOT EDIT THIS!!!!
 	
 	ARCBank.Settings["death_money_remove"] = 80
 	ARCBank.Settings["death_money_drop"] = 60
@@ -135,7 +135,10 @@ function ARCBank.SettingsReset() --DO NOT EDIT THIS!!!!
 	ARCBank.Settings["usergroup_6_group_standard"] = {"vip"} --DO NOT EDIT THIS!!!!
 	ARCBank.Settings["usergroup_7_group_premium"] = {"donator","admin"} --DO NOT EDIT THIS!!!!
 	ARCBank.Settings["usergroup_all"] = {"operator","owner","superadmin"} --DO NOT EDIT THIS!!!!
-	ARCBank.Settings["admins"] = {"owner","superadmin","admin"} --DO NOT EDIT THIS!!!!
+	ARCBank.Settings["admins"] = {"owner","superadmin"} --DO NOT EDIT THIS!!!!
+	ARCBank.Settings["moderators"] = {"admin"} --DO NOT EDIT THIS!!!!
+	ARCBank.Settings["moderators_read_only"] = true
+	
 	ARCBank.Settings["atm_hack_min_hackerstoppers"] = 1 --DO NOT EDIT THIS!!!!
 	ARCBank.Settings["atm_darkmode_default"] = false --DO NOT EDIT THIS!!!!
 	
@@ -145,6 +148,7 @@ function ARCBank.SettingsReset() --DO NOT EDIT THIS!!!!
 	ARCBank.Settings["atm_fast_amount_4"] = 1000
 	ARCBank.Settings["atm_fast_amount_5"] = 2000
 	ARCBank.Settings["atm_fast_amount_6"] = 4000
+	ARCBank.Settings["_ester_eggs"] = true
 	
 end
 

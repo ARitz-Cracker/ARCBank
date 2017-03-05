@@ -2,7 +2,7 @@
 
 -- This file is under copyright, and is bound to the agreement stated in the EULA.
 -- Any 3rd party content has been used as either public domain or with permission.
--- © Copyright 2016 Aritz Beobide-Cardinal All rights reserved.
+-- © Copyright 2016-2017 Aritz Beobide-Cardinal All rights reserved.
 ARCBank.Loaded = false
 function ARCBank.SpawnATMs()
 	local shit = file.Read(ARCBank.Dir.."/saved_atms/"..string.lower(game.GetMap())..".txt", "DATA" )
@@ -104,7 +104,7 @@ function ARCBank.UnSaveATMs()
 	file.Delete(savepos)
 	return true
 end
-function ARCBank.ClearATMs() -- Make sure this doesn't crash (dump %%CONFIRMATION_HASH%%)
+function ARCBank.ClearATMs()
 	for _, oldatms in pairs( ents.FindByClass("sent_arc_atm") ) do
 		oldatms.ARCBank_MapEntity = false
 		oldatms:Remove()

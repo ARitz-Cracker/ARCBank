@@ -1,6 +1,6 @@
 -- This file is under copyright, and is bound to the agreement stated in the EULA.
 -- Any 3rd party content has been used as either public domain or with permission.
--- © Copyright 2014-2016 Aritz Beobide-Cardinal All rights reserved.
+-- © Copyright 2014-2017 Aritz Beobide-Cardinal All rights reserved.
 AddCSLuaFile("cl_init.lua")
 AddCSLuaFile("shared.lua")
 include('shared.lua')
@@ -95,7 +95,9 @@ function ENT:HackStop()
 	self.InUse = false
 	timer.Simple((CurTime()-self.StartHackTime)*0.5,function()
 		if !IsValid(self) then return end
-		self:Reboot(3)
+		if self.Broken then
+			self:Reboot(3)
+		end
 	end)
 end
 function ENT:HackStart()
@@ -117,8 +119,8 @@ function ENT:HackComplete(ply,amount,rand)
 	if ply.ARCBank_Secrets && self.ATMType.UseMoneyModel then --TODO: Have this work with multiple ATM Types instead of only the default one
 		self:EmitSound("^arcbank/atm/spit-out.wav")
 		timer.Simple(6.5,function()
-			if atm.ATMType.ModelOpen != "" then
-				atm:SetModel( atm.ATMType.ModelOpen ) 
+			if self.ATMType.ModelOpen != "" then
+				self:SetModel( self.ATMType.ModelOpen ) 
 			end
 		end)
 		timer.Simple(6.8,function() 
@@ -129,6 +131,7 @@ function ENT:HackComplete(ply,amount,rand)
 			self:EmitSound("arcbank/atm/lolhack.wav")
 			local moneyproppos = self:GetPos() + ((self:GetAngles():Up() * 0.2) + (self:GetAngles():Forward() * -4.0) + (self:GetAngles():Right() * -0.4))
 			self.UsePlayer = nil
+			self:SetARCBankUsePlayer(NULL)
 			timer.Destroy( "ATM_WIN" ) 
 			timer.Create( "ATM_WIN", 0.2, math.random(10,20), function()
 				local moneyprop = ents.Create( "sent_arc_cash" )
@@ -137,13 +140,17 @@ function ENT:HackComplete(ply,amount,rand)
 				moneyprop:SetAngles( self:LocalToWorldAngles(self.ATMType.WithdrawAnimationAng) )
 				moneyprop:SetValue(1000)
 				moneyprop:Spawn()
-				moneyprop:GetPhysicsObject():SetVelocity(moneyprop:GetForward()*self.ATMType.WithdrawAnimationSpeed.x + moneyprop:GetRight()*self.ATMType.WithdrawAnimationSpeed.y + moneyprop:GetUp()*self.ATMType.WithdrawAnimationSpeed.z)
-			
+				timer.Simple(0,function()
+					if IsValid(moneyprop) then
+						moneyprop:GetPhysicsObject():SetVelocity((moneyprop:GetForward()*self.ATMType.WithdrawAnimationSpeed.x + moneyprop:GetRight()*self.ATMType.WithdrawAnimationSpeed.y + moneyprop:GetUp()*self.ATMType.WithdrawAnimationSpeed.z*10 )* 10)
+					end
+				end)
+				constraint.NoCollide( self, moneyprop, 0, 0 ) 
 			end)
 		end)
 		timer.Simple(11,function() 
-			if atm.ATMType.ModelOpen != "" then
-				atm:SetModel( atm.ATMType.Model ) 
+			if self.ATMType.ModelOpen != "" then
+				self:SetModel( self.ATMType.Model ) 
 			end
 			self:EmitSound("arcbank/atm/close.wav")
 			net.Start("ARCATM_COMM_BEEP")
@@ -157,39 +164,25 @@ function ENT:HackComplete(ply,amount,rand)
 		----MsgN("HACK ERORR:"..tostring(accounts))
 		--self:StopHack()
 		self.args = {}
-		self.args.money = amount
 		self.UsePlayer = ply
-		ARCBank.GetAllAccounts(amount,function(ercode,accounts)
-			if ercode == 0 then
-				local accounttable
-				if rand then
-					accounttable = "*STEAL FROM MULTIPLE ACCOUNTS!!*"
-				else
-					accounttable = accounts[ARCLib.RandomExp(1,#accounts)]
+		self:SetARCBankUsePlayer(ply)
+		local nextper = 0
+		ARCBank.StealMoney(ply,rand,amount,function(err,progress,amount)
+			if err == ARCBANK_ERROR_DOWNLOADING then
+				if progress > nextper then
+					ARCBank.MsgCL(ply,ARCBank.Msgs.Items.Hacker..": (%"..math.floor(progress*100)..")")
+					nextper = nextper + 0.01
 				end
-				local nextper = 0.1
-				ARCBank.StealMoney(ply,amount,accounttable,false,function(errcode,per)
-					if errcode == ARCBANK_ERROR_DOWNLOADING then
-						if per > nextper then
-							ARCBank.MsgCL(ply,ARCBank.Msgs.Items.Hacker..": (%"..math.floor(per)..")")
-							nextper = nextper + 0.1
-						end
-					elseif errcode == 0 then
-						ARCBank.MsgCL(ply,ARCBank.Msgs.Items.Hacker..": (%100)")
-						self:WithdrawAnimation()
-						timer.Simple(self.ATMType.PauseBeforeWithdrawAnimation + self.ATMType.PauseAfterWithdrawAnimation + self.ATMType.WithdrawAnimationLength,function()
-							if !IsValid(self) then return end
-							self.PlayerNeedsToDoSomething = true
-							self.Beep = true
-						end)
-					else
-						ARCLib.NotifyPlayer(ply,ARCBank.Msgs.Items.Hacker..": "..ARCBANK_ERRORSTRINGS[errcode],NOTIFY_ERROR,6,true)
-						self.DoingSomething = false
-						-- SHIT HAPPENED, BRAH
-					end
+			elseif err == 0 then
+				ARCBank.MsgCL(ply,ARCBank.Msgs.Items.Hacker..": (%100)")
+				self:WithdrawAnimation()
+				timer.Simple(self.ATMType.PauseBeforeWithdrawAnimation + self.ATMType.PauseAfterWithdrawAnimation + self.ATMType.WithdrawAnimationLength,function()
+					if !IsValid(self) then return end
+					self.PlayerNeedsToDoSomething = true
+					self.Beep = true
 				end)
 			else
-				ARCLib.NotifyPlayer(ply,ARCBank.Msgs.Items.Hacker..": "..ARCBANK_ERRORSTRINGS[ercode],NOTIFY_ERROR,6,true)
+				ARCLib.NotifyPlayer(ply,ARCBank.Msgs.Items.Hacker..": "..ARCBANK_ERRORSTRINGS[err],NOTIFY_ERROR,6,true)
 				self.DoingSomething = false
 				-- SHIT HAPPENED, BRAH
 			end
@@ -200,6 +193,9 @@ function ENT:HackComplete(ply,amount,rand)
 end
 
 function ENT:Reboot(t)
+	if self.InUse and IsValid(self.UsePlayer) then
+		self:ATM_USE(self.UsePlayer)
+	end
 	self.RebootTime = CurTime() + 8 + (t||0)
 	self.Broken = false
 	net.Start("arcbank_atm_reboot")
@@ -238,6 +234,7 @@ function ENT:Think()
 	if self.UsePlayer && !IsValid(self.UsePlayer) && !self.Hacked then
 		self.InUse = false
 		self.UsePlayer = nil
+		self:SetARCBankUsePlayer(NULL)
 		if self.PlayerNeedsToDoSomething then
 			if self.TakingMoney then
 				self.errorc = ARCBANK_ERROR_ABORTED
@@ -287,6 +284,7 @@ function ENT:Think()
 	if self.Beep then
 		if self.Hacked then
 			self.UsePlayer = ARCLib.GetNearestPlayer(self:GetPos())
+			self:SetARCBankUsePlayer(self.UsePlayer)
 			--MsgN("UserPlayer is "..self.UsePlayer:Nick())
 			self:EmitSoundTable(self.ATMType.WaitSound,65,math.random(95,110))
 		else
@@ -363,23 +361,27 @@ function ENT:Use( ply, caller )
 					ARCBank.PlayerAddMoney(self.UsePlayer,self.args.money)
 					self.errorc = 0
 					self.UsePlayer = nil
+					self:SetARCBankUsePlayer(NULL)
 					if self.ATMType.UseMoneyModel and IsValid(self.moneyprop) then
 						self.moneyprop:Remove()
 					end
 					self:EmitSound("foley/alyx_hug_eli.wav",65,math.random(225,255))
 					self.PlayerNeedsToDoSomething = false
 				else
-					ARCBank.AtmFunc(self.UsePlayer,-self.args.money,self.args.name,function(errc)
+					ARCBank.AddFromWallet(self.UsePlayer,self.args.name,-self.args.money,"ATM",function(errc)
 						self.errorc = errc
 						if self.ATMType.UseMoneyModel and IsValid(self.moneyprop) then
 							self.moneyprop:Remove()
 						end
-						self:EmitSound("foley/alyx_hug_eli.wav",65,math.random(225,255))
+						if errc == ARCBANK_ERROR_NONE then
+							self:EmitSound("foley/alyx_hug_eli.wav",65,math.random(225,255))
+						end
 						self.PlayerNeedsToDoSomething = false
 					end)
 				end
 			else
-				ARCBank.AtmFunc(self.UsePlayer,self.args.money,self.args.name,function(errc)
+			
+				ARCBank.AddFromWallet(self.UsePlayer,self.args.name,self.args.money,"ATM",function(errc)
 					self.errorc = errc
 					if self.errorc == 0 then
 						self:EmitSoundTable(self.ATMType.DepositDoneSound,65,100)
@@ -467,7 +469,9 @@ function ENT:ATM_USE(activator)
 					timer.Simple(self.ATMType.CardRemoveAnimationLength-0.3,function() selfcard:GetPhysicsObject():SetVelocity(Vector(0,0,0)) end)
 					timer.Simple(self.ATMType.CardRemoveAnimationLength,function() 
 						--MsgN(self:WorldToLocal(selfcard:GetPos()))
-						selfcard:Remove() 
+						if IsValid(selfcard) then
+							selfcard:Remove() 
+						end
 					end)
 				end
 				local ply = self.UsePlayer
@@ -479,6 +483,7 @@ function ENT:ATM_USE(activator)
 				self.InUse = false
 				table.RemoveByValue(ARCBank.Disk.NommedCards,activator:SteamID())
 				self.UsePlayer = nil
+				self:SetARCBankUsePlayer(NULL)
 				net.Start( "ARCATM_USE" )
 				net.WriteEntity( self )
 				net.WriteBit(false)
@@ -519,6 +524,7 @@ function ENT:ATM_USE(activator)
 			self.InUse = true
 			table.insert(ARCBank.Disk.NommedCards,activator:SteamID())
 			self.UsePlayer = activator
+			self:SetARCBankUsePlayer(activator)
 			activator:SwitchToDefaultWeapon() 
 			activator:StripWeapon( ARCBank.Settings["card_weapon"] ) 
 			--activator:SendLua( "achievements.EatBall()" );
@@ -619,8 +625,13 @@ net.Receive( "ARCATM_COMM_CASH", function(length,ply)
 	atm.args.name = acc
 	if take then
 		--atm.TakingMoney = true
-		ARCBank.CanAfford(atm.UsePlayer,amount,acc,function(errc)
+		--ARCBank.CanAfford(atm.UsePlayer,amount,acc,function(errc)
+		ARCBank.GetBalance(ply,account,function(errc,currentbalance)
+			if errc == ARCBANK_ERROR_NONE and (currentbalance - amount) + ARCBank.Settings.account_debt_limit < 0 then
+				errc = ARCBANK_ERROR_NO_CASH
+			end
 			atm.errorc = errc
+			
 			if atm.errorc == ARCBANK_ERROR_NONE then
 				atm:WithdrawAnimation()
 				

@@ -14,3 +14,7 @@ ENT.AdminOnly = false
 ENT.IsAFuckingATM = true
 ENT.ARCBank_IsAValidDevice = true
 
+function ENT:SetupDataTables()
+	self:NetworkVar( "Entity", 0, "ARCBankUsePlayer" )
+end
+ENT.ARCBank_Permissions = 65535

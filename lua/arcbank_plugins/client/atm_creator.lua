@@ -1,8 +1,7 @@
 -- ATM Creator ARitz Cracker Bank (Clientside)
--- This file is under a Creative Commons Attribution 4.0 International Licence
--- http://creativecommons.org/licenses/by/4.0/
--- You can mess around with it, mod it to your liking, and even redistribute it.
--- However, you must credit me.
+-- This file is under copyright, and is bound to the agreement stated in the EULA.
+-- Any 3rd party content has been used as either public domain or with permission.
+-- © Copyright 2016-2017 Aritz Beobide-Cardinal All rights reserved.
 if ARCBank then
 	surface.CreateFont( "ARCBankATMCreator", {
 		font = "Arial",
@@ -92,7 +91,7 @@ if ARCBank then
 			end
 			
 			local AddRemoveSounds = function(value)
-				assert(isstring(value),"I needu string got "..type(value).."u")
+				assert(isstring(value),"I needu string got "..type(value).."urru")
 
 				local SettingsContainer = vgui.Create( "DFrame" )
 				SettingsContainer:SetPos( ScrW()/2 - 265/2, ScrH()/2 - 20/2 )
@@ -203,7 +202,7 @@ if ARCBank then
 				ATMThing.ATMType.Screen.z = value
 			end
 			local ScrSliderSD = vgui.Create( "DLabel", ScreenPlacement )
-			ScrSliderSD:SetText( ARCBank.Msgs.ATMCreator.ScreenSize )
+			ScrSliderSD:SetText( ARCBank.Msgs.ATMCreator.ScreenSize2 )
 			ScrSliderSD:SetPos( 10, 80 )
 			ScrSliderSD:SizeToContents()
 			ScrSliderSD:SetDark(true)

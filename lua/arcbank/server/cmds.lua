@@ -2,7 +2,7 @@
 
 -- This file is under copyright, and is bound to the agreement stated in the EULA.
 -- Any 3rd party content has been used as either public domain or with permission.
--- © Copyright 2014-2016 Aritz Beobide-Cardinal All rights reserved.
+-- © Copyright 2014-2017 Aritz Beobide-Cardinal All rights reserved.
 ARCBank.Loaded = false
 ARCBank.Commands = { --Make sure they are less then 16 chars long.$
 	["about"] = {
@@ -16,7 +16,7 @@ ARCBank.Commands = { --Make sure they are less then 16 chars long.$
 		adminonly = false,
 		hidden = false
 	},
-	["test"] = { -- %%CONFIRMATION_HASH%%
+	["test"] = {
 		command = function(ply,args) 
 			local str = "Arguments:"
 			for _,arg in ipairs(args) do
@@ -62,7 +62,8 @@ ARCBank.Commands = { --Make sure they are less then 16 chars long.$
 	},
 	["owner"] = {
 		command = function(ply,args) 
-			ARCBank.MsgCL(ply,"%%SID%%")
+			ARCBank.MsgCL(ply,"{{ user_id }}")
+			ARCBank.MsgCL(ply,"{{ user_id sha256 trackarcbank }}")
 		end, 
 		usage = "",
 		description = "Who owns this copy of ARCBank?",
@@ -128,34 +129,33 @@ ARCBank.Commands = { --Make sure they are less then 16 chars long.$
 		adminonly = true,
 		hidden = false
 	},
+	
 	["give_money"] = {
 		command = function(ply,args) 
 			if !ARCBank.Loaded then ARCBank.MsgCL(ply,ARCBank.Msgs.CommandOutput.SysReset) return end
-			if !args[1] || !args[2] || !args[3] || args[1] == "" || args[2] == "" || args[3] == "" then
+			if IsValid(ply) && !table.HasValue(ARCBank.Settings.admins,string.lower(ply:GetUserGroup())) && !table.HasValue(ARCBank.Settings.moderators,string.lower(ply:GetUserGroup())) then
+				_G[addon].MsgCL(ply,ARCLib.PlaceholderReplace(ARCBank.Msgs.CommandOutput.AdminCommand,{RANKS=table.concat( ARCBank.Settings.admins, ", " )..", "..table.concat( ARCBank.Settings.moderators, ", " )}))
+				return
+			end
+			if !args[1] || !args[2] || args[1] == "" || args[2] == "" then
 				ARCBank.MsgCL(ply,"Not enough argumetns!")
 				return
 			end
-			ARCBank.ReadAccountFile(args[1],tobool(args[2]),function(tab)
-				if tab then
-					tab.money = tab.money + tonumber(args[3])
-					ARCBank.WriteAccountFile(tab,function(didwork)
-						if didwork then
-							ARCBank.MsgCL(ply,ARCBANK_ERRORSTRINGS[0].." "..tostring(tab.money-tonumber(args[3])).." -> "..tab.money)
-							ARCBankAccountMsg(tab,"ADMIN: "..tonumber(args[3]).." ("..tab.money..")")
-						else
-							ARCBank.MsgCL(ply,ARCBANK_ERRORSTRINGS[16])
-						end
-					end)
-				else
-					ARCBank.MsgCL(ply,ARCBANK_ERRORSTRINGS[1])
-				end
-			end)
+			local amount = tonumber(args[2]) or 0
+			if amount == 0 then
+				ARCBank.MsgCL(ply,"invalid amount")
+			else
+				ARCBank.AddMoney(ply,args[1],amount,ARCBANK_TRANSACTION_WITHDRAW_OR_DEPOSIT,"Admin Menu",function(err)
+					ARCBank.MsgCL(ply,ARCBANK_ERRORSTRINGS[err])
+				end)
+			end
 		end, 
-		usage = " <name(str)> <group(bool)> <money(num)>",
+		usage = " <accountid(str)> <money(num)>",
 		description = "Gives or takes away money from an account",
-		adminonly = true,
+		adminonly = false,
 		hidden = false
 	},
+	
 	["print_json"] = {
 		command = function(ply,args) 
 			if !ARCBank.Loaded then ARCBank.MsgCL(ply,ARCBank.Msgs.CommandOutput.SysReset) return end
@@ -203,7 +203,57 @@ ARCBank.Commands = { --Make sure they are less then 16 chars long.$
 		description = "Enable/Disable dark mode",
 		adminonly = false,
 		hidden = true
-	},	
+	},
+	["unlock"] = {
+		command = function(ply,args)
+			if !ARCBank.Loaded then ARCBank.MsgCL(ply,ARCBank.Msgs.CommandOutput.SysReset) return end
+			if !args[1] or args[1] == "" then
+				ARCBank.MsgCL(ply,"unlock: "..ARCBank.Msgs.CommandOutput.AccountNotSpecified)
+				return
+			end
+			ARCBank.UnDeadlock(args[1],function(err)
+				if err == ARCBANK_ERROR_NIL_ACCOUNT then
+					ARCBank.MsgCL(ply,"unlock: "..ARCBank.Msgs.CommandOutput.AccountNotLocked)
+				else
+					ARCBank.MsgCL(ply,"unlock: "..ARCBANK_ERRORSTRINGS[err])
+				end
+			end)
+		end,
+		usage = " <accountid(str)>",
+		description = "Unlocks an account that has been deadlocked",
+		adminonly = true,
+		hidden = false
+	},
+	["purge_accounts"] = {
+		command = function(ply,args) 
+			if (IsValid(ply) && ply:IsPlayer() && !ply:IsListenServerHost()) then
+				ARCBank.MsgCL(ply,"This command cannot be used by a player.")
+				return
+			end
+			if !ARCBank.CommitSedoku then
+				ARCBank.MsgCL(ply,"/!\\ WARNING WARNING WARNING /!\\")
+				ARCBank.MsgCL(ply,"YOU HAVE ENTERED THE COMMAND THAT WILL NUKE ALL ACCOUNTS ON THE SERVER!")
+				ARCBank.MsgCL(ply,"NO BACKUPS WILL BE CREATED. THIS ACTION CANNOT BE REVERSED!!")
+				ARCBank.MsgCL(ply,"If you are absolutely sure you want to reset your economy, enter \"arcbank purge_accounts\" again to confirm!")
+				ARCBank.CommitSedoku = true
+			else
+				ARCBank.MsgCL(ply,"Purging ARCBank history...")
+				ARCBank.PurgeAccounts(function(err)
+					if err == 0 then
+						ARCBank.MsgCL(ply,"ARCBank economy successfully reset!")
+						ARCBank.MsgCL(ply,"Please enter \"arcbank reset\" to continue")
+					else
+						ARCBank.MsgCL(ply,"Failed to purge ARCBank history! this is bad. "..ARCBANK_ERRORSTRINGS[err])
+					end
+				end)
+			end
+			
+		end, 
+		usage = "",
+		description = "Deletes all accounts on the server",
+		adminonly = true,
+		hidden = false
+	},
 	["reset_settings"] = {
 		command = function(ply,args) 
 			ARCBank.SettingsReset()
@@ -227,7 +277,7 @@ ARCBank.Commands = { --Make sure they are less then 16 chars long.$
 			end)
 		end, 
 		usage = "",
-		description = "Updates settings and checks for any currupt or invalid accounts. (SAVE YOUR SETTINGS BEFORE DOING THIS!)",
+		description = "Runs the ARCBank startup process. (SAVE YOUR SETTINGS BEFORE DOING THIS!)",
 		adminonly = true,
 		hidden = false}
 }

@@ -2,7 +2,7 @@
 
 -- This file is under copyright, and is bound to the agreement stated in the EULA.
 -- Any 3rd party content has been used as either public domain or with permission.
--- © Copyright 2014-2016 Aritz Beobide-Cardinal All rights reserved.
+-- © Copyright 2014-2017 Aritz Beobide-Cardinal All rights reserved.
 ARCBank.Loaded = false
 
 if CLIENT then
@@ -32,7 +32,9 @@ if CLIENT then
 		end
 	end)
 else
-
+	hook.Add( "PlayerSpawn", "ARCBank UpdateName", function(ply)
+		ARCBank.ChangeAccountName(ply,"",ply:Nick(),NULLFUNC)
+	end	)
 	hook.Add( "CanTool", "ARCBank Tool", function( ply, tr, tool )
 		if IsValid(tr.Entity) then -- Overrides shitty FPP
 			if tr.Entity.ARCBank_MapEntity then return false end 
@@ -45,6 +47,7 @@ else
 			]]
 		end
 	end)
+	--
 	hook.Add( "CanPlayerUnfreeze", "ARCBank BlockUnfreeze", function( ply, ent, phys )
 		if ent.ARCBank_MapEntity then return false end 
 	end )
@@ -141,7 +144,8 @@ else
 
 				
 	hook.Add( "PlayerDeath", "ARCBank DeathTax", function( victim, inflictor, attacker )
-		local amount = ARCBank.PlayerGetMoney(victim) 
+		local amount = ARCBank.PlayerGetMoney(victim)
+		if !isnumber(amount) then return end
 		local dropped = math.ceil(amount * ARCBank.Settings["death_money_drop"] / 100)
 		if dropped > 0 then
 			local moneyprop = ents.Create( "sent_arc_cash" ) --I don't want to create another entity. 
@@ -159,13 +163,13 @@ else
 			timer.Simple(0.01,function()
 				pay = ply.DarkRPVars["money"] - pay 
 				if pay <= 0 then return end
-				ARCBank.AtmFunc(ply,pay,"",function(errcode)
+				ARCBank.AddFromWallet(ply,"",pay,team.GetName( ply:Team() ),function(errcode)
 					if errcode == 0 then
 						ARCLib.NotifyPlayer(ply,string.Replace(ARCBank.Msgs.UserMsgs.Paycheck.." ("..string.Replace( string.Replace( ARCBank.Settings["money_format"], "$", ARCBank.Settings.money_symbol ) , "0", tostring(pay) )..")","ARCBank",ARCBank.Settings.name),NOTIFY_HINT,4,false)
 					elseif errcode != ARCBANK_ERROR_NIL_ACCOUNT then
 						ARCLib.NotifyPlayer(ply,string.Replace(ARCBank.Msgs.UserMsgs.PaycheckFail,"ARCBank",ARCBank.Settings.name).." ("..ARCBANK_ERRORSTRINGS[errcode]..")",NOTIFY_ERROR,4,true)
 					end
-				end)
+				end,ARCBANK_TRANSACTION_SALARY)
 			end)
 		end
 	end)
@@ -176,13 +180,15 @@ else
 			timer.Simple(0.01,function()
 				pay = ply:getDarkRPVar("money") - pay 
 				if pay <= 0 then return end
-				ARCBank.AtmFunc(ply,pay,"",function(errcode)
+				
+				
+				ARCBank.AddFromWallet(ply,"",pay,team.GetName( ply:Team() ),function(errcode)
 					if errcode == 0 then
 						ARCLib.NotifyPlayer(ply,string.Replace(ARCBank.Msgs.UserMsgs.Paycheck.." ("..string.Replace( string.Replace( ARCBank.Settings["money_format"], "$", ARCBank.Settings.money_symbol ) , "0", tostring(pay) )..")","ARCBank",ARCBank.Settings.name),NOTIFY_HINT,4,false)
 					elseif errcode != ARCBANK_ERROR_NIL_ACCOUNT then
 						ARCLib.NotifyPlayer(ply,string.Replace(ARCBank.Msgs.UserMsgs.PaycheckFail,"ARCBank",ARCBank.Settings.name).." ("..ARCBANK_ERRORSTRINGS[errcode]..")",NOTIFY_ERROR,4,true)
 					end
-				end)
+				end,ARCBANK_TRANSACTION_SALARY)
 			end)
 		end
 	end)
@@ -210,28 +216,24 @@ else
 		end
 	end)
 	hook.Add( "PlayerInitialSpawn", "ARCBank RestoreArchivedAccount", function(ply)
-		local f = ARCBank.Dir.."/accounts_unused/"..string.lower(string.gsub(ARCBank.GetPlayerID(ply), "[^_%w]", "_"))..".txt"
-		if file.Exists(f,"DATA") then
-			local accounts = string.Explode( "\r\n", file.Read(f,"DATA"))
-			for i=1,#accounts do
-				if #accounts[i] > 2 && file.Exists(ARCBank.Dir.."/accounts_unused/"..accounts[i],"DATA") then
-					file.Write( ARCBank.Dir.."/accounts/"..accounts[i], file.Read(ARCBank.Dir.."/accounts_unused/"..accounts[i],"DATA") )
-					file.Delete( ARCBank.Dir.."/accounts_unused/"..accounts[i])
-					file.Delete(f)
-					--file.Append(ARCBank.Dir.."/accounts/logs/"..accounts[i], os.date("%d-%m-%Y %H:%M:%S").." > Account has been re-activated.\r\n")
-				end
-			end
-		end
 		ARCBank.CapAccountRank(ply);
 	end)
+	local function keepDeleting(ply,account)
+		ARCBank.RemoveAccount(ply,account,"Nutscript Character deleted",function(errcode)
+			if errcode == ARCBANK_ERROR_BUSY or errcode == ARCBANK_ERROR_NOT_LOADED then
+				timer.Simple(1,function() keepDeleting(ply,account) end)
+			end
+		end)
+	end
+	
     hook.Add("OnCharDelete","ARCBank NutScriptDeleteAccount",function(ply,charid,currentchar)
 		if (nut) then
 			local userid = ARCBank.PlayerIDPrefix..charid
-			ARCBank.EraseAccount(ARCBank.GetAccountID(userid),false,NULLFUNC) -- We'll just assume that the account has been successfully removed
-			ARCBank.GroupAccountOwner(ply,function(errorcode,accounts)
+			keepDeleting(userid,"")
+			ARCBank.GetOwnedAccounts(userid,function(errorcode,accounts)
 				if errorcode == ARCBANK_ERROR_NONE then
 					for k,v in ipairs(accounts) do
-						ARCBank.EraseAccount(accountdata.filename,true,NULLFUNC)
+						keepDeleting(userid,v)
 					end
 				else
 					ARCBank.Msg("Failed to get list of group accounts for deleted character "..userid.." - "..ARCBANK_ERRORSTRINGS[errorcode])
@@ -239,33 +241,7 @@ else
 			end)
 		end
     end)
-	--[[
-	-- This is now handeled in the ATM entity itself.
-	%%CONFIRMATION_HASH%%
-	hook.Add( "PreCleanupMap", "ARCBank PreCleanupATM", function()
-		for _, oldatms in pairs( ents.FindByClass("sent_arc_atm") ) do
-			oldatms.ARCBank_MapEntity = false
-			--oldatms:Remove()
-		end
-	end )
 
-	hook.Add( "PostCleanupMap", "ARCBank PostCleanupATM", function() timer.Simple(1,function() ARCBank.SpawnATMs() end ) end )
-	]]
-	--[[
-	hook.Add( "ARCLoad_OnLoaded", "ARCBank SpawnATMs", function(loaded)
-		if loaded != true && loaded != "ARCBank" then return end
-			ARCBank.Load()
-			ARCBank.SpawnATMs()
-	end )
-	hook.Add( "ARCLoad_OnUpdate", "ARCBank RemoveATMs",function(loaded)
-		if loaded != "ARCBank" then return end
-		for k,v in pairs(player.GetAll()) do 
-			ARCBank.MsgCL(v,"Updating...") 
-		end
-		ARCBank.SaveDisk()
-		ARCBank.ClearATMs()
-	end)
-	]]
 	hook.Add( "InitPostEntity", "ARCBank SpawnATMs", function()
 		ARCBank.SpawnATMs()
 	end )
@@ -276,6 +252,61 @@ else
 		end
 		ARCBank.SaveDisk()
 	end)
-
+	
+	hook.Add("ARCBank_OnHackBegin","ARCBank OnHackBegin",function(ply,hackent,hackedent,amount,stealth)
+		ARCBank.Msg(ply:Nick().." ("..ply:SteamID()..") started hacking "..tostring(hackedent).." for "..amount..". Stealth: "..tostring(stealth))
+	end)
+	hook.Add("ARCBank_OnHackSuccess","ARCBank OnHackSuccess",function(ply,hackent,hackedent)
+		local msg = ply:Nick().." ("..ply:SteamID()..") successfully hacked "..tostring(hackedent).."."
+		if hackedent:GetClass() == "sent_arc_atm" then
+			msg = msg.." find user1 == \"__UNKNOWN\" in the transaction logs to see the account that has been hacked."
+		end
+		ARCBank.Msg(msg)
+	end)
+	hook.Add("ARCBank_OnHackBroken","ARCBank OnHackBroken",function(ply,hackent,hero)
+		ARCBank.Msg(ply:Nick().." ("..ply:SteamID()..") destroyed "..ply:Nick().." ("..ply:SteamID()..")'s hacking device")
+	end)
+	hook.Add("ARCBank_OnHackEnd","ARCBank OnHackEnd",function(ply,hackent)
+		ARCBank.Msg(ply:Nick().." ("..ply:SteamID()..") stopped hacking.")
+	end)
+	--[[
+	
+	ARCBANK_TRANSACTION_WITHDRAW_OR_DEPOSIT = 1 -- Withdraw/deposit
+ARCBANK_TRANSACTION_TRANSFER = 2 -- Transfer
+ARCBANK_TRANSACTION_INTEREST = 4 -- Interest
+ARCBANK_TRANSACTION_UPGRADE = 8 -- Upgrade
+ARCBANK_TRANSACTION_DOWNGRADE = 16 -- Downgrade
+ARCBANK_TRANSACTION_GROUP_ADD = 32 -- Add member
+ARCBANK_TRANSACTION_GROUP_REMOVE = 64 -- Remove member
+ARCBANK_TRANSACTION_CREATE = 128 -- Create
+ARCBANK_TRANSACTION_DELETE = 256 -- Delete
+	]]
+	hook.Add("ARCBank_OnTransaction","ARCBank OnHackEnd",function(transaction_type,account1,account2,user1,user2,money_difference,money,comment)
+		if transaction_type == ARCBANK_TRANSACTION_WITHDRAW_OR_DEPOSIT then
+			local msg = ARCBank.GetPlayerByID(user1):Nick().." ("..user1..")"
+			if money_difference < 0 then
+				msg = msg.." withdrew "..tostring(-money_difference).." from "
+			else
+				msg = msg.." deposited "..tostring(money_difference).." into "
+			end
+			ARCBank.Msg(msg..account1)
+		elseif transaction_type == ARCBANK_TRANSACTION_TRANSFER then
+			ARCBank.Msg(ARCBank.GetPlayerByID(user1):Nick().." ("..user1..") transfered "..money_difference.." to "..ARCBank.GetPlayerByID(user2):Nick().." ("..user2..") "..account1.." -> "..account2)
+		elseif transaction_type == ARCBANK_TRANSACTION_INTEREST then
+			--We really don't need this
+		elseif transaction_type == ARCBANK_TRANSACTION_UPGRADE then
+			ARCBank.Msg(ARCBank.GetPlayerByID(user1):Nick().." ("..user1..") upgraded account "..account1)
+		elseif transaction_type == ARCBANK_TRANSACTION_DOWNGRADE then
+			ARCBank.Msg(ARCBank.GetPlayerByID(user1):Nick().." ("..user1..") downgraded account "..account1)
+		elseif transaction_type == ARCBANK_TRANSACTION_GROUP_ADD then
+			ARCBank.Msg(ARCBank.GetPlayerByID(user1):Nick().." ("..user1..") added "..ARCBank.GetPlayerByID(user2):Nick().." ("..user2..") to account "..account1)
+		elseif transaction_type == ARCBANK_TRANSACTION_GROUP_REMOVE then
+			ARCBank.Msg(ARCBank.GetPlayerByID(user1):Nick().." ("..user1..") removed "..ARCBank.GetPlayerByID(user2):Nick().." ("..user2..") from account "..account1)
+		elseif transaction_type == ARCBANK_TRANSACTION_CREATE then
+			ARCBank.Msg(ARCBank.GetPlayerByID(user1):Nick().." ("..user1..") created "..account1.." with a starting balance of "..money_difference)
+		elseif transaction_type == ARCBANK_TRANSACTION_DELETE then
+			ARCBank.Msg(ARCBank.GetPlayerByID(user1):Nick().." ("..user1..") deleted "..account1)
+		end
+	end)
 end
 
