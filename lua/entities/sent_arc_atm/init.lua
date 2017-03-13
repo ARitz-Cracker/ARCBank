@@ -360,8 +360,6 @@ function ENT:Use( ply, caller )
 			self.MonehDelay = CurTime() + 5
 			if self.TakingMoney then
 				if self.Hacked then
-					MsgN(self.UsePlayer)
-					MsgN(self.args.money)
 					ARCBank.PlayerAddMoney(self.UsePlayer,self.args.money)
 					self.errorc = 0
 					self.UsePlayer = nil

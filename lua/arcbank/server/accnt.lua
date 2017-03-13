@@ -676,10 +676,10 @@ function ARCBank.CanAccessAccount(ply,account,callback,sa_internal)
 	if ARCBank.Busy then callback(ARCBANK_ERROR_BUSY) return end
 	local sc = specialAccess(ply,not sa_internal)
 	ply, account = sterilizePlayerAccount(ply,account)
+	if !ply then callback(ARCBANK_ERROR_NIL_PLAYER) return end
 	if #account >= 255 then
 		timer.Simple(0.0001, function() callback(ARCBANK_ERROR_NAME_TOO_LONG) end)
 	end
-	if !ply then callback(ARCBANK_ERROR_NIL_PLAYER) return end
 	ARCBank.ReadAccountProperties(account,function(err,data)
 		if err == ARCBANK_ERROR_NONE then
 			if data.owner == ply or sc then
@@ -928,7 +928,7 @@ function ARCBank.WriteAccountProperties(account,name,owner,rank,callback)
 		if rank then
 			q = q .. "rank="..(tonumber(rank) or 0)..","
 		end
-		q = string.sub(q,1,#q-1).." WHERE account='"..ARCBank.MySQL.Escape(account).."';"
+		q = string.sub(q,1,#q-1).." WHERE account='"..ARCBank.MySQL.Escape(tostring(account)).."';"
 		ARCBank.MySQL.Query(q,function(err,ddata)
 			if err then
 				callback(ARCBANK_ERROR_WRITE_FAILURE)
