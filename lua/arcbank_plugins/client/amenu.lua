@@ -535,6 +535,7 @@ net.Receive( "ARCBank_Admin_GUI", function(length)
 			AccountProgress:SetFraction(1)
 			
 			callback = function(err,tab)
+				if not IsValid(AccountProgress) then return end
 				if err == ARCBANK_ERROR_NONE then
 					AccountProgress:SetFraction(1)
 					for k,v in ipairs(tab) do
