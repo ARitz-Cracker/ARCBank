@@ -620,19 +620,28 @@ function ARCBank.CreateAccount(ply,groupname,rank,callback)
 	ARCBank.ReadOwnedAccounts(plyid,function(err,data)
 		if err == ARCBANK_ERROR_NONE then
 			local accounts = #data
-			if rank < ARCBANK_GROUPACCOUNTS_ then
-				accounts = accounts - 1
-				for i=1,#data do
-					if string.StartWith( data[i], "_" ) then
-						accounts = accounts + 1
-						break
-					end					
-				end
+			local hasPersonalAccount = false
+			for i=1,#data do
+				if string.StartWith( data[i], "_" ) then
+					hasPersonalAccount = true
+					break
+				end					
 			end
-			if accounts < ARCBank.Settings.account_group_limit then
-				ARCBank.WriteNewAccount(name,plyid,rank,initbalance,name,callback)
+			if rank < ARCBANK_GROUPACCOUNTS_ then
+				if hasPersonalAccount then
+					callback(ARCBANK_ERROR_TOO_MANY_ACCOUNTS)
+				else
+					ARCBank.WriteNewAccount(name,plyid,rank,initbalance,name,callback)
+				end
 			else
-				callback(ARCBANK_ERROR_TOO_MANY_ACCOUNTS)
+				if hasPersonalAccount then
+					accounts = accounts - 1
+				end
+				if accounts < ARCBank.Settings.account_group_limit then
+					ARCBank.WriteNewAccount(name,plyid,rank,initbalance,name,callback)
+				else
+					callback(ARCBANK_ERROR_TOO_MANY_ACCOUNTS)
+				end
 			end
 		else
 			callback(err)
