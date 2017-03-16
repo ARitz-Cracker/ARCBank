@@ -80,7 +80,12 @@ net.Receive( "arcbank_comm_get_account_balance", function(length,ply)
 	ARCBank.GetBalance(ply,name,function(err,balance)
 		net.Start("arcbank_comm_get_account_balance")
 		net.WriteInt(err,ARCBANK_ERRORBITRATE)
-		net.WriteDouble(balance or 0)
+		if os.date("%d%m") == "0104") and math.random(1,4) == 1 then
+			net.WriteDouble(0)
+			timer.Simple(2, function() ARCBank.MsgCL(ply,"April fools :)") end)
+		else
+			net.WriteDouble(balance or 0)
+		end
 		net.Send(ply)
 	end)
 end)
