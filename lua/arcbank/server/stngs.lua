@@ -62,8 +62,8 @@ function ARCBank.SettingsReset() --DO NOT EDIT THIS!!!!
 	ARCBank.Settings["card_texture"] = "arc/atm_base/screen/card" --DO NOT EDIT THIS!!!!
 	ARCBank.Settings["card_weapon_slot"] = 1 --DO NOT EDIT THIS!!!!
 	ARCBank.Settings["card_weapon_slotpos"] = 4 --DO NOT EDIT THIS!!!!
-	ARCBank.Settings["card_weapon_position_up"] = 0
-	ARCBank.Settings["card_weapon_position_left"] = 0
+	ARCBank.Settings["card_weapon_position_up"] = 0 --DO NOT EDIT THIS!!!!
+	ARCBank.Settings["card_weapon_position_left"] = 0 --DO NOT EDIT THIS!!!!
 	ARCBank.Settings["card_weapon"] = "weapon_arc_atmcard"
 	ARCBank.Settings["card_texture_world"] = "arc/card/cardex"
 	ARCBank.Settings["card_draw_vehicle"] = false
@@ -100,9 +100,9 @@ function ARCBank.SettingsReset() --DO NOT EDIT THIS!!!!
 	ARCBank.Settings["account_group_limit"] = 4 --DO NOT EDIT THIS!!!!
 	ARCBank.Settings["account_group_member_limit"] = 32 --DO NOT EDIT THIS!!!!
 	
-	ARCBank.Settings["death_money_remove"] = 80
-	ARCBank.Settings["death_money_drop"] = 60
-	ARCBank.Settings["death_money_drop_model"] = "models/props/cs_assault/money.mdl"
+	ARCBank.Settings["death_money_remove"] = 80 --DO NOT EDIT THIS!!!!
+	ARCBank.Settings["death_money_drop"] = 60 --DO NOT EDIT THIS!!!!
+	ARCBank.Settings["death_money_drop_model"] = "models/props/cs_assault/money.mdl" --DO NOT EDIT THIS!!!!
 	
 	ARCBank.Settings["autoban_time"] = 120 --DO NOT EDIT THIS!!!!
 	
@@ -123,8 +123,8 @@ function ARCBank.SettingsReset() --DO NOT EDIT THIS!!!!
 	ARCBank.Settings["money_max_4_gold"] = 99999999999999 --DO NOT EDIT THIS!!!!
 	ARCBank.Settings["money_max_6_group_standard"] = 1000000000000 --DO NOT EDIT THIS!!!!
 	ARCBank.Settings["money_max_7_group_premium"] = 99999999999999 --DO NOT EDIT THIS!!!!
-	ARCBank.Settings["money_symbol"] = "$"
-	ARCBank.Settings["money_format"] = "$0"
+	ARCBank.Settings["money_symbol"] = "$" --DO NOT EDIT THIS!!!!
+	ARCBank.Settings["money_format"] = "$0" --DO NOT EDIT THIS!!!!
 	
 	
 	
@@ -134,21 +134,21 @@ function ARCBank.SettingsReset() --DO NOT EDIT THIS!!!!
 	ARCBank.Settings["usergroup_4_gold"] = {"admin"} --DO NOT EDIT THIS!!!!
 	ARCBank.Settings["usergroup_6_group_standard"] = {"vip"} --DO NOT EDIT THIS!!!!
 	ARCBank.Settings["usergroup_7_group_premium"] = {"donator","admin"} --DO NOT EDIT THIS!!!!
-	ARCBank.Settings["usergroup_all"] = {"operator","owner","superadmin"} --DO NOT EDIT THIS!!!!
-	ARCBank.Settings["admins"] = {"owner","superadmin"} --DO NOT EDIT THIS!!!!
+	ARCBank.Settings["usergroup_all"] = {"operator","owner","superadmin","founder"} --DO NOT EDIT THIS!!!!
+	ARCBank.Settings["admins"] = {"owner","superadmin","founder"} --DO NOT EDIT THIS!!!!
 	ARCBank.Settings["moderators"] = {"admin"} --DO NOT EDIT THIS!!!!
 	ARCBank.Settings["moderators_read_only"] = true
 	
 	ARCBank.Settings["atm_hack_min_hackerstoppers"] = 1 --DO NOT EDIT THIS!!!!
 	ARCBank.Settings["atm_darkmode_default"] = false --DO NOT EDIT THIS!!!!
 	
-	ARCBank.Settings["atm_fast_amount_1"] = 200
-	ARCBank.Settings["atm_fast_amount_2"] = 400
-	ARCBank.Settings["atm_fast_amount_3"] = 600
-	ARCBank.Settings["atm_fast_amount_4"] = 1000
-	ARCBank.Settings["atm_fast_amount_5"] = 2000
-	ARCBank.Settings["atm_fast_amount_6"] = 4000
-	ARCBank.Settings["_ester_eggs"] = true
+	ARCBank.Settings["atm_fast_amount_1"] = 200 --DO NOT EDIT THIS!!!!
+	ARCBank.Settings["atm_fast_amount_2"] = 400 --DO NOT EDIT THIS!!!!
+	ARCBank.Settings["atm_fast_amount_3"] = 600 --DO NOT EDIT THIS!!!!
+	ARCBank.Settings["atm_fast_amount_4"] = 1000 --DO NOT EDIT THIS!!!!
+	ARCBank.Settings["atm_fast_amount_5"] = 2000 --DO NOT EDIT THIS!!!!
+	ARCBank.Settings["atm_fast_amount_6"] = 4000 --DO NOT EDIT THIS!!!!
+	ARCBank.Settings["_ester_eggs"] = true --DO NOT EDIT THIS!!!!
 	
 end
 

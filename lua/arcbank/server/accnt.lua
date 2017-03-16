@@ -572,22 +572,21 @@ function ARCBank.CreateAccount(ply,groupname,rank,callback)
 		return
 	end
 	local newb = true
-	for k,v in pairs( ARCBank.Settings["usergroup_all"] ) do
-		if ply:IsUserGroup( v ) then
-			newb = false
-		end
+	if table.HasValue(ARCBank.Settings["usergroup_all"],string.lower(ply:GetUserGroup())) then
+		newb = false
 	end
+	
 	if newb then
 		if rank < ARCBANK_GROUPACCOUNTS_ then
 			for i=rank,ARCBANK_PERSONALACCOUNTS_GOLD do
-				if table.HasValue(ARCBank.Settings["usergroup_"..i.."_"..ARCBANK_ACCOUNTSTRINGS[i]],ply:GetUserGroup()) then
+				if table.HasValue(ARCBank.Settings["usergroup_"..i.."_"..ARCBANK_ACCOUNTSTRINGS[i]],string.lower(ply:GetUserGroup())) then
 					newb = false
 					break
 				end
 			end
 		else
 			for i=rank,ARCBANK_GROUPACCOUNTS_PREMIUM do
-				if table.HasValue(ARCBank.Settings["usergroup_"..i.."_"..ARCBANK_ACCOUNTSTRINGS[i]],ply:GetUserGroup()) then
+				if table.HasValue(ARCBank.Settings["usergroup_"..i.."_"..ARCBANK_ACCOUNTSTRINGS[i]],string.lower(ply:GetUserGroup())) then
 					newb = false
 					break
 				end

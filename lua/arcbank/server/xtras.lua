@@ -5,23 +5,29 @@
 -- © Copyright 2014-2017 Aritz Beobide-Cardinal All rights reserved.
 
 function ARCBank.CapAccountRank(ply)
-	if !IsValid(ply) then
+	if not IsValid(ply) then
 		for k,v in ipairs(player.GetHumans()) do
 			ARCBank.CapAccountRank(v)
 		end
 		return
 	end
-	ARCBank.GetOwnedAccounts(ply,function(err,data)
+	local user1 = ARCBank.GetPlayerID(ply)
+	if not user1 then return end
+	ARCBank.ReadOwnedAccounts(user1,function(err,data)
 		if err != ARCBANK_ERROR_NONE then return end
+		if not IsValid(ply) then return end
+		
 		for i=1,#data do
-			ARCBank.ReadAccountProperties(data[i],function(err,data)
+			local account = data[i]
+			ARCBank.ReadAccountProperties(account,function(err,data)
 				if err != ARCBANK_ERROR_NONE then return end
+				if not IsValid(ply) then return end
 				local isgroup = data.rank > ARCBANK_GROUPACCOUNTS_
 				local maxrank = ARCBank.MaxAccountRank(ply,isgroup)
 				if data.rank > maxrank then
-					ARCBank.WriteAccountProperties(data[i],nil,nil,maxrank,function(err)
+					ARCBank.WriteAccountProperties(account,nil,nil,maxrank,function(err)
 						if err == ARCBANK_ERROR_NONE then
-							ARCBank.WriteTransaction(data[i],nil,ply,nil,0,nil,ARCBANK_TRANSACTION_DOWNGRADE,"Usergroup Cap",NULLFUNC)
+							ARCBank.WriteTransaction(account,nil,user1,nil,0,nil,ARCBANK_TRANSACTION_DOWNGRADE,"Usergroup Cap",NULLFUNC)
 						end
 					end)
 				end

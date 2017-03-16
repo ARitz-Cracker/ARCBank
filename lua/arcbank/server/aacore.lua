@@ -51,38 +51,27 @@ end
 function ARCBank.MaxAccountRank(ply,group)
 	if group then
 		local result = ARCBANK_GROUPACCOUNTS_
-		
-		for k,v in pairs( ARCBank.Settings["usergroup_all"] ) do
-			if ply:IsUserGroup( v ) then
-				result = ARCBANK_GROUPACCOUNTS_PREMIUM
-				break
-			end
+		if table.HasValue(ARCBank.Settings["usergroup_all"],string.lower(ply:GetUserGroup())) then
+			result = ARCBANK_GROUPACCOUNTS_PREMIUM
 		end
 		if result>ARCBANK_GROUPACCOUNTS_ then return result end
 		for i=ARCBANK_GROUPACCOUNTS_STANDARD,ARCBANK_GROUPACCOUNTS_PREMIUM do
-			for k,v in pairs( ARCBank.Settings["usergroup_"..i.."_"..ARCBANK_ACCOUNTSTRINGS[i]] ) do
-				if ply:IsUserGroup( v ) then
-					result = i
-					break
-				end
+			if table.HasValue(ARCBank.Settings["usergroup_"..i.."_"..ARCBANK_ACCOUNTSTRINGS[i]],string.lower(ply:GetUserGroup())) then
+				result = i
+				break
 			end
 		end
 		return result
 	else
 		local result = ARCBANK_PERSONALACCOUNTS_
-		for k,v in pairs( ARCBank.Settings["usergroup_all"] ) do
-			if ply:IsUserGroup( v ) then
-				result = ARCBANK_PERSONALACCOUNTS_GOLD
-				break
-			end
+		if table.HasValue(ARCBank.Settings["usergroup_all"],string.lower(ply:GetUserGroup())) then
+			result = ARCBANK_PERSONALACCOUNTS_GOLD
 		end
 		if result>ARCBANK_PERSONALACCOUNTS_ then return result end
 		for i=ARCBANK_PERSONALACCOUNTS_STANDARD,ARCBANK_PERSONALACCOUNTS_GOLD do
-			for k,v in pairs( ARCBank.Settings["usergroup_"..i.."_"..ARCBANK_ACCOUNTSTRINGS[i]] ) do
-				if ply:IsUserGroup( v ) then
-					result = i
-					break
-				end
+			if table.HasValue(ARCBank.Settings["usergroup_"..i.."_"..ARCBANK_ACCOUNTSTRINGS[i]],string.lower(ply:GetUserGroup())) then
+				result = i
+				break
 			end
 		end
 		return result
