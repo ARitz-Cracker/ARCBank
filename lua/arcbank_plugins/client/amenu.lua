@@ -256,7 +256,6 @@ local function NewAccountPropertiesWindow(account)
 							else
 								Derma_Message( ARCBANK_ERRORSTRINGS[err], accountdata.name, ARCBank.Msgs.ATMMsgs.OK )
 							end
-							ent.Loading = false
 						end)
 					end
 					
@@ -390,8 +389,8 @@ net.Receive( "ARCBank_Admin_GUI", function(length)
 		AccountsButton:SetSize( 180, 20 )
 		AccountsButton.DoClick = function()
 			local callback
-		
-		
+			local ResultList
+			
 			local AccountTable = {}
 			local SelectedAccountIndex = 1
 			local AccountMenu = vgui.Create( "DFrame" )
@@ -406,6 +405,8 @@ net.Receive( "ARCBank_Admin_GUI", function(length)
 			local SIDBox = vgui.Create( "DTextEntry", AccountMenu )
 			local RankList= vgui.Create( "DComboBox",AccountMenu)
 			local NameBox = vgui.Create( "DTextEntry", AccountMenu )
+			local ResultList = vgui.Create( "DComboBox",AccountMenu)
+			local AccountProgress = vgui.Create( "DProgress",AccountMenu )
 			RankList:SetPos(10,30)
 			RankList:SetSize( 200, 20 )
 			RankList:SetText( "" )
@@ -462,7 +463,7 @@ net.Receive( "ARCBank_Admin_GUI", function(length)
 			SIDSelect= vgui.Create( "DComboBox",AccountMenu)
 			SIDSelect:SetPos(10,90)
 			SIDSelect:SetSize( 100, 20 )
-			SIDSelect:SetText("Account owner or member")
+			SIDSelect:SetText(ARCBank.Msgs.AdminMenu.AccountMemberOwner)
 			function SIDSelect:OnSelect(index,value,data)
 				ARCBank_AdminMenuSIDOption = index
 			end
@@ -521,19 +522,20 @@ net.Receive( "ARCBank_Admin_GUI", function(length)
 				ARCBank.AdminSearch(ARCBank_AdminMenuBalOption+3,tostring(Balnum:GetValue()),callback)
 			end
 			
-			ResultList= vgui.Create( "DComboBox",AccountMenu)
+			
 			ResultList:SetPos(10,150)
 			ResultList:SetSize( 320, 20 )
 			ResultList:SetText("")
 			function ResultList:OnSelect(index,value,data)
 				NewAccountPropertiesWindow(data)
 			end
-			AccountProgress = vgui.Create( "DProgress",AccountMenu )
+			
 			AccountProgress:SetPos( 10, 180 )
 			AccountProgress:SetSize( 320, 20 )
 			AccountProgress:SetFraction(1)
 			
 			callback = function(err,tab)
+				if not IsValid(AccountProgress) then return end
 				if err == ARCBANK_ERROR_NONE then
 					AccountProgress:SetFraction(1)
 					for k,v in ipairs(tab) do

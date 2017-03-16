@@ -495,6 +495,7 @@ net.Receive( "arcbank_comm_admin_search", function(length,ply)
 	elseif search == 2 then -- Group Member (UserID)
 		ARCBank.GetGroupAccounts(term,callback)
 	elseif search == 3 then -- Accessable accounts (UserID) (Group member and account owner combined)
+		ARCBank.GetAccessableAccounts(term,callback)
 	elseif isfunction(comparefuncsbal[search]) then
 		term = tonumber(term) or 0
 		ARCBank.ReadAllAccountProperties(function(err,data)

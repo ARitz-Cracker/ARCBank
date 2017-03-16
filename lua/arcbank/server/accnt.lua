@@ -619,7 +619,17 @@ function ARCBank.CreateAccount(ply,groupname,rank,callback)
 	local plyid = ARCBank.GetPlayerID(ply)
 	ARCBank.ReadOwnedAccounts(plyid,function(err,data)
 		if err == ARCBANK_ERROR_NONE then
-			if #data < ARCBank.Settings.account_group_limit then
+			local accounts = #data
+			if rank < ARCBANK_GROUPACCOUNTS_ then
+				accounts = accounts - 1
+				for i=1,#data do
+					if string.StartWith( data[i], "_" ) then
+						accounts = accounts + 1
+						break
+					end					
+				end
+			end
+			if accounts < ARCBank.Settings.account_group_limit then
 				ARCBank.WriteNewAccount(name,plyid,rank,initbalance,name,callback)
 			else
 				callback(ARCBANK_ERROR_TOO_MANY_ACCOUNTS)
@@ -666,10 +676,10 @@ function ARCBank.CanAccessAccount(ply,account,callback,sa_internal)
 	if ARCBank.Busy then callback(ARCBANK_ERROR_BUSY) return end
 	local sc = specialAccess(ply,not sa_internal)
 	ply, account = sterilizePlayerAccount(ply,account)
+	if !ply then callback(ARCBANK_ERROR_NIL_PLAYER) return end
 	if #account >= 255 then
 		timer.Simple(0.0001, function() callback(ARCBANK_ERROR_NAME_TOO_LONG) end)
 	end
-	if !ply then callback(ARCBANK_ERROR_NIL_PLAYER) return end
 	ARCBank.ReadAccountProperties(account,function(err,data)
 		if err == ARCBANK_ERROR_NONE then
 			if data.owner == ply or sc then
@@ -918,7 +928,7 @@ function ARCBank.WriteAccountProperties(account,name,owner,rank,callback)
 		if rank then
 			q = q .. "rank="..(tonumber(rank) or 0)..","
 		end
-		q = string.sub(q,1,#q-1).." WHERE account='"..ARCBank.MySQL.Escape(account).."';"
+		q = string.sub(q,1,#q-1).." WHERE account='"..ARCBank.MySQL.Escape(tostring(account)).."';"
 		ARCBank.MySQL.Query(q,function(err,ddata)
 			if err then
 				callback(ARCBANK_ERROR_WRITE_FAILURE)

@@ -165,6 +165,7 @@ function ENT:HackComplete(ply,amount,rand)
 		--self:StopHack()
 		self.args = {}
 		self.UsePlayer = ply
+		
 		self:SetARCBankUsePlayer(ply)
 		local nextper = 0
 		ARCBank.StealMoney(ply,rand,amount,function(err,progress,amount)
@@ -175,6 +176,7 @@ function ENT:HackComplete(ply,amount,rand)
 				end
 			elseif err == 0 then
 				ARCBank.MsgCL(ply,ARCBank.Msgs.Items.Hacker..": (%100)")
+				self.args.money = amount
 				self:WithdrawAnimation()
 				timer.Simple(self.ATMType.PauseBeforeWithdrawAnimation + self.ATMType.PauseAfterWithdrawAnimation + self.ATMType.WithdrawAnimationLength,function()
 					if !IsValid(self) then return end
