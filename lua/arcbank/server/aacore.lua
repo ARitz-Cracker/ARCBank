@@ -211,6 +211,7 @@ function ARCBank.Load()
 							ARCBank.Msg("Interest will be given next on "..os.date( "%X - %d-%m-%Y", ARCBank.Disk.LastInterestTime+ARCBank.Settings["interest_time"]*3600 ))
 						end
 					end
+					recursiveCallback()
 				end
 				file.Write(ARCBank.Dir.."/__data.txt", util.TableToJSON(ARCBank.Disk) )
 				--ARCBank.UpdateLang(ARCBank.Settings["atm_language"])

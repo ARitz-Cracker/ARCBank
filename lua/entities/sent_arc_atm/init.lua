@@ -628,10 +628,7 @@ net.Receive( "ARCATM_COMM_CASH", function(length,ply)
 	if take then
 		--atm.TakingMoney = true
 		--ARCBank.CanAfford(atm.UsePlayer,amount,acc,function(errc)
-		ARCBank.GetBalance(ply,account,function(errc,currentbalance)
-			if errc == ARCBANK_ERROR_NONE and (currentbalance - amount) + ARCBank.Settings.account_debt_limit < 0 then
-				errc = ARCBANK_ERROR_NO_CASH
-			end
+		ARCBank.CanAfford(ply,account,amount,function(errc)
 			atm.errorc = errc
 			
 			if atm.errorc == ARCBANK_ERROR_NONE then

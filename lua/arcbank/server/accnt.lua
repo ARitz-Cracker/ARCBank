@@ -384,7 +384,21 @@ function ARCBank.AddMoney(ply,account,amount,transaction_type,comment,callback)
 		end
 	end,true)
 end
-function ARCBank.GetBalance(ply,account,callback)
+function ARCBank.CanAfford(ply,account,amount,callback)
+	ARCBank.GetBalance(ply,account,function(err,money)
+		if err == ARCBANK_ERROR_NONE then
+			if (money - amount) + ARCBank.Settings.account_debt_limit >= 0 then
+				callback(ARCBANK_ERROR_NONE)
+			else
+				callback(ARCBANK_ERROR_NO_CASH)
+			end
+		else
+			callback(err)
+		end
+	end,true)
+end
+
+function ARCBank.GetBalance(ply,account,callback,sa_internal)
 	if ARCBank.Busy then callback(ARCBANK_ERROR_BUSY) return end
 	ARCBank.GetAccountProperties(ply,account,function(err,data)
 		if err == ARCBANK_ERROR_NONE then
@@ -393,7 +407,7 @@ function ARCBank.GetBalance(ply,account,callback)
 		else
 			callback(err)
 		end
-	end)
+	end,sa_internal)
 end
 function ARCBank.GetLog(ply,account,timestamp,transaction_type,callback)
 	if ARCBank.Busy then callback(ARCBANK_ERROR_BUSY) return end
@@ -487,7 +501,6 @@ function ARCBank.GroupRemovePlayer(ply,account,otherply,comment,callback)
 			end
 			ARCBank.ReadGroupMembers(account,function(errcode,data)
 				if errcode == ARCBANK_ERROR_NONE then
-					PrintTable(data)
 					if table.HasValue(data,otherply) then
 						ARCBank.WriteGroupMemberRemove(account,otherply,function(errcode)
 							if errcode == ARCBANK_ERROR_NONE then
@@ -727,7 +740,7 @@ end
 
 local function accountInterest(accounts,i,callback)
 	if i <= #accounts then
-		ARCBank.ReadTransactions(accounts[i],os.time()-(ARCBank.Settings["account_interest_time_limit"]*86400),bit.bnot(ARCBANK_TRANSACTION_EVERYTHING,ARCBANK_TRANSACTION_INTEREST),function(errcode,progress,data)
+		ARCBank.ReadTransactions(accounts[i].account,os.time()-(ARCBank.Settings["account_interest_time_limit"]*86400),bit.band(ARCBANK_TRANSACTION_EVERYTHING,bit.bnot(ARCBANK_TRANSACTION_INTEREST)),function(errcode,progress,data)
 			if errcode == ARCBANK_ERROR_NONE then
 				if #data > 0 then
 					local interest = ARCBank.Settings["interest_"..accounts[i].rank.."_"..ARCBANK_ACCOUNTSTRINGS[accounts[i].rank]] or 0
@@ -982,9 +995,9 @@ function ARCBank.WriteBalanceMultiply(account1,account2,user1,user2,amount,trans
 		if err == ARCBANK_ERROR_NONE then
 			ARCBank.ReadBalance(account1,function(err,currentbalance)
 				if err == ARCBANK_ERROR_NONE then
-					local total = currentbalance * amount
+					local total = math.floor(currentbalance * amount)
 					local difference = total - currentbalance
-					if amount < 1 and total + ARCBank.Settings.account_debt_limit*ARCLib.BoolToNumber(allowdebt) < 0 then
+					if total + ARCBank.Settings.account_debt_limit*ARCLib.BoolToNumber(allowdebt) < 0 then
 						ARCBank.UnlockAccount(account1,NULLFUNC) -- Hope it works
 						callback(ARCBANK_ERROR_NO_CASH)
 					elseif amount > 1 and total > (maxcash or 99999999999999) then
@@ -1156,7 +1169,7 @@ function ARCBank.WriteTransaction(account1,account2,user1,user2,moneydiff,money,
 				currentLogFile = ARCBank.Dir.."/logs_1.4/"..time_override..".txt"
 				currentLogLine = 1
 			else
-				currentLogFile = ARCBank.Dir.."/logs_1.4/"..currentLogs[1]
+				currentLogFile = ARCBank.Dir.."/logs_1.4/"..currentLogs[#currentLogs]
 				
 				currentLogLine = #string.Explode("\r\n",file.Read(currentLogFile,"DATA"))
 				if currentLogLine > 4096 then
@@ -1493,6 +1506,7 @@ function ARCBank.ReadTransactions(filename,timestamp,ttype,callback) -- TODO: LI
 	filename = filename or ""
 	ttype = tonumber(ttype) or 0
 	ttype = bit.band( ttype, ARCBANK_TRANSACTION_EVERYTHING ) -- Clamp it to 16 bit
+	--print("ttype:",ttype)
 	if ARCBank.IsMySQLEnabled() then
 		local q = "SELECT * FROM arcbank_log WHERE timestamp >= "..timestamp
 		if filename != "" then
@@ -1558,7 +1572,6 @@ ARCLib.AddThinkFunc("ARCBank ReadTransactions",function() -- Look at this guy, r
 				local transaction_type = tonumber(stuffs[9])
 				local timestamp = tonumber(stuffs[2]) or 0
 				local account1 = stuffs[3]
-				
 				
 				if (filename == "" or account1 == filename) and (ttype == 0 or bit.band(transaction_type,ttype) > 0) and timestamp >= timestampstart then
 					datalen = datalen + 1
