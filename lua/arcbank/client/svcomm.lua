@@ -3,6 +3,12 @@
 -- Any 3rd party content has been used as either public domain or with permission.
 -- © Copyright 2014-2017 Aritz Beobide-Cardinal All rights reserved.
 
+
+net.Receive( "arcbank_viewsettings", function(length)
+	ARCBank.ATM_DarkTheme = net.ReadBool()
+	LocalPlayer().ARCBank_FullScreen = net.ReadBool()
+end)
+
 local ARCBank_PingBusy = false
 local ARCBank_PingCallBack = {}
 local ARCBank_PingCount = 1

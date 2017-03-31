@@ -79,6 +79,8 @@ function ARCBank.PurgeAccounts(callback)
 end
 
 function ARCBank.GetAccountName(account,callback)
+	assert(isstring(account),"ARCBank.GetAccountName: Argument #1 is not a string")
+	assert(isfunction(callback),"ARCBank.GetAccountName: Argument #2 is not a function")
 	if ARCBank.Busy then callback(ARCBANK_ERROR_BUSY) return end
 	ARCBank.ReadAccountProperties(account,function(err,data)
 		if err == ARCBANK_ERROR_NONE then
@@ -109,6 +111,8 @@ function ARCBank.ChangeAccountName(ply,account,name,callback)
 	end)
 end
 function ARCBank.UpgradeAccount(ply,account,callback)
+	assert(isstring(account),"ARCBank.UpgradeAccount: Argument #2 is not a string")
+	assert(isfunction(callback),"ARCBank.UpgradeAccount: Argument #3 is not a function")
 	if ARCBank.Busy then callback(ARCBANK_ERROR_BUSY) return end
 	local sc = specialAccess(ply)
 	ply, account = sterilizePlayerAccount(ply,account)
@@ -139,6 +143,8 @@ function ARCBank.UpgradeAccount(ply,account,callback)
 	end)
 end
 function ARCBank.DowngradeAccount(ply,account,callback)
+	assert(isstring(groupname),"ARCBank.DowngradeAccount: Argument #2 is not a string")
+	assert(isfunction(callback),"ARCBank.DowngradeAccount: Argument #3 is not a function")
 	if ARCBank.Busy then callback(ARCBANK_ERROR_BUSY) return end
 	local sc = specialAccess(ply)
 	ply, account = sterilizePlayerAccount(ply,account)
@@ -220,6 +226,10 @@ end
 function ARCBank.StealMoney(ply,multiple,amount,callback)
 	if ARCBank.Busy then callback(ARCBANK_ERROR_BUSY) return end
 	ARCBank.ReadAllAccountProperties(function(errcode,accounts)
+		if errcode != ARCBANK_ERROR_NONE then
+			callback(errcode)
+			return
+		end
 		table.sort( accounts, hackSortFunc )
 		local moneyToHack = {}
 		local brokeAccounts = {}
@@ -243,6 +253,10 @@ function ARCBank.StealMoney(ply,multiple,amount,callback)
 	end)
 end
 function ARCBank.AddFromWallet(ply,account,amount,comment,callback,transaction_type)
+	assert(isstring(account),"ARCBank.AddFromWallet: Argument #2 is not a string")
+	assert(isnumber(amount),"ARCBank.AddFromWallet: Argument #3 is not a number")
+	assert(isstring(comment),"ARCBank.AddFromWallet: Argument #4 is not a string")
+	assert(isfunction(callback),"ARCBank.AddFromWallet: Argument #5 is not a function")
 	transaction_type = tonumber(transaction_type) or ARCBANK_TRANSACTION_WITHDRAW_OR_DEPOSIT
 	if ARCBank.Busy then callback(ARCBANK_ERROR_BUSY) return end
 	if not IsValid(ply) or not ply:IsPlayer() then
@@ -272,6 +286,11 @@ local function UnlockAccouts(account1,account2,callback)
 end
 
 function ARCBank.Transfer(plyfrom,plyto,accountfrom,accountto,amount,comment,callback)
+	assert(isstring(accountfrom),"ARCBank.Transfer: Argument #3 is not a string")
+	assert(isstring(accountto),"ARCBank.Transfer: Argument #4 is not a string")
+	assert(isnumber(amount),"ARCBank.Transfer: Argument #5 is not a number")
+	assert(isstring(comment),"ARCBank.Transfer: Argument #6 is not a string")
+	assert(isfunction(callback),"ARCBank.Transfer: Argument #7 is not a function")
 	if ARCBank.Busy then callback(ARCBANK_ERROR_BUSY) return end
 	if amount < 0 then
 		callback(ARCBANK_ERROR_EXPLOIT)
@@ -370,6 +389,10 @@ function ARCBank.Transfer(plyfrom,plyto,accountfrom,accountto,amount,comment,cal
 end
 
 function ARCBank.AddMoney(ply,account,amount,transaction_type,comment,callback)
+	assert(isstring(account),"ARCBank.CanAfford: Argument #2 is not a string")
+	assert(isnumber(amount),"ARCBank.CanAfford: Argument #3 is not a number")
+	assert(isstring(comment),"ARCBank.CanAfford: Argument #5 is not a string")
+	assert(isfunction(callback),"ARCBank.CanAfford: Argument #6 is not a function")
 	if ARCBank.Busy then callback(ARCBANK_ERROR_BUSY) return end
 	ARCBank.GetAccountProperties(ply,account,function(err,data)
 		if err == ARCBANK_ERROR_NONE then
@@ -378,13 +401,16 @@ function ARCBank.AddMoney(ply,account,amount,transaction_type,comment,callback)
 				return
 			end
 			ply, account = sterilizePlayerAccount(ply,account)
-			ARCBank.WriteBalanceAdd(account,nil,ply,nil,amount,transaction_type or ARCBANK_TRANSACTION_OTHER,comment,callback,true,ARCBank.Settings["money_max_"..data.rank.."_"..ARCBANK_ACCOUNTSTRINGS[data.rank]])
+			ARCBank.WriteBalanceAdd(account,nil,ply,nil,amount,tonumber(transaction_type) or ARCBANK_TRANSACTION_OTHER,comment,callback,true,ARCBank.Settings["money_max_"..data.rank.."_"..ARCBANK_ACCOUNTSTRINGS[data.rank]])
 		else
 			callback(err)
 		end
 	end,true)
 end
 function ARCBank.CanAfford(ply,account,amount,callback)
+	assert(isstring(account),"ARCBank.CanAfford: Argument #2 is not a string")
+	assert(isnumber(amount),"ARCBank.CanAfford: Argument #3 is not a number")
+	assert(isfunction(callback),"ARCBank.CanAfford: Argument #4 is not a function")
 	ARCBank.GetBalance(ply,account,function(err,money)
 		if err == ARCBANK_ERROR_NONE then
 			if (money - amount) + ARCBank.Settings.account_debt_limit >= 0 then
@@ -399,6 +425,8 @@ function ARCBank.CanAfford(ply,account,amount,callback)
 end
 
 function ARCBank.GetBalance(ply,account,callback,sa_internal)
+	assert(isstring(account),"ARCBank.GetBalance: Argument #2 is not a string")
+	assert(isfunction(callback),"ARCBank.GetBalance: Argument #3 is not a function")
 	if ARCBank.Busy then callback(ARCBANK_ERROR_BUSY) return end
 	ARCBank.GetAccountProperties(ply,account,function(err,data)
 		if err == ARCBANK_ERROR_NONE then
@@ -410,6 +438,10 @@ function ARCBank.GetBalance(ply,account,callback,sa_internal)
 	end,sa_internal)
 end
 function ARCBank.GetLog(ply,account,timestamp,transaction_type,callback)
+	assert(isstring(account),"ARCBank.GetLog: Argument #2 is not a string")
+	assert(isnumber(timestamp),"ARCBank.GetLog: Argument #3 is not a number")
+	assert(isnumber(transaction_type),"ARCBank.GetLog: Argument #4 is not a number")
+	assert(isfunction(callback),"ARCBank.GetLog: Argument #5 is not a function")
 	if ARCBank.Busy then callback(ARCBANK_ERROR_BUSY) return end
 	--ply, account = sterilizePlayerAccount(ply,account)
 	--if !ply then callback(ARCBANK_ERROR_NIL_PLAYER) return end
@@ -424,6 +456,7 @@ function ARCBank.GetLog(ply,account,timestamp,transaction_type,callback)
 end
 
 function ARCBank.GetAccessableAccounts(ply,callback)
+	assert(isfunction(callback),"ARCBank.GetAccessableAccounts: Argument #2 is not a function")
 	if ARCBank.Busy then callback(ARCBANK_ERROR_BUSY) return end
 	ply = sterilizePlayerAccount(ply,"")
 	if !ply then callback(ARCBANK_ERROR_NIL_PLAYER) return end
@@ -457,6 +490,8 @@ function ARCBank.GetOwnedAccounts(ply,callback)
 end
 
 function ARCBank.GroupGetPlayers(ply,account,callback)
+	assert(isstring(account),"ARCBank.GroupGetPlayers: Argument #2 is not a string")
+	assert(isfunction(callback),"ARCBank.GroupGetPlayers: Argument #3 is not a function")
 	if ARCBank.Busy then callback(ARCBANK_ERROR_BUSY) return end
 	local sa = specialAccess(ply,true)
 	ply, account = sterilizePlayerAccount(ply,account)
@@ -484,6 +519,10 @@ function ARCBank.GroupGetPlayers(ply,account,callback)
 end
 
 function ARCBank.GroupRemovePlayer(ply,account,otherply,comment,callback)
+	assert(isstring(account),"ARCBank.GroupRemovePlayer: Argument #2 is not a string")
+	--assert(isstring(otherply) or (IsValid(otherply) and otherply:IsPlayer()),"ARCBank.GroupRemovePlayer: Argument #3 is not a string or player")
+	assert(isstring(comment),"ARCBank.GroupRemovePlayer: Argument #4 is not a string")
+	assert(isfunction(callback),"ARCBank.GroupRemovePlayer: Argument #5 is not a function")
 	if ARCBank.Busy then callback(ARCBANK_ERROR_BUSY) return end
 	local sa = specialAccess(ply)
 	ply, account = sterilizePlayerAccount(ply,account)
@@ -523,6 +562,10 @@ function ARCBank.GroupRemovePlayer(ply,account,otherply,comment,callback)
 end
 
 function ARCBank.GroupAddPlayer(ply,account,otherply,comment,callback)
+	assert(isstring(account),"ARCBank.GroupAddPlayer: Argument #2 is not a string")
+	--assert(isstring(otherply) or (IsValid(otherply) and otherply:IsPlayer()),"ARCBank.GroupAddPlayer: Argument #3 is not a string or player")
+	assert(isstring(comment),"ARCBank.GroupAddPlayer: Argument #4 is not a string")
+	assert(isfunction(callback),"ARCBank.GroupAddPlayer: Argument #5 is not a function")
 	if ARCBank.Busy then callback(ARCBANK_ERROR_BUSY) return end
 	local sa = specialAccess(ply)
 	ply, account = sterilizePlayerAccount(ply,account)
@@ -578,6 +621,9 @@ function ARCBank.GroupAddPlayer(ply,account,otherply,comment,callback)
 end
 
 function ARCBank.CreateAccount(ply,groupname,rank,callback)
+	assert(isstring(groupname),"ARCBank.CreateAccount: Argument #2 is not a string")
+	assert(isnumber(rank),"ARCBank.CreateAccount: Argument #3 is not a number")
+	assert(isfunction(callback),"ARCBank.CreateAccount: Argument #4 is not a function")
 	if !ARCBank.Loaded then callback(ARCBANK_ERROR_NOT_LOADED) return end
 	if ARCBank.Busy then callback(ARCBANK_ERROR_BUSY) return end
 	if not IsValid(ply) or not ply:IsPlayer() then
@@ -641,7 +687,7 @@ function ARCBank.CreateAccount(ply,groupname,rank,callback)
 			end
 			if rank < ARCBANK_GROUPACCOUNTS_ then
 				if hasPersonalAccount then
-					callback(ARCBANK_ERROR_TOO_MANY_ACCOUNTS)
+					callback(ARCBANK_ERROR_NAME_DUPE)
 				else
 					ARCBank.WriteNewAccount(name,plyid,rank,initbalance,name,callback)
 				end
@@ -661,6 +707,9 @@ function ARCBank.CreateAccount(ply,groupname,rank,callback)
 	end)
 end
 function ARCBank.RemoveAccount(ply,account,comment,callback)
+	assert(isstring(groupname),"ARCBank.RemoveAccount: Argument #2 is not a string")
+	assert(isstring(reason),"ARCBank.RemoveAccount: Argument #3 is not a string")
+	assert(isfunction(callback),"ARCBank.RemoveAccount: Argument 4 is not a function")
 	if ARCBank.Busy then callback(ARCBANK_ERROR_BUSY) return end
 	local sa = specialAccess(ply)
 	ply, account = sterilizePlayerAccount(ply,account)
@@ -694,6 +743,8 @@ end
 
 
 function ARCBank.CanAccessAccount(ply,account,callback,sa_internal)
+	assert(isstring(account),"ARCBank.GetAccountProperties: Argument #2 is not a string")
+	assert(isfunction(callback),"ARCBank.GetAccountProperties: Argument #3 is not a function")
 	if ARCBank.Busy then callback(ARCBANK_ERROR_BUSY) return end
 	local sc = specialAccess(ply,not sa_internal)
 	ply, account = sterilizePlayerAccount(ply,account)

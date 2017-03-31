@@ -30,9 +30,9 @@ function ENT:Draw()
     local Ang = self:GetAngles()
 
     surface.SetFont("ChatFont")
+	if not ARCBank.Settings.money_format or not ARCBank.Settings.money_symbol then return end
 	
-	
-    local text = string.Replace( string.Replace( ARCBank.Settings["money_format"], "$", ARCBank.Settings.money_symbol ) , "0", tostring(self:GetMoneyAmount()))
+    local text = string.Replace( string.Replace( ARCBank.Settings.money_format, "$", ARCBank.Settings.money_symbol ) , "0", tostring(self:GetMoneyAmount()))
     local TextWidth = surface.GetTextSize(text)
 
     cam.Start3D2D(self:LocalToWorld(Pos+offset), Ang, 0.1)

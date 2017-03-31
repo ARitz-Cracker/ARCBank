@@ -529,7 +529,6 @@ function ENT:ATM_USE(activator)
 			self:SetARCBankUsePlayer(activator)
 			activator:SwitchToDefaultWeapon() 
 			activator:StripWeapon( ARCBank.Settings["card_weapon"] ) 
-			--activator:SendLua( "achievements.EatBall()" );
 			if IsValid(activator) then
 				net.Start( "ARCATM_USE" )
 				net.WriteEntity( self )
@@ -628,7 +627,7 @@ net.Receive( "ARCATM_COMM_CASH", function(length,ply)
 	if take then
 		--atm.TakingMoney = true
 		--ARCBank.CanAfford(atm.UsePlayer,amount,acc,function(errc)
-		ARCBank.CanAfford(ply,account,amount,function(errc)
+		ARCBank.CanAfford(ply,acc,amount,function(errc)
 			atm.errorc = errc
 			
 			if atm.errorc == ARCBANK_ERROR_NONE then

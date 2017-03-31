@@ -186,7 +186,7 @@ function ARCBank.MySQL.Connect()
 
 end
 local ignorableErrors = {"Duplicate entry "}
-local resetErrors = {}
+local resetErrors = {"Lost connection to MySQL server during query"}
 function ARCBank.MySQL.Query(str,callback)
 	local function onSuccess( data )
 		callback(nil,data)

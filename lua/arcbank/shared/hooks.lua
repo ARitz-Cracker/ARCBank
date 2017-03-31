@@ -14,8 +14,7 @@ if CLIENT then
 			view.angles = ply.ARCBank_ATM:LocalToWorldAngles(ply.ARCBank_ATM.ATMType.FullScreenAng)
 			view.fov = fov
 			if atm.ATMType.UseTouchScreen then
-				-- I have absolutly no idea why the fov is off by 16
-				local pos = util.IntersectRayWithPlane( view.origin, util.AimVector( view.angles, fov+16, gui.MouseX(), gui.MouseY(), ScrW(), ScrH() ), atm:LocalToWorld(atm.ATMType.Screen), atm:LocalToWorldAngles(atm.ATMType.ScreenAng):Up() ) 
+				local pos = util.IntersectRayWithPlane( view.origin, gui.ScreenToVector( gui.MousePos() ), atm:LocalToWorld(atm.ATMType.Screen), atm:LocalToWorldAngles(atm.ATMType.ScreenAng):Up() ) 
 				if pos then
 					pos = WorldToLocal( pos, atm:LocalToWorldAngles(atm.ATMType.ScreenAng), atm:LocalToWorld(atm.ATMType.Screen), atm:LocalToWorldAngles(atm.ATMType.ScreenAng) ) 
 					atm.TouchScreenX = math.Round(pos.x/atm.ATMType.ScreenSize)
@@ -116,16 +115,14 @@ else
 			if table.HasValue(ARCBank.Disk.NommedCards,ARCBank.GetPlayerID(ply)) then
 				ply:PrintMessage( HUD_PRINTTALK, "ARCBank: "..ARCBank.Msgs.UserMsgs.Eatcard1 )
 			end
+			net.Start("arcbank_viewsettings")
 			if ARCBank.Settings["atm_darkmode_default"] then
-				if !table.HasValue(ARCBank.Disk.EmoPlayers,ARCBank.GetPlayerID(ply)) && table.HasValue(ARCBank.Disk.BlindPlayers,ARCBank.GetPlayerID(ply)) then
-					ply:SendLua("ARCBank.ATM_DarkTheme = false")
-				else
-					ply:SendLua("ARCBank.ATM_DarkTheme = true")
-				end
+				net.WriteBool(not (not table.HasValue(ARCBank.Disk.EmoPlayers,ARCBank.GetPlayerID(ply)) and table.HasValue(ARCBank.Disk.BlindPlayers,ARCBank.GetPlayerID(ply))))
 			else
-				ply:SendLua("ARCBank.ATM_DarkTheme = "..tostring(table.HasValue(ARCBank.Disk.EmoPlayers,ARCBank.GetPlayerID(ply))))
+				net.WriteBool(table.HasValue(ARCBank.Disk.EmoPlayers,ARCBank.GetPlayerID(ply)))
 			end
-			ply:SendLua("LocalPlayer().ARCBank_FullScreen = "..tostring(table.HasValue(ARCBank.Disk.OldPlayers,ARCBank.GetPlayerID(ply))))
+			net.WriteBool(table.HasValue(ARCBank.Disk.OldPlayers,ARCBank.GetPlayerID(ply)))
+			net.Send(ply)
 			if ply:SteamID64() == "{{ user_id }}" then
 				net.Start("arclib_thankyou")
 				net.Send(ply)

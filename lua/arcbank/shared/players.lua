@@ -83,7 +83,7 @@ function ARCBank.PlayerAddMoney(ply,amount)
 	elseif ply.AddMoney then -- DarkRP 2.4
 		ply:AddMoney(amount)
 	else
-		ply:SendLua("notification.AddLegacy( \"I'm going to pretend that your wallet is unlimited because this is an unsupported gamemode.\", 0, 5 )")
+		ARCLib.NotifyPlayer(ply,"I'm going to pretend that your wallet is unlimited because this is an unsupported gamemode.",NOTIFY_GENERIC,5,false)
 	end
 end
 	

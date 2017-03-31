@@ -1340,7 +1340,7 @@ function ENT:Screen_Main()
 			end
 		else
 			if self.RebootTime - 0.3214 < CurTime() then
-				if self.Percent < math.Rand(0.25,0.5) then
+				if not self.Hacked or self.Percent < math.Rand(0.25,0.5) then
 					self:Screen_Welcome()
 				end
 			end
@@ -1370,27 +1370,31 @@ function ENT:Screen_Main()
 		--ARCBank_Draw:Window_MsgBox(-120,-50,220,"","Hello\nBob!\n!!!! Wow this is cool! It supports \n and everything!",false,0,ARCLib.GetIcon(2,"cancel"),nil)
 		if self.Hacked then
 			if self.Percent > 0.0415 && self.Percent < 1 then
-				ARCBank_Draw:Window_MsgBox(-120,-50,220,"","user is not in the sudoers file. This incident will be reported.",ARCBank.ATM_DarkTheme,1,ARCLib.GetIcon(2,"cancel"),nil,self.ATMType.ForegroundColour)
+				ARCBank_Draw:Window_MsgBox(-120,-50,220,"/usr/bin/arcbank-client","",ARCBank.ATM_DarkTheme,1,ARCLib.GetIcon(2,"cancel"),nil,self.ATMType.ForegroundColour)
+			end
+			if self.Percent > 0.0515 && self.Percent < 1 then
+				ARCBank_Draw:Window_MsgBox(-120,-50,220,"/usr/bin/arcbank-client","sudo: user is not in the sudoers file. This incident will be reported.",ARCBank.ATM_DarkTheme,1,ARCLib.GetIcon(2,"cancel"),nil,self.ATMType.ForegroundColour)
 			end
 			if self.Percent > 0.1 && self.Percent < 1 then
-				ARCBank_Draw:Window_MsgBox(-135,-150,250,"","The instruction at '0x18a5ef73' referenced memory at '0x28fe5a7c'. \nThe memory could not be written.",ARCBank.ATM_DarkTheme,6,ARCLib.GetIcon(2,"cancel"),nil,self.ATMType.ForegroundColour)
+				ARCBank_Draw:Window_MsgBox(-135,-150,250,"Segmentation fault","The instruction at '0x18a5ef73' referenced memory at '0x28fe5a7c'. \nThe memory could not be written.",ARCBank.ATM_DarkTheme,6,ARCLib.GetIcon(2,"cancel"),nil,self.ATMType.ForegroundColour)
 			end
 			if self.Percent > 0.12 && self.Percent < 1 then
-				ARCBank_Draw:Window_MsgBox(-135,-120,250,"","The instruction at '0x28fe5a7c' referenced memory at '0x04d42f78'. \nThe memory could not be written.",ARCBank.ATM_DarkTheme,6,ARCLib.GetIcon(2,"cancel"),nil,self.ATMType.ForegroundColour)
+				ARCBank_Draw:Window_MsgBox(-135,-120,250,"Segmentation fault","The instruction at '0x28fe5a7c' referenced memory at '0x04d42f78'. \nThe memory could not be written.",ARCBank.ATM_DarkTheme,6,ARCLib.GetIcon(2,"cancel"),nil,self.ATMType.ForegroundColour)
 			end
 			if self.Percent > 0.14 && self.Percent < 1 then
-				ARCBank_Draw:Window_MsgBox(-135,-90,250,"","The instruction at '0x28fe5a7c' referenced memory at '0x00000000'. \nThe memory could not be read.",ARCBank.ATM_DarkTheme,6,ARCLib.GetIcon(2,"cancel"),nil,self.ATMType.ForegroundColour)
+				ARCBank_Draw:Window_MsgBox(-135,-90,250,"Segmentation fault","The instruction at '0x28fe5a7c' referenced memory at '0x00000000'. \nThe memory could not be read.",ARCBank.ATM_DarkTheme,6,ARCLib.GetIcon(2,"cancel"),nil,self.ATMType.ForegroundColour)
 			end
 			if self.Percent > 0.16 && self.Percent < 1 then
-				ARCBank_Draw:Window_MsgBox(-135,-60,250,"","The instruction at '0x00000000' referenced memory at '0xffffffff'. \nThe memory could not be read.",ARCBank.ATM_DarkTheme,6,ARCLib.GetIcon(2,"cancel"),nil,self.ATMType.ForegroundColour)
+				ARCBank_Draw:Window_MsgBox(-135,-60,250,"Segmentation fault","The instruction at '0x00000000' referenced memory at '0xffffffff'. \nThe memory could not be read.",ARCBank.ATM_DarkTheme,6,ARCLib.GetIcon(2,"cancel"),nil,self.ATMType.ForegroundColour)
 			end
 			if self.Percent > 0.18 && self.Percent < 1 then
 				if self.Percent < 0.25 then
-					ARCBank_Draw:Window_MsgBox(-110,-60,200,"","SECURITY ERROR! Arbitrary memory access detected.",ARCBank.ATM_DarkTheme,1,ARCLib.GetIcon(2,"cancel"),nil,self.ATMType.ForegroundColour)
+					ARCBank_Draw:Window_MsgBox(-110,-30,200,"","SECURITY ERROR! Arbitrary memory access detected.",ARCBank.ATM_DarkTheme,1,ARCLib.GetIcon(2,"cancel"),nil,self.ATMType.ForegroundColour)
 				else
-					ARCBank_Draw:Window_MsgBox(-110,-60,200,"",table.Random({"UNKNOWN ERROR!\nUNKNOWN ERROR!\nUNKNOWN ERROR!\nUNKNOWN ERROR!","ERROR: P3N15","^&*DGY*SGY *7fg8egg8y f87a t8G**^SFG8g f6g8 8^T*98ds//f a78","BDSM GEY BUTTSECKS","HAAAAAAX!!\nDUH HAAAAAX!"}),ARCBank.ATM_DarkTheme,1,ARCLib.GetIcon(2,"cancel"),nil,self.ATMType.ForegroundColour)
+					ARCBank_Draw:Window_MsgBox(-110,-30,200,"",table.Random({"UNKNOWN ERROR!\nUNKNOWN ERROR!\nUNKNOWN ERROR!\nUNKNOWN ERROR!","ERROR: P3N15","^&*DGY*SGY *7fg8egg8y f87a t8G**^SFG8g f6g8 8^T*98ds//f a78","BDSM GEY BUTTSECKS","HAAAAAAX!!\nDUH HAAAAAX!"}),ARCBank.ATM_DarkTheme,1,ARCLib.GetIcon(2,"cancel"),nil,self.ATMType.ForegroundColour)
 				end
 			end
+			
 			--self:Screen_Loading()
 			if self.Percent < 0.999 then
 				local xpos

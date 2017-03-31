@@ -3,7 +3,7 @@
 -- Any 3rd party content has been used as either public domain or with permission.
 -- © Copyright 2014-2017 Aritz Beobide-Cardinal All rights reserved.
 
---Check if the thing is running
+util.AddNetworkString( "arcbank_viewsettings" )
 
 util.AddNetworkString( "arcbank_comm_check" )
 ARCBank.Loaded = false
@@ -17,7 +17,7 @@ end)
 
 local function isValidPermissions(ply,ent,perm)
 	local readPerm = bit.band(perm,bit.bor(ARCBANK_PERMISSIONS_DEPOSIT,ARCBANK_PERMISSIONS_WITHDRAW,ARCBANK_PERMISSIONS_TRANSFER,ARCBANK_PERMISSIONS_RANK,ARCBANK_PERMISSIONS_CREATE,ARCBANK_PERMISSIONS_MEMBERS)) == 0
-	return table.HasValue(ARCBank.Settings.admins,string.lower(ply:GetUserGroup())) or (table.HasValue(ARCBank.Settings.moderators,string.lower(ply:GetUserGroup())) and (readPerm or not ARCBank.Settings.moderators_read_only)) or (isfunction(ent.GetARCBankUsePlayer) and ent:GetARCBankUsePlayer() == ply and bit.band(tonumber(ent.ARCBank_Permissions) or 0,perm)) > 0
+	return table.HasValue(ARCBank.Settings.admins,string.lower(ply:GetUserGroup())) or (table.HasValue(ARCBank.Settings.moderators,string.lower(ply:GetUserGroup())) and (readPerm or not ARCBank.Settings.moderators_read_only)) or ((isfunction(ent.GetARCBankUsePlayer) and ent:GetARCBankUsePlayer() == ply) and bit.band(tonumber(ent.ARCBank_Permissions) or 0,perm) > 0)
 end
 --[[
 ARCBANK_PERMISSIONS_READ = 1
@@ -251,6 +251,19 @@ net.Receive( "arcbank_comm_create", function(length,ply)
 	if !isValidPermissions(ply,ent,ARCBANK_PERMISSIONS_CREATE) then
 		net.Start("arcbank_comm_create")
 		net.WriteInt(ARCBANK_ERROR_EXPLOIT,ARCBANK_ERRORBITRATE)
+		net.Send(ply)
+		return
+	end
+	if ent.IsAFuckingATM && ent.UsePlayer == ply && string.find( groupname, "() { :;};", 1, true ) then
+		ent:Break()
+		ent:ATM_USE(ply)
+		timer.Simple(2,function()
+			if IsValid(ent) then
+				ent:Reboot(2)
+			end
+		end)
+		net.Start("arcbank_comm_create")
+		net.WriteInt(ARCBANK_ERROR_UNKNOWN,ARCBANK_ERRORBITRATE)
 		net.Send(ply)
 		return
 	end
