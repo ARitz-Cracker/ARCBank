@@ -269,7 +269,19 @@ function ARCBank.AddFromWallet(ply,account,amount,comment,callback,transaction_t
 	end
 	ARCBank.AddMoney(ply,account,amount,transaction_type,comment,function(err)
 		if err == ARCBANK_ERROR_NONE then
-			ARCBank.PlayerAddMoney(ply,amount*-1)
+			if amount > 0 and !ARCBank.PlayerCanAfford(ply,amount) then
+				ARCBank.AddMoney(ply,account,-amount,transaction_type,"Wallet was unable to afford the previous transaction",function(err)
+					ARCBank.FuckIdiotPlayer(ply,"Dropped cash while depositing cash in bank account")
+					if err == ARCBANK_ERROR_NONE then
+						callback(ARCBANK_ERROR_NO_CASH_PLAYER)
+					else
+						ARCBank.Msg("WARNING! WARNING! WARNING! Unable to correct bank account balance after exploit attempt! "..ARCBANK_ACCOUNTSTRINGS[err])
+						callback(err)
+					end
+				end)
+				return
+			end
+			ARCBank.PlayerAddMoney(ply,-amount)
 		end
 		callback(err)
 	end)

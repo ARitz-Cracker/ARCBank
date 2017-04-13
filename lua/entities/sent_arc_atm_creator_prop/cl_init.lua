@@ -151,7 +151,7 @@ function ENT:Screen_Welcome()
 		end
 		surface.SetTexture(surface.GetTextureID(self.hackdtx))
 		surface.DrawTexturedRect( -128, -122, 256, 256)
-		ARCBank_Draw:Window_MsgBox(-125,-40,230,"Criticao EräÞr",ARCBank.Msgs.ATMMsgs.HackingError,self.DarkMode,0,ARCLib.Icons32t["emotion_dead"])
+		ARCBank_Draw:Window_MsgBox(-125,-40,230,"Criticao EräÞr",ARCBank.Msgs.ATMMsgs.HackingError,self.DarkMode,0,ARCLib.GetIcon(2,"emotion_dead"))
 	else
 		surface.SetTexture(surface.GetTextureID(self.ATMType.WelcomeScreen))
 		surface.DrawTexturedRect( -128, -122, 256, 256)
@@ -179,7 +179,7 @@ function ENT:Draw()--Good
 			self:Screen_Welcome()
 		end
 		if self.MsgBox then
-			ARCBank_Draw:Window_MsgBox(-125,-40,230,"ATM Popup box preview","Error. Your custom ATM is too awesome.",self.DarkMode,6,ARCLib.Icons32t["cancel"],nil,self.ATMType.ForegroundColour)
+			ARCBank_Draw:Window_MsgBox(-125,-40,230,"ATM Popup box preview","Error. Your custom ATM is too awesome.",self.DarkMode,6,ARCLib.GetIcon(2,"cancel"),nil,self.ATMType.ForegroundColour)
 		end
 		if self.SpriteNoZ then
 			surface.SetDrawColor( 255, 0, 0, 255 )

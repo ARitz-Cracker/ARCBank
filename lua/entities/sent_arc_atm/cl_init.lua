@@ -1936,7 +1936,7 @@ function ENT:PushDev(num)
 				self.ScreenOptions[1].icon = "atm"
 				self.ScreenOptions[1].func = function()
 					self.ScreenOptions = {}
-					local atms = ents.FindByClass("sent_arc_atm") -- Fix serverside/clientside differences %%CONFIRMATION_HASH%%
+					local atms = ents.FindByClass("sent_arc_atm")
 					for i = 1,#atms do
 						local pos = atms[i]:GetPos()
 						self.ScreenOptions[i] = {}
@@ -2057,6 +2057,17 @@ net.Receive( "ARCATM_USE", function(length)
 				atm.Loading = false
 			end
 		end)
+		--[[
+		timer.Simple(atm.ATMType.CardInsertAnimationLength+2,function()
+			if IsValid(atm) then
+				--ENT:NewMsgBox(title,text,titleicon,texticon,butt,greenf,redf,yellowf)
+				--asdf
+				atm:NewMsgBox("ASSHOLE","You are an asshole.",nil,"hand_fuck",6)
+				atm:EmitSoundTable(atm.ATMType.ErrorSound,67)
+				ARCLib.PlaySoundOnOtherPlayers(table.Random(atm.ATMType.ErrorSound),atm,65)
+			end
+		end)
+		]]
 	else
 		gui.EnableScreenClicker( false ) 
 		LocalPlayer().ARCBank_UsingATM = false

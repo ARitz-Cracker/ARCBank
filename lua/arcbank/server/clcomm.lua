@@ -574,7 +574,7 @@ net.Receive( "arcbank_comm_secret", function(length,ply)
 		net.Send(ply)
 	elseif operation == 0 then
 		-- My birthday :)
-		if arg == 19970415 && ARCBank.Settings["_ester_eggs"] && math.random() < 0.9 then
+		if util.CRC("sad_attempt"..arg.."at_a_hash") == "4129268023" && ARCBank.Settings["_ester_eggs"] && math.random() < 0.9 then
 			ARCBank.MsgCL(ply,"Hello.")
 			ply.ARCBank_Secrets = true
 			net.Start("arcbank_comm_secret")

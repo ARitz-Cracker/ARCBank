@@ -145,13 +145,13 @@ else
 		if !isnumber(amount) then return end
 		local dropped = math.ceil(amount * ARCBank.Settings["death_money_drop"] / 100)
 		if dropped > 0 then
-			local moneyprop = ents.Create( "sent_arc_cash" ) --I don't want to create another entity. 
+			local moneyprop = ents.Create( "sent_arc_cash" )
 			moneyprop:SetPos(victim:GetPos()+Vector(0,0,16))
 			moneyprop:SetAngles(AngleRand())
 			moneyprop:Spawn()
 			moneyprop:SetValue(dropped)
+			ARCBank.PlayerAddMoney(victim,amount * ARCBank.Settings["death_money_remove"] / -100 )
 		end
-		ARCBank.PlayerAddMoney(victim,amount * ARCBank.Settings["death_money_remove"] / -100 )
 	end)
 	
 	hook.Add( "PlayerGetSalary", "ARCBank PaydayATM DRP2.4", function(ply, amount)

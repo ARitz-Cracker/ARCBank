@@ -30,6 +30,7 @@ local function NewLogWindow(account,t)
 	for i=1,10 do
 		AppList:AddColumn(ARCBank.Msgs.AdminMenu.Logs[i])
 	end
+	AppList:SetSortable( true )
 	local checkboxes = {}
 	for i=0,9 do
 	
@@ -123,7 +124,7 @@ local function NewLogWindow(account,t)
 		ARCBank.GetLog(LocalPlayer(),AccountEntry:GetText(),thetime,transaction_type,function(err,progress,data)
 			if not IsValid(MainPanel) then return end --Panel was closed
 			if err == ARCBANK_ERROR_DOWNLOADING then
-				SearchProgress:SetFraction( progress*0.75 )
+				SearchProgress:SetFraction( progress*0.4 )
 			elseif err != ARCBANK_ERROR_NONE then
 				SearchProgress:SetVisible(false)
 				SearchButton:SetVisible(true)
@@ -168,7 +169,7 @@ ARCLib.AddThinkFunc("ARCBank ShowAdminMenuLogs",function()
 			end
 			AppList:AddLine( v.transaction_id, os.date("%Y-%m-%d %H:%M:%S",v.timestamp), ARCBank.Msgs.AccountTransactions[v.transaction_type], v.account1, v.account2, user1, user2, v.moneydiff, v.money or "", v.comment )
 			if IsValid(SearchProgress) then
-				SearchProgress:SetFraction( 0.75+(k/loglen*0.25) )
+				SearchProgress:SetFraction( 0.4+(k/loglen*0.6) )
 			end
 			coroutine.yield()
 		end
