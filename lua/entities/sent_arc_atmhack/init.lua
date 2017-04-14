@@ -404,6 +404,16 @@ function ENT:Use( ply, caller )--self:HackStop()
 	if IsValid(self:GetParent()) then
 		self:HackStop()
 	else
+		if ARCBank.Settings.atm_hack_allowed_use then
+			local notAllowed = true
+			for k,v in ipairs(ARCBank.Settings.atm_hack_allowed) do
+				if ply:Team() == _G[v] then
+					notAllowed = false
+					break
+				end
+			end
+			if notAllowed then return end
+		end
 		ply:Give("weapon_arc_atmhack")
 		ply:SelectWeapon("weapon_arc_atmhack")
 		self.OurHealth = 0
