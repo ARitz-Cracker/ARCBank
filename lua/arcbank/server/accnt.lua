@@ -954,7 +954,7 @@ function ARCBank.WriteNewAccount(name,owner,rank,amount,comment,callback)
 	owner = tostring(owner)
 	amount = tonumber(amount) or 0
 	rank = tonumber(rank) or 1
-	if string.sub(name,#name) != "_" then
+	if string.sub(name,#name) == "_" then
 		timer.Simple(0.0001, function() callback(ARCBANK_ERROR_INVALID_NAME) end)
 		return
 	end
