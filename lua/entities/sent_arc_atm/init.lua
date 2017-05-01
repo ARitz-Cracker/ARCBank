@@ -478,8 +478,10 @@ function ENT:ATM_USE(activator)
 				end
 				local ply = self.UsePlayer
 				timer.Simple(0.5,function()
-					ply:Give(ARCBank.Settings["card_weapon"])
-					ply:SelectWeapon(ARCBank.Settings["card_weapon"])
+					IsValid(ply) then
+						ply:Give(ARCBank.Settings["card_weapon"])
+						ply:SelectWeapon(ARCBank.Settings["card_weapon"])
+					end
 				end)
 				
 				self.InUse = false

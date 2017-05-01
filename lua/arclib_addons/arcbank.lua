@@ -22,8 +22,8 @@ ARCBank.Msg("© Copyright 2014-2017 Aritz Beobide-Cardinal (ARitz Cracker) All r
 ARCBank.Features = {}
 ARCBank.Features["hackapi"] = true
 
-ARCBank.Update = "April 13th 2017"
-ARCBank.Version = "1.4.1c"
+ARCBank.Update = "May 1st 2017"
+ARCBank.Version = "1.4.1d"
 
 
 ARCBank.About = [[

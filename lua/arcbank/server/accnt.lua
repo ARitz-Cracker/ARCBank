@@ -19,7 +19,7 @@ end
 
 local function sterilizePlayerAccount(ply,accnt)
 	if isstring(ply) then
-		if !string.StartWith( ply, ARCBank.PlayerIDPrefix ) then
+		if ply ~= "__SYSTEM" and ply ~= "__UNKNOWN" and not string.StartWith( ply, ARCBank.PlayerIDPrefix ) then
 			return nil
 		end
 	elseif IsValid(ply) and ply:IsPlayer() then
@@ -29,7 +29,7 @@ local function sterilizePlayerAccount(ply,accnt)
 	end
 	if !accnt or accnt == "" then
 		accnt = "_"..string.lower(ARCLib.basexx.to_base32(ply)).."_"
-	elseif string.sub(accnt,#accnt) != "_" then -- If not already encoded
+	elseif string.sub(accnt,#accnt) ~= "_" then -- If not already encoded
 		accnt = string.lower(ARCLib.basexx.to_base32(accnt)).."_"
 	end
 	return ply,accnt
@@ -719,8 +719,8 @@ function ARCBank.CreateAccount(ply,groupname,rank,callback)
 	end)
 end
 function ARCBank.RemoveAccount(ply,account,comment,callback)
-	assert(isstring(groupname),"ARCBank.RemoveAccount: Argument #2 is not a string")
-	assert(isstring(reason),"ARCBank.RemoveAccount: Argument #3 is not a string")
+	assert(isstring(account),"ARCBank.RemoveAccount: Argument #2 is not a string")
+	assert(isstring(comment),"ARCBank.RemoveAccount: Argument #3 is not a string")
 	assert(isfunction(callback),"ARCBank.RemoveAccount: Argument 4 is not a function")
 	if ARCBank.Busy then callback(ARCBANK_ERROR_BUSY) return end
 	local sa = specialAccess(ply)
@@ -954,14 +954,20 @@ function ARCBank.WriteNewAccount(name,owner,rank,amount,comment,callback)
 	owner = tostring(owner)
 	amount = tonumber(amount) or 0
 	rank = tonumber(rank) or 1
+	if string.sub(name,#name) != "_" then
+		timer.Simple(0.0001, function() callback(ARCBANK_ERROR_INVALID_NAME) end)
+		return
+	end
 	local account
 	if rank < ARCBANK_GROUPACCOUNTS_ then
 		account = "_"..string.lower(ARCLib.basexx.to_base32(owner)).."_"
 	else
 		account = string.lower(ARCLib.basexx.to_base32(name)).."_"
 	end
+	
 	if #account >= 255 then
 		timer.Simple(0.0001, function() callback(ARCBANK_ERROR_NAME_TOO_LONG) end)
+		return
 	end
 	
 	ARCBank.ReadAccountProperties(account,function(errcode,data)
