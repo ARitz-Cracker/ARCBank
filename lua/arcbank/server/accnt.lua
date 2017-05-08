@@ -126,7 +126,13 @@ function ARCBank.UpgradeAccount(ply,account,callback)
 				if data.rank == ARCBANK_GROUPACCOUNTS_PREMIUM or data.rank == ARCBANK_PERSONALACCOUNTS_GOLD then
 					callback(ARCBANK_ERROR_INVALID_RANK)
 				else
-					ARCBank.WriteAccountProperties(account,nil,nil,data.rank+1,function(err)
+				--
+					data.rank = data.rank + 1
+					if (data.rank > ARCBank.MaxAccountRank(ply,not string.StartWith( account, "_"))) then
+						callback(ARCBANK_ERROR_UNDERLING)
+						return
+					end
+					ARCBank.WriteAccountProperties(account,nil,nil,data.rank,function(err)
 						if err == ARCBANK_ERROR_NONE then
 							ARCBank.WriteTransaction(account,nil,ply,nil,0,nil,ARCBANK_TRANSACTION_UPGRADE,nil,callback)
 						else
