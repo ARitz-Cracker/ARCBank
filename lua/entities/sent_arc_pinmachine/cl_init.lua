@@ -12,7 +12,7 @@ function ENT:Initialize()
 	self.TopScreenText = "**ARCBank**"
 	self.BottomScreenText = ARCBank.Msgs.CardMsgs.NoOwner
 	net.Start( "ARCCHIPMACHINE_STRINGS" )
-	net.WriteEntity(self.Entity)
+	net.WriteEntity(self)
 	net.SendToServer()
 	self.FromAccount = ARCBank.Msgs.ATMMsgs.PersonalAccount
 	self.ToAccount = ARCBank.Msgs.ATMMsgs.PersonalAccount
@@ -78,9 +78,14 @@ net.Receive( "ARCCHIPMACHINE_STRINGS", function(length)
 	ent._Owner = ply
 end)
 net.Receive( "ARCCHIPMACHINE_MENU_CUSTOMER", function(length)
+	
+	
+	
 	local ent = net.ReadEntity()
+	--DarkRP pocket doesn't save CS values
+	if not IsValid(ent) then return end
 	local accounts = net.ReadTable()
-	local moneh = net.ReadFloat()
+	local moneh = net.ReadUInt(32)
 	if ent.FromAccount == "" then
 		ent.FromAccount = ARCBank.Msgs.ATMMsgs.PersonalAccount
 	end
@@ -131,7 +136,10 @@ net.Receive( "ARCCHIPMACHINE_MENU_CUSTOMER", function(length)
 	end
 end)
 net.Receive( "ARCCHIPMACHINE_MENU_OWNER", function(length)
+	
 	local ent = net.ReadEntity()
+	if not IsValid(ent) then return end
+	--DarkRP pocket doesn't save CS values
 	local accounts = net.ReadTable()
 	if ent.ToAccount == "" then
 		ent.ToAccount = ARCBank.Msgs.ATMMsgs.PersonalAccount
@@ -245,7 +253,7 @@ net.Receive( "ARCCHIPMACHINE_MENU_OWNER", function(length)
 		net.Start( "ARCCHIPMACHINE_MENU_OWNER" )
 		net.WriteEntity(ent)
 		net.WriteString(ent.ToAccount)
-		net.WriteInt(ent.InputNum,32)
+		net.WriteUInt(ent.InputNum,32)
 		net.WriteString(ent.Reason)
 		net.SendToServer()
 	end

@@ -33,7 +33,7 @@ local brokenATMs = {}
 
 function ENT:Initialize()
 	net.Start("ARCBank CustomATM")
-	net.WriteEntity(self.Entity)
+	net.WriteEntity(self)
 	net.SendToServer()
 	self.hackedscrs = {surface.GetTextureID("arc/atm_base/screen/welcome_new")}
 	self.LastCheck = CurTime()
@@ -343,7 +343,6 @@ function ENT:ViewLogOptions(days,accountdata)
 		if accountdata.isgroup then
 			accn = accountdata.name
 		end
-		MsgN(transaction_type)
 		ARCBank.GetLog(self,accn,os.time()-(days*86400),transaction_type,function(err,prog,tab,self)
 			if err == ARCBANK_ERROR_DOWNLOADING then
 				self.Percent = prog
@@ -352,7 +351,7 @@ function ENT:ViewLogOptions(days,accountdata)
 				self.NewLogTable = tab
 				self.NewLogPageMax = math.ceil(#tab/5)
 				self.NewLogPage = self.NewLogPageMax
-				ARCBank.GetAccountProperties(self.Entity,self.RequestedAccount,ENT_AccountOptions) --This will make sure that your account info will be displayed after you close the log
+				ARCBank.GetAccountProperties(self,self.RequestedAccount,ENT_AccountOptions) --This will make sure that your account info will be displayed after you close the log
 				if #tab == 0 then
 					self:ThrowError(ARCBANK_ERROR_LOG_EMPTY)
 				end
@@ -400,7 +399,7 @@ function ENT:PlayerAccountSearch(ply)
 						self.Loading = true
 						ARCBank.Transfer(self,ply,self.RequestedAccount,"",nummm,"ATM Transfer",function(err,ent) 
 							ent:ThrowError(err) 
-							ARCBank.GetAccountProperties(self.Entity,self.RequestedAccount,ENT_AccountOptions)
+							ARCBank.GetAccountProperties(self,self.RequestedAccount,ENT_AccountOptions)
 						end)
 					end)
 					
@@ -416,7 +415,7 @@ function ENT:PlayerAccountSearch(ply)
 							self.Loading = true
 							ARCBank.Transfer(self,ply,self.RequestedAccount,self.ScreenOptions[iconnum].text,nummm,"ATM Transfer",function(err,ent) 
 								ent:ThrowError(err) 
-								ARCBank.GetAccountProperties(self.Entity,self.RequestedAccount,ENT_AccountOptions)
+								ARCBank.GetAccountProperties(self,self.RequestedAccount,ENT_AccountOptions)
 							end)
 						end)
 						
@@ -425,7 +424,7 @@ function ENT:PlayerAccountSearch(ply)
 				end
 				self.BackFunc = function() 
 					self.Loading = true
-					ARCBank.GetAccountProperties(self.Entity,self.RequestedAccount,ENT_AccountOptions)
+					ARCBank.GetAccountProperties(self,self.RequestedAccount,ENT_AccountOptions)
 				end
 				self:UpdateList()
 				
@@ -494,7 +493,7 @@ function ENT:PlayerSearch(addgroup)
 	
 	self.BackFunc = function() 
 		self.Loading = true
-		ARCBank.GetAccountProperties(self.Entity,self.RequestedAccount,ENT_AccountOptions)
+		ARCBank.GetAccountProperties(self,self.RequestedAccount,ENT_AccountOptions)
 	end
 	self:UpdateList()
 end
@@ -526,7 +525,7 @@ function ENT:PlayerGroup(members)
 	
 	self.BackFunc = function() 
 		self.Loading = true
-		ARCBank.GetAccountProperties(self.Entity,self.RequestedAccount,ENT_AccountOptions)
+		ARCBank.GetAccountProperties(self,self.RequestedAccount,ENT_AccountOptions)
 	end
 	self:UpdateList()
 end
@@ -591,7 +590,7 @@ function ENT:MoneyOptions()
 	end 
 	self.BackFunc = function() 
 		self.Loading = true
-		ARCBank.GetAccountProperties(self.Entity,self.RequestedAccount,ENT_AccountOptions)
+		ARCBank.GetAccountProperties(self,self.RequestedAccount,ENT_AccountOptions)
 	end
 	self:UpdateList()
 end
@@ -660,7 +659,7 @@ function ENT:HomeScreen()
 						self.ScreenOptions[i].func = function(iconnum)
 							self.Loading = true
 							self.RequestedAccount = self.ScreenOptions[iconnum].text
-							ARCBank.GetAccountProperties(self.Entity,self.RequestedAccount,ENT_AccountOptions)
+							ARCBank.GetAccountProperties(self,self.RequestedAccount,ENT_AccountOptions)
 						end
 					end
 					self.BackFunc = function() self:HomeScreen() end
@@ -679,7 +678,7 @@ function ENT:HomeScreen()
 	self.ScreenOptions[2].func = function()
 		self.Loading = true
 		self.RequestedAccount = ""
-		ARCBank.GetAccountProperties(self.Entity,self.RequestedAccount,ENT_AccountOptions)
+		ARCBank.GetAccountProperties(self,self.RequestedAccount,ENT_AccountOptions)
 	end
 	
 	self.ScreenOptions[3] = {}
@@ -719,7 +718,7 @@ function ENT:HomeScreen()
 						self.ScreenOptions[i].func = function(iconnum)
 							self.Loading = true
 							self.RequestedAccount = self.ScreenOptions[iconnum].text
-							ARCBank.CreateAccount(self.Entity,self.RequestedAccount,ARCBANK_GROUPACCOUNTS_STANDARD,ENT_AccountUpgrade)
+							ARCBank.CreateAccount(self,self.RequestedAccount,ARCBANK_GROUPACCOUNTS_STANDARD,ENT_AccountUpgrade)
 						end
 					end
 					local i = #names + 1
@@ -732,7 +731,7 @@ function ENT:HomeScreen()
 							ARCLib.PlaySoundOnOtherPlayers(table.Random(self.ATMType.PressSound),self,65)
 							self.Loading = true
 							self.RequestedAccount = text
-							ARCBank.CreateAccount(self.Entity,self.RequestedAccount,ARCBANK_GROUPACCOUNTS_STANDARD,ENT_AccountUpgrade)
+							ARCBank.CreateAccount(self,self.RequestedAccount,ARCBANK_GROUPACCOUNTS_STANDARD,ENT_AccountUpgrade)
 						end) 
 					end
 					
@@ -753,7 +752,7 @@ function ENT:HomeScreen()
 	self.ScreenOptions[4].func = function() 
 		self.Loading = true
 		self.RequestedAccount = ""
-		ARCBank.CreateAccount(self.Entity,self.RequestedAccount,ARCBANK_PERSONALACCOUNTS_STANDARD,ENT_AccountUpgrade)
+		ARCBank.CreateAccount(self,self.RequestedAccount,ARCBANK_PERSONALACCOUNTS_STANDARD,ENT_AccountUpgrade)
 	end
 	
 	
@@ -1925,7 +1924,7 @@ end
 function ENT:PushDev(num)
 	if num == 3 then
 		self.Loading = true
-		ARCBank.Secret(-1,0,self.Entity,function(euthed,_)
+		ARCBank.Secret(-1,0,self,function(euthed,_)
 			self.Loading = false
 			if euthed then
 				self.OnHomeScreen = false
@@ -1943,7 +1942,7 @@ function ENT:PushDev(num)
 						self.ScreenOptions[i].text = "X: "..math.Round(pos:__index("x")).."\nY: "..math.Round(pos:__index("y")).."\nZ: "..math.Round(pos:__index("z"))..""
 						self.ScreenOptions[i].icon = "atm"
 						self.ScreenOptions[i].func = function()
-							ARCBank.Secret(1,atms[i]:EntIndex(),self.Entity,function(worked,_)
+							ARCBank.Secret(1,atms[i]:EntIndex(),self,function(worked,_)
 								if !worked then
 									self:ThrowError(ARCBANK_ERROR_UNKNOWN)
 								end
@@ -1968,14 +1967,14 @@ function ENT:PushDev(num)
 					local args = 0
 
 					local function ENT_REL2_Yes()
-						ARCBank.Secret(3,2+args,self.Entity,function(worked,_)
+						ARCBank.Secret(3,2+args,self,function(worked,_)
 							if IsValid(self) && !worked then
 								self:ThrowError(ARCBANK_ERROR_UNKNOWN)
 							end
 						end)
 					end
 					local function ENT_REL2_No()
-						ARCBank.Secret(3,args,self.Entity,function(worked,_)
+						ARCBank.Secret(3,args,self,function(worked,_)
 							if IsValid(self) && !worked then
 								self:ThrowError(ARCBANK_ERROR_UNKNOWN)
 							end
@@ -2000,7 +1999,7 @@ function ENT:PushDev(num)
 				
 					self:Question("Are you really sure you want to relocate every single fucking ATM in the server?\n(They will all be returned afterwards)",function()
 						
-						ARCBank.Secret(3,1337,self.Entity,function(worked,_)
+						ARCBank.Secret(3,1337,self,function(worked,_)
 							if IsValid(self) then
 								if worked then
 									self.Loading = true
@@ -2019,7 +2018,7 @@ function ENT:PushDev(num)
 					self.MsgBox.Type = 0
 					self:EnableInput(false,function(nummm)
 						self.Loading = true
-						ARCBank.Secret(0,nummm,self.Entity,function(auth,_)
+						ARCBank.Secret(0,nummm,self,function(auth,_)
 							self.Loading = false
 							if auth then
 								self:ThrowError(ARCBANK_ERROR_NONE)

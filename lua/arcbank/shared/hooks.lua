@@ -261,10 +261,33 @@ else
 		ARCBank.Msg(msg)
 	end)
 	hook.Add("ARCBank_OnHackBroken","ARCBank OnHackBroken",function(ply,hackent,hero)
-		ARCBank.Msg(ply:Nick().." ("..ply:SteamID()..") destroyed "..ply:Nick().." ("..ply:SteamID()..")'s hacking device")
+		local pNick = "[OFFLINE PLAYER]"
+		local pID = "OFFLINE"
+		if (IsValid(ply) and ply:IsPlayer()) then
+			pNick = ply:Nick()
+			pID = ply:SteamID()
+		end
+		local hNick = "[Invalid Entity]"
+		local hID = "NULL"
+		if IsValid(hero) then 
+			if hero:IsPlayer() then
+				hNick = hero:Nick()
+				hID = hero:SteamID()
+			elseif IsEntity(hero) then
+				hID = hero:GetClass()
+				hNick = tostring(hero.PrintName or hID)
+			end
+		end
+		ARCBank.Msg(hNick.." ("..hID..") destroyed "..pNick.." ("..pID..")'s hacking device")
 	end)
 	hook.Add("ARCBank_OnHackEnd","ARCBank OnHackEnd",function(ply,hackent)
-		ARCBank.Msg(ply:Nick().." ("..ply:SteamID()..") stopped hacking.")
+		local pNick = "[OFFLINE PLAYER]"
+		local pID = "OFFLINE"
+		if (IsValid(ply) and ply:IsPlayer()) then
+			pNick = ply:Nick()
+			pID = ply:SteamID()
+		end
+		ARCBank.Msg(pNick.." ("..pID..") stopped hacking.")
 	end)
 	--[[
 	
@@ -288,7 +311,7 @@ ARCBANK_TRANSACTION_DELETE = 256 -- Delete
 			end
 			ARCBank.Msg(msg..account1)
 		elseif transaction_type == ARCBANK_TRANSACTION_TRANSFER then
-			ARCBank.Msg(ARCBank.GetPlayerByID(user1):Nick().." ("..user1..") transfered "..money_difference.." to "..ARCBank.GetPlayerByID(user2):Nick().." ("..user2..") "..account1.." -> "..account2)
+			ARCBank.Msg(ARCBank.GetPlayerByID(user2):Nick().." ("..user2..") transfered "..money_difference.." to "..ARCBank.GetPlayerByID(user1):Nick().." ("..user1..") "..account2.." -> "..account1)
 		elseif transaction_type == ARCBANK_TRANSACTION_INTEREST then
 			--We really don't need this
 		elseif transaction_type == ARCBANK_TRANSACTION_UPGRADE then

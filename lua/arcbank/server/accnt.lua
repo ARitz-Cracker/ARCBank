@@ -971,7 +971,7 @@ function ARCBank.WriteNewAccount(name,owner,rank,amount,comment,callback)
 		account = string.lower(ARCLib.basexx.to_base32(name)).."_"
 	end
 	
-	if #account >= 255 then
+	if #account >= 255-4 then -- .txt takes up 3 chars
 		timer.Simple(0.0001, function() callback(ARCBANK_ERROR_NAME_TOO_LONG) end)
 		return
 	end
@@ -1806,12 +1806,15 @@ end)
 
 local function createOldAccount(oldAccounts,i)
 	local accountdata = oldAccounts[i]
-	if not accountdata then
+	if not istable(accountdata) then
 		ARCBank.Msg("Finished converting old accounts.")
 		for _,plys in ipairs(player.GetAll()) do
 			ARCBank.MsgCL(plys,"Finished converting old accounts.")
 		end
 		ARCBank.Busy = false
+		if isfunction(accountdata) then
+			accountdata()
+		end
 		return
 	end
 	ARCBank.Msg("Converting old accounts... ("..i.."/"..#oldAccounts..") DO NOT SHUT DOWN THE SERVER!")
@@ -1851,16 +1854,18 @@ local function createOldAccount(oldAccounts,i)
 			ARCBank.Msg(accountdata.filename.." already exists in new system!")
 			createOldAccount(oldAccounts,i+1)
 		else
-			ARCBank.Msg("Failed to create account - "..ARCBANK_ERRORSTRINGS[errcode])
+			ARCBank.Msg("Failed to create account "..accountdata.name.." ("..accountdata.filename..") - "..ARCBANK_ERRORSTRINGS[errcode].."; skipping...")
+			createOldAccount(oldAccounts,i+1)
 		end
 	end)
 end
-function ARCBank.ConvertOldAccounts()
+function ARCBank.ConvertOldAccounts(callback)
 	ARCBank.ConvertAncientAccounts()
 	ARCBank.GetOldAccounts(function(errcode,data)
 		if errcode == ARCBANK_ERROR_NONE then
 			if #data > 0 then
 				ARCBank.Busy = true
+				data[#data + 1] = callback
 				createOldAccount(data,1)
 			else
 				ARCBank.Msg("No bank accounts from v1.3.8 or older have been found.")

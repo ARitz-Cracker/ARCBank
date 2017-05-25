@@ -87,8 +87,8 @@ function ARCBank.Load()
 		timer.Simple(1,function()
 
 		ARCBank.Msg("Post-loading ARCBank...")
-		if not ARCLib.IsVersion("1.7.0") then
-			ARCBank.Msg("CRITICAL ERROR! This addon requires ARCLib 1.7.0 or later!")
+		if not ARCLib.IsVersion("1.7.3") then
+			ARCBank.Msg("CRITICAL ERROR! This addon requires ARCLib 1.7.3 or later!")
 			ARCBank.Msg("LOADING FALIURE!")
 			return
 		end
@@ -225,11 +225,13 @@ function ARCBank.Load()
 			if ARCBank.IsMySQLEnabled() then
 				ARCBank.MySQL.Connect()
 			else
-				ARCBank.Msg("ARCBank is ready!")
+				ARCBank.Msg("ARCBank is loaded!")
 				ARCBank.Loaded = true
 				ARCBank.Busy = false
-				ARCBank.ConvertOldAccounts()
-				ARCBank.CapAccountRank()
+				ARCBank.CheckForCorruptAccounts(function()
+					ARCBank.ConvertOldAccounts(ARCBank.CapAccountRank)
+				end)
+				
 			end
 			for k,ply in pairs(player.GetAll()) do
 				local f = ARCBank.Dir.."/accounts_unused/"..string.lower(string.gsub(ARCBank.GetPlayerID(ply), "[^_%w]", "_"))..".txt" 

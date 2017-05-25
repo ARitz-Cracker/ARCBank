@@ -477,6 +477,7 @@ ARCBank.SettingsDesc["atm_holo_text"] = "The text on the ATM sign"
 ARCBank.SettingsDesc["interest_perpetual_debt"] = "If a player is in debt, they will gain more debt at their interest rate."
 ARCBank.SettingsDesc["autoban_time"] = "A 1337 xXNOSCOPZXx h4x0r will be banned for this many minutes for even thinking of using exploits."
 
+ARCBank.SettingsDesc["account_corruption_check"] = "Checks and corrects corrupted accounts on startup (Non-MySQL systems only) This may take a long time if you have a lot of accounts, so you should only enable if players are reporting corrupt accounts."
 ARCBank.SettingsDesc["account_debt_limit"] = "How much below 0 an account can get"
 ARCBank.SettingsDesc["account_starting_cash"] = "Players will start with this amount of money when they open a bank account."
 ARCBank.SettingsDesc["account_group_limit"] = "A player can only create this many group accounts"

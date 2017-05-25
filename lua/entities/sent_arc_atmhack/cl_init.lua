@@ -55,7 +55,8 @@ net.Receive( "arcbank_hacker_status", function(length)
 		end
 
 	elseif operation == 2 then -- Stop
-		if IsValidHacker(ent) and IsValid(parent) then
+		--if IsValidHacker(ent) and IsValid(parent) then
+		if IsValidHacker(ent) and IsValid(parent) and not istable(startEnts[enti]) then
 			ent.EnergyLevel = ent.EnergyEnd - CurTime()
 			if ent.EnergyLevel < 0 then
 				ent.EnergyLevel = 0

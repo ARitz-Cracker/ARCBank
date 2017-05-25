@@ -23,7 +23,7 @@ function ENT:Initialize()
 		self.spark:Spawn()
 		self.spark:SetKeyValue("Magnitude",1)
 		self.spark:SetKeyValue("TrailLength",1)
-		self.spark:SetParent( self.Entity )
+		self.spark:SetParent( self )
 	self.PickupTime = math.huge
 	self.Hacking = false
 	self.CopRefresh = CurTime()

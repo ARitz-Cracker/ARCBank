@@ -89,15 +89,18 @@ function ENT:Use(ply,caller)
 				
 					ARCBank.CanAccessAccount(ply,"",function(err)
 						if err == ARCBANK_ERROR_NONE then
-							ARCBank.GetGroupAccounts(ply,function(err,accounts)
+							ARCBank.GetAccessableAccounts(ply,function(err,accounts)
 								if err == ARCBANK_ERROR_NONE then
+									local result = {}
 									for i=1,#accounts do
-										accounts[i] = ARCLib.basexx.from_base32(string.upper(string.sub(accounts[i],1,#accounts[i]-1)))
+										if string.sub(accounts[i],1,1) ~= "_" then
+											table.insert(result, ARCLib.basexx.from_base32(string.upper(string.sub(accounts[i],1,#accounts[i]-1))))
+										end
 									end
 									table.insert( accounts, 1, ARCBank.Msgs.ATMMsgs.PersonalAccount )
 									net.Start( "ARCCHIPMACHINE_MENU_OWNER" )
-									net.WriteEntity(self.Entity)
-									net.WriteTable(accounts)
+									net.WriteEntity(self)
+									net.WriteTable(result)
 									net.Send(ply)
 								else
 									ARCLib.NotifyPlayer(ply,ARCBANK_ERRORSTRINGS[err],NOTIFY_ERROR,5,true)
@@ -118,16 +121,19 @@ function ENT:Use(ply,caller)
 end
 function ENT:ATM_USE(ply)
 	if self.DemandingMoney then
-		ARCBank.GetGroupAccounts(ply,function(errcode,accounts)
+		ARCBank.GetAccessableAccounts(ply,function(errcode,accounts)
 			if errcode == 0 then
+				local result = {}
 				for i=1,#accounts do
-					accounts[i] = ARCLib.basexx.from_base32(string.upper(string.sub(accounts[i],1,#accounts[i]-1)))
+					if string.sub(accounts[i],1,1) ~= "_" then
+						table.insert(result, ARCLib.basexx.from_base32(string.upper(string.sub(accounts[i],1,#accounts[i]-1))))
+					end
 				end
 				table.insert( accounts, 1, ARCBank.Msgs.ATMMsgs.PersonalAccount )
 				net.Start( "ARCCHIPMACHINE_MENU_CUSTOMER" )
-				net.WriteEntity(self.Entity)
-				net.WriteTable(accounts)
-				net.WriteFloat(self.EnteredAmount)
+				net.WriteEntity(self)
+				net.WriteTable(result)
+				net.WriteUInt(self.EnteredAmount,32)
 				net.Send(ply)
 			else
 				ARCLib.NotifyPlayer(ply,ARCBANK_ERRORSTRINGS[errcode],NOTIFY_ERROR,5,true)
@@ -140,7 +146,7 @@ function ENT:ATM_USE(ply)
 end
 function ENT:SetScreenMsg(strtop,strbottom)
 	net.Start( "ARCCHIPMACHINE_STRINGS" )
-	net.WriteEntity(self.Entity)
+	net.WriteEntity(self)
 	net.WriteString(strtop or "")
 	net.WriteString(strbottom or "")
 	net.WriteEntity(self._Owner)
@@ -159,7 +165,7 @@ end)
 net.Receive( "ARCCHIPMACHINE_MENU_OWNER", function(length,ply)
 	local ent = net.ReadEntity()
 	local account = net.ReadString()
-	local amount = net.ReadInt(32) 
+	local amount = net.ReadUInt(32) 
 	local re = net.ReadString()
 	ent.ToAccount = account
 	ent.EnteredAmount = amount

@@ -273,7 +273,7 @@ function ENT:Think()
 		end
 		if IsValid(self.UsePlayer) then
 			net.Start( "ARCATM_COMM_CASH" )
-			net.WriteEntity( self.Entity )
+			net.WriteEntity( self )
 			net.WriteInt(self.errorc,ARCBANK_ERRORBITRATE)
 			net.Send(self.UsePlayer)
 		end
@@ -306,7 +306,7 @@ function ENT:Think()
 				end
 				if IsValid(self.UsePlayer) then
 					net.Start( "ARCATM_COMM_WAITMSG" )
-					net.WriteEntity( self.Entity )
+					net.WriteEntity( self )
 					net.WriteUInt(0,2)
 					net.Send(self.UsePlayer)
 				end
@@ -316,7 +316,7 @@ function ENT:Think()
 		self:NextThink( CurTime() + 1 )
 		if self.ATMType.UseMoneylight then
 			net.Start("ARCATM_COMM_BEEP")
-			net.WriteEntity(self.Entity)
+			net.WriteEntity(self)
 			net.WriteBit(true)
 			net.Broadcast()
 		end
@@ -324,7 +324,7 @@ function ENT:Think()
 		timer.Simple(0.5, function() 
 			if self.ATMType.UseMoneylight then
 				net.Start("ARCATM_COMM_BEEP")
-				net.WriteEntity(self.Entity)
+				net.WriteEntity(self)
 				net.WriteBit(false)
 				net.Broadcast()
 			end
@@ -418,7 +418,7 @@ function ENT:Use( ply, caller )
 			end
 			if IsValid(self.UsePlayer) then
 				net.Start( "ARCATM_COMM_WAITMSG" )
-				net.WriteEntity( self.Entity )
+				net.WriteEntity( self )
 				net.WriteUInt(0,2)
 				net.Send(self.UsePlayer)
 			end

@@ -54,6 +54,7 @@ function ARCBank.SettingsReset() --DO NOT EDIT THIS!!!!
 	ARCBank.Settings["name"] = "ARCBank" --DO NOT EDIT THIS!!!!
 	ARCBank.Settings["name_long"] = "ARitz Cracker Bank" --DO NOT EDIT THIS!!!!
 	
+	ARCBank.Settings["account_corruption_check"] = true
 	ARCBank.Settings["account_interest_time_limit"] = 14 --DO NOT EDIT THIS!!!!
 	ARCBank.Settings["account_starting_cash"] = 500 --DO NOT EDIT THIS!!!!
 	ARCBank.Settings["account_debt_limit"] = 10000  --DO NOT EDIT THIS!!!!
@@ -130,7 +131,7 @@ function ARCBank.SettingsReset() --DO NOT EDIT THIS!!!!
 	
 	ARCBank.Settings["usergroup_1_standard"] = {"user"} --DO NOT EDIT THIS!!!!
 	ARCBank.Settings["usergroup_2_bronze"] = {"vip"} --DO NOT EDIT THIS!!!!
-	ARCBank.Settings["usergroup_3_silver"] = {"donaor"} --DO NOT EDIT THIS!!!!
+	ARCBank.Settings["usergroup_3_silver"] = {"donator"} --DO NOT EDIT THIS!!!!
 	ARCBank.Settings["usergroup_4_gold"] = {"admin"} --DO NOT EDIT THIS!!!!
 	ARCBank.Settings["usergroup_6_group_standard"] = {"vip"} --DO NOT EDIT THIS!!!!
 	ARCBank.Settings["usergroup_7_group_premium"] = {"donator","admin"} --DO NOT EDIT THIS!!!!
@@ -138,6 +139,7 @@ function ARCBank.SettingsReset() --DO NOT EDIT THIS!!!!
 	ARCBank.Settings["admins"] = {"owner","superadmin","founder"} --DO NOT EDIT THIS!!!!
 	ARCBank.Settings["moderators"] = {"admin"} --DO NOT EDIT THIS!!!!
 	ARCBank.Settings["moderators_read_only"] = true
+	
 	
 	ARCBank.Settings["atm_hack_min_hackerstoppers"] = 1 --DO NOT EDIT THIS!!!!
 	ARCBank.Settings["atm_darkmode_default"] = false --DO NOT EDIT THIS!!!!
