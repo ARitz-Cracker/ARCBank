@@ -49,6 +49,25 @@ end
 
 
 function ARCBank.MaxAccountRank(ply,group)
+	if isstring(ply) then
+		if ply == "__SYSTEM" then
+			if (group) then
+				return ARCBANK_GROUPACCOUNTS_PREMIUM
+			else
+				return ARCBANK_PERSONALACCOUNTS_GOLD
+			end
+		else
+			ply = ARCBank.GetPlayerByID(ply)
+			if not IsValid(ply) then
+				if (group) then
+					return ARCBANK_GROUPACCOUNTS_
+				else
+					return ARCBANK_PERSONALACCOUNTS_
+				end
+			end
+		end
+	end
+
 	if group then
 		local result = ARCBANK_GROUPACCOUNTS_
 		if table.HasValue(ARCBank.Settings["usergroup_all"],string.lower(ply:GetUserGroup())) then

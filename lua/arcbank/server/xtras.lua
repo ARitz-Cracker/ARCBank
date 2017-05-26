@@ -15,9 +15,9 @@ end
 
 function ARCBank.CapAccountRank(ply)
 	if not IsValid(ply) then
-		ARCBank.FixInvalidAccountRanks(function(err)
-			ARCBank.Msg("Account rank fixing progress: "..err)
+		ARCBank.FixInvalidAccountRanks(function()
 			for k,v in ipairs(player.GetHumans()) do
+				
 				ARCBank.CapAccountRank(v)
 			end
 		end)
@@ -50,10 +50,10 @@ function ARCBank.CapAccountRank(ply)
 end
 
 function ARCBank.FixInvalidAccountRanks(callback)
+
 	ARCBank.ReadAllAccountProperties(function(err,accounts)
 		if err == ARCBANK_ERROR_NONE then
-			for i=1,#accounts do
-				local accountdata = accounts[i]
+			ARCLib.ForEachAsync(accounts,function(k,accountdata,cb)
 				local rank = 0
 				if accountdata.rank == ARCBANK_PERSONALACCOUNTS_ then
 					rank = ARCBANK_PERSONALACCOUNTS_STANDARD
@@ -61,11 +61,20 @@ function ARCBank.FixInvalidAccountRanks(callback)
 					rank = ARCBANK_GROUPACCOUNTS_STANDARD
 				end
 				if rank > 0 then
-					ARCBank.WriteAccountProperties(accountdata.account,nil,nil,rank,callback)
+					ARCBank.WriteAccountProperties(accountdata.account,nil,nil,rank,function(err)
+						if err ~= ARCBANK_ERROR_NONE then
+							ARCBank.Msg("Failed to correct invalid rank for "..accountdata.account..": "..ARCBANK_ERRORSTRINGS[err])
+						end
+						cb()
+					end)
+				else 
+					cb()
 				end
-			end
+			end,function()
+				callback()
+			end)
 		else
-			callback(err)
+			callback()
 		end
 	end)
 end
@@ -97,7 +106,6 @@ local corruptThinkFunc = function() -- Look at this guy, re-inventing the wheel
 		end
 		coroutine.yield() 
 	end
-	PrintTable(propertyTransactions)
 	for k,account1 in ipairs(corruptAccounts) do 
 		while (propertyTransactions[account1] == nil) do
 			coroutine.yield(true) -- Wait until transactions are retrieved. 
@@ -196,7 +204,6 @@ local corruptThinkFunc = function() -- Look at this guy, re-inventing the wheel
 	end
 
 	for k,account1 in ipairs(corruptAccounts) do 
-		local account1 = string.sub(v,1,-5)
 		while (memberTransactions[account1] == nil) do
 			coroutine.yield(true) -- Wait until transactions are retrieved. 
 		end
@@ -212,7 +219,7 @@ local corruptThinkFunc = function() -- Look at this guy, re-inventing the wheel
 			if entry.transaction_type == ARCBANK_TRANSACTION_GROUP_ADD then
 				members[entry.user2] = true
 			elseif entry.transaction_type == ARCBANK_TRANSACTION_GROUP_REMOVE then
-				members[entry.user2] = false
+				members[entry.user2] = nil
 			end
 		end
 		local membersstr = ""
@@ -220,7 +227,11 @@ local corruptThinkFunc = function() -- Look at this guy, re-inventing the wheel
 			membersstr = membersstr .. kk .. ","
 		end
 		ARCBank.Msg("Recovered "..account1.." members!")
-		file.Write(ARCBank.Dir.."/groups_1.4/"..account1..".txt", membersstr)
+		if (#membersstr == 0) then
+			file.Delete(ARCBank.Dir.."/groups_1.4/"..account1..".txt")
+		else
+			file.Write(ARCBank.Dir.."/groups_1.4/"..account1..".txt", membersstr)
+		end
 	end
 	ARCBank.Msg("Account corruption check complete!")
 	if isfunction(fsReadCallback) then

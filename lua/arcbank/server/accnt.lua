@@ -1435,7 +1435,12 @@ function ARCBank.WriteGroupMemberRemove(filename,person,callback)
 	else
 		local fullpath = ARCBank.Dir.."/groups_1.4/"..tostring(filename)..".txt"
 		if file.Exists( fullpath, "DATA" ) then
-			file.Write( fullpath, string.Replace( file.Read(fullpath,"DATA"), person..",", "")   )
+			local newstr = string.Replace( file.Read(fullpath,"DATA"), person..",", "")
+			if #newstr == 0 then
+				file.Delete(fullpath)
+			else
+				file.Write( fullpath, newstr)
+			end
 		end
 		timer.Simple(0.0001, function() callback(ARCBANK_ERROR_NONE) end)
 	end
@@ -1841,7 +1846,14 @@ local function createOldAccount(oldAccounts,i)
 		if errcode == ARCBANK_ERROR_NONE then
 			if accountdata.isgroup then
 				ARCLib.ForEachAsync(accountdata.members,function(k,v,callback)
-					ARCBank.WriteGroupMemberAdd(filename,v,function(errcode) --I know I don't check errcode here shhh
+					ARCBank.WriteGroupMemberAdd(filename,v,function(errcode) 
+						if errcode == ARCBANK_ERROR_NONE then
+							ARCBank.WriteTransaction(filename,nil,owner,v,0,nil,ARCBANK_TRANSACTION_GROUP_ADD,"Converted from an older version of ARCBank",function(err) --I know I don't check errcode here shhh
+								callback()
+							end)
+						else
+							callback()
+						end
 						callback()
 					end)					
 				end,function()
