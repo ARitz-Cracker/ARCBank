@@ -151,6 +151,7 @@ function ARCBank.SettingsReset() --DO NOT EDIT THIS!!!!
 	ARCBank.Settings["atm_fast_amount_5"] = 2000 --DO NOT EDIT THIS!!!!
 	ARCBank.Settings["atm_fast_amount_6"] = 4000 --DO NOT EDIT THIS!!!!
 	ARCBank.Settings["_ester_eggs"] = true --DO NOT EDIT THIS!!!!
+	ARCBank.Settings["darkrp_f4_menu"] = true
 	
 end
 

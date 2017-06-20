@@ -5,6 +5,7 @@
 -- © Copyright 2014-2017 Aritz Beobide-Cardinal All rights reserved.
 ARCBank.Loaded = false
 
+
 if CLIENT then
 	hook.Add( "CalcView", "ARCBank ATMCalcView",function( ply, pos, angles, fov ) --Good
 		if ply.ARCBank_UsingATM && IsValid(ply.ARCBank_ATM) --[[&& LocalPlayer().ARCBank_ATM.WaitDelay < math.huge ]]&& ply.ARCBank_ATM.MoneyMsg == 0 && ply.ARCBank_FullScreen then

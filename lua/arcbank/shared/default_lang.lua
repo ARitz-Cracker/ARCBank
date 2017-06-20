@@ -356,6 +356,8 @@ ARCBank.Msgs.UserMsgs.CardAir = "The air doesn't have an ATM slot"
 ARCBank.Msgs.UserMsgs.DepositATM = "Use the mouth of the ATM to deposit money. (Press E)"
 ARCBank.Msgs.UserMsgs.WithdrawATM = "Use the money to pick it up. (Press E)"
 
+ARCBank.Msgs.UserMsgs.F4MenuAsk = "Would you like to purchase this item using your ARCBank account?"
+
 ARCBank.Msgs.AdminMenu.SearchBalance = "Search by Balance"
 ARCBank.Msgs.AdminMenu.Bigger = "Greater than"
 ARCBank.Msgs.AdminMenu.Same = "Equal to"
@@ -527,3 +529,5 @@ ARCBank.SettingsDesc["atm_fast_amount_3"] = "The 3rd quick-pick option on the at
 ARCBank.SettingsDesc["atm_fast_amount_4"] = "The 4th quick-pick option on the atm deposit/withdraw screen"
 ARCBank.SettingsDesc["atm_fast_amount_5"] = "The 5th quick-pick option on the atm deposit/withdraw screen"
 ARCBank.SettingsDesc["atm_fast_amount_6"] = "The 6th quick-pick option on the atm deposit/withdraw screen"
+
+ARCBank.SettingsDesc["darkrp_f4_menu"] = "If enabled, people who purchase items via the DarkRP F4 Menu will have the option to pay with their ARCBank account"

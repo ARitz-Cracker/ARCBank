@@ -273,11 +273,14 @@ function ARCBank.AddFromWallet(ply,account,amount,comment,callback,transaction_t
 		callback(ARCBANK_ERROR_NO_CASH_PLAYER)
 		return
 	end
+	user1, account1 = sterilizePlayerAccount(ply,account)
 	ARCBank.AddMoney(ply,account,amount,transaction_type,comment,function(err)
 		if err == ARCBANK_ERROR_NONE then
 			if amount > 0 and !ARCBank.PlayerCanAfford(ply,amount) then
-				ARCBank.AddMoney(ply,account,-amount,transaction_type,"Wallet was unable to afford the previous transaction",function(err)
-					ARCBank.FuckIdiotPlayer(ply,"Dropped cash while depositing cash in bank account")
+				ARCBank.AddMoney(user1,account1,-amount,transaction_type,"Wallet was unable to afford the previous transaction",function(err)
+					if IsValid(ply) then
+						ARCBank.FuckIdiotPlayer(ply,"Dropped cash while depositing cash in bank account")
+					end
 					if err == ARCBANK_ERROR_NONE then
 						callback(ARCBANK_ERROR_NO_CASH_PLAYER)
 					else
@@ -415,7 +418,7 @@ function ARCBank.AddMoney(ply,account,amount,transaction_type,comment,callback)
 	ARCBank.GetAccountProperties(ply,account,function(err,data)
 		if err == ARCBANK_ERROR_NONE then
 			if amount == 0 then
-				callback(ARCBANK_ERROR_NONE) --Confirmed both accounts are accessable, but locking out accounts for reasons like these is stupid
+				callback(ARCBANK_ERROR_NONE) --Confirmed both accounts are accessible, but locking out accounts for reasons like these is stupid
 				return
 			end
 			ply, account = sterilizePlayerAccount(ply,account)
@@ -816,13 +819,13 @@ local function accountInterest(accounts,i,callback)
 					ARCBank.WriteBalanceMultiply(accounts[i].account,nil,"__SYSTEM",nil,1+(interest/100),ARCBANK_TRANSACTION_INTEREST,interest.."%",function(err)
 						if err != ARCBANK_ERROR_NONE --[[ and err != ARCBANK_ERROR_NO_CASH ]] then
 							ARCBank.Msg("Failed to give interest to "..accounts[i].account.." - "..ARCBANK_ERRORSTRINGS[err])
-						else
-							ARCBank.Msg("Gave interest to "..accounts[i].account)
+						--else
+							--ARCBank.Msg("Gave interest to "..accounts[i].account)
 						end
 						accountInterest(accounts,i + 1,callback)
 					end,ARCBank.Settings["interest_perpetual_debt"])
 				else
-					ARCBank.Msg(accounts[i].account.." is unused")
+					--ARCBank.Msg(accounts[i].account.." is unused")
 					accountInterest(accounts,i + 1,callback)
 				end
 			elseif errcode != ARCBANK_ERROR_DOWNLOADING then

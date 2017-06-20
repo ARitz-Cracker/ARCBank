@@ -54,6 +54,7 @@ function ARCBank.GetPlayerByID(id)
 end
 
 function ARCBank.PlayerAddMoney(ply,amount)
+	if not IsValid(ply) then return end
 	if (nut) then
 		local chr = ply:getChar()
 		if chr then
@@ -88,6 +89,7 @@ function ARCBank.PlayerAddMoney(ply,amount)
 end
 	
 function ARCBank.PlayerCanAfford(ply,amount)
+	if not IsValid(ply) then return false end
 	if (nut) then
 		local chr = ply:getChar()
 		if chr then
@@ -109,6 +111,7 @@ function ARCBank.PlayerCanAfford(ply,amount)
 end
 
 function ARCBank.PlayerGetMoney(ply)
+	if not IsValid(ply) then return 0 end
 	if (nut) then
 		local chr = ply:getChar()
 		if chr then

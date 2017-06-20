@@ -28,7 +28,7 @@ end
 function ENT:Draw()
 	self:DrawModel()
 	self:DrawShadow( true )
-	self.DisplayPos = self:GetPos() + ((self:GetAngles():Up() * 1.005) + (self:GetAngles():Forward() * -4.01) + (self:GetAngles():Right()*2.55))
+	self.DisplayPos = self:GetPos() + ((self:GetAngles():Up() * 1.1) + (self:GetAngles():Forward() * -4.01) + (self:GetAngles():Right()*2.55))
 	self.displayangle1 = self:GetAngles()
 	self.displayangle1:RotateAroundAxis( self.displayangle1:Up(), 90 )
 	--self.displayangle1:RotateAroundAxis( self.displayangle1:Forward(), -13 )
@@ -109,9 +109,11 @@ net.Receive( "ARCCHIPMACHINE_MENU_CUSTOMER", function(length)
 		ent.FromAccount = value
 	end--$é
 	AccountSelect:SetText(ent.FromAccount or ARCBank.Msgs.ATMMsgs.PersonalAccount)
+	AccountSelect:AddChoice(ARCBank.Msgs.ATMMsgs.PersonalAccount)
 	for i=1,#accounts do
 		AccountSelect:AddChoice(accounts[i])
 	end
+	
 	local OkButton = vgui.Create( "DButton", DermaPanel )
 	OkButton:SetText( ARCBank.Msgs.ATMMsgs.OK )
 	OkButton:SetPos( 10, 74 )
@@ -227,9 +229,11 @@ net.Receive( "ARCCHIPMACHINE_MENU_OWNER", function(length)
 		ent.ToAccount = value
 	end
 	AccountSelect:SetText(ent.ToAccount or ARCBank.Msgs.ATMMsgs.PersonalAccount)
+	AccountSelect:AddChoice(ARCBank.Msgs.ATMMsgs.PersonalAccount)
 	for i=1,#accounts do
 		AccountSelect:AddChoice(accounts[i])
 	end
+	
 	local NumLabel3 = vgui.Create( "DLabel", DermaPanel )
 	NumLabel3:SetPos( 10, 162 )
 	NumLabel3:SetText( ARCBank.Msgs.CardMsgs.Label )

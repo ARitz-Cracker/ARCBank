@@ -120,8 +120,10 @@ function ENT:Use(ply,caller)
 	end
 end
 function ENT:ATM_USE(ply)
+	if self.Loading then return end
 	if self.DemandingMoney then
 		ARCBank.GetAccessableAccounts(ply,function(errcode,accounts)
+			if not self.DemandingMoney then return end
 			if errcode == 0 then
 				local result = {}
 				for i=1,#accounts do
@@ -178,7 +180,11 @@ net.Receive( "ARCCHIPMACHINE_MENU_CUSTOMER", function(length,ply)
 	local account = net.ReadString()
 	ent.FromAccount = account
 	ent.DemandingMoney = false
+	ent.Loading = true
+	ent:SetScreenMsg(ARCBank.Msgs.ATMMsgs.Loading,ARCBank.Msgs.ATMMsgs.LoadingMsg)
 	ARCBank.Transfer(ply,ent._Owner,ent.FromAccount,ent.ToAccount,ent.EnteredAmount,ent.Reason,function(errorcode)
+		if not IsValid(ent) then return end
+		ent.Loading = false
 		local errormsg = ARCBANK_ERRORSTRINGS[errorcode]
 		ent:SetScreenMsg(tostring(errorcode),errormsg)
 		local dollah = string.Replace( string.Replace( ARCBank.Settings["money_format"], "$", ARCBank.Settings.money_symbol ) , "0", tostring(ent.EnteredAmount))
@@ -192,7 +198,7 @@ net.Receive( "ARCCHIPMACHINE_MENU_CUSTOMER", function(length,ply)
 		end
 	end)
 	timer.Simple(10,function()
-		if ent == NULL then return end
+		if not IsValid(ent) then return end
 		ent:SetScreenMsg(ARCBank.Settings["name"],string.Replace( ARCBank.Msgs.CardMsgs.Owner, "%PLAYER%", ent._Owner:Nick() ))
 		ent.Status = 0
 	end)
