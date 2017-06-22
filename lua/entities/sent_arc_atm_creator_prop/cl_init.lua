@@ -111,7 +111,7 @@ end
 
 function ENT:Screen_Options()
 	local halfres = math.Round(self.ATMType.Resolutionx*0.5)
-	ARCBank_Draw:Window_MsgBox((halfres*-1)+2,-150,self.ATMType.Resolutionx-24,"ATM Menu Preview","I see you're customizing the ATM! Good for you!",self.DarkMode,0,ARCLib.GetWebIcon32("atm"),nil,self.ATMType.ForegroundColour)
+	ARCBank_Draw.Window_MsgBox((halfres*-1)+2,-150,self.ATMType.Resolutionx-24,"ATM Menu Preview","I see you're customizing the ATM! Good for you!",self.DarkMode,0,ARCLib.GetWebIcon32("atm"),nil,self.ATMType.ForegroundColour)
 	local light = 255*ARCLib.BoolToNumber(self.DarkMode)
 	local darkk = 255*ARCLib.BoolToNumber(!self.DarkMode)
 	
@@ -123,13 +123,13 @@ function ENT:Screen_Options()
 			xpos = halfres - 136
 		end
 		local ypos = -80+((math.floor((i-1)/2))*61)
-		local fitstr = ARCLib.FitText("This is option #"..i.." (Button #"..(i+12)..")","ARCBankATMNormal",98)
+		local fitstr = ARCLib.FitText("This is option #"..i.." (Button #"..(i+12)..")",ARCBank_Draw.Font("ARCBankATMNormal"),98)
 		surface.SetDrawColor( darkk, darkk, darkk, 255 )
 		surface.DrawRect( xpos, ypos, 134, 40)
 		surface.SetDrawColor( light, light, light, 255 )
 		surface.DrawOutlinedRect( xpos, ypos, 134, 40)
 		for ii = 1,#fitstr do
-			draw.SimpleText( fitstr[ii], "ARCBankATMNormal",xpos+37+((i%2)*63), ypos+((ii-1)*12), Color(light,light,light,255), (i%2)*2 , TEXT_ALIGN_TOP  )
+			draw.SimpleText( fitstr[ii], ARCBank_Draw.Font("ARCBankATMNormal"),xpos+37+((i%2)*63), ypos+((ii-1)*12), Color(light,light,light,255), (i%2)*2 , TEXT_ALIGN_TOP  )
 		end
 		surface.SetDrawColor( 255, 255, 255, 255 )
 		surface.SetMaterial(ARCLib.GetWebIcon32("information"))
@@ -143,7 +143,7 @@ function ENT:Screen_Options()
 	]]
 end
 function ENT:Screen_Welcome()
-	ARCBank_Draw:Window(-129, -142, 238, 257,ARCBank.Msgs.ATMMsgs.Welcome,self.DarkMode,nil,self.ATMType.ForegroundColour)
+	ARCBank_Draw.Window(-129, -142, 238, 257,ARCBank.Msgs.ATMMsgs.Welcome,self.DarkMode,nil,self.ATMType.ForegroundColour)
 	surface.SetDrawColor( 255, 255, 255, 255 )
 	if self.Hacked then
 		if (!tobool(math.random(0,16)) || !self.hackdtx) then
@@ -151,13 +151,13 @@ function ENT:Screen_Welcome()
 		end
 		surface.SetTexture(surface.GetTextureID(self.hackdtx))
 		surface.DrawTexturedRect( -128, -122, 256, 256)
-		ARCBank_Draw:Window_MsgBox(-125,-40,230,"Criticao EräÞr",ARCBank.Msgs.ATMMsgs.HackingError,self.DarkMode,0,ARCLib.GetIcon(2,"emotion_dead"))
+		ARCBank_Draw.Window_MsgBox(-125,-40,230,"Criticao EräÞr",ARCBank.Msgs.ATMMsgs.HackingError,self.DarkMode,0,ARCLib.GetIcon(2,"emotion_dead"))
 	else
 		surface.SetTexture(surface.GetTextureID(self.ATMType.WelcomeScreen))
 		surface.DrawTexturedRect( -128, -122, 256, 256)
 	end
 	
---draw.SimpleText( "ARitz Cracker Bank", "ARCBankATMBigger", 0, 140, Color(255,255,255,255), TEXT_ALIGN_CENTER , TEXT_ALIGN_CENTER  ) 
+--draw.SimpleText( "ARitz Cracker Bank", ARCBank_Draw.Font("ARCBankATMBigger"), 0, 140, Color(255,255,255,255), TEXT_ALIGN_CENTER , TEXT_ALIGN_CENTER  ) 
 end
 function ENT:Draw()--Good
 	if self.ATMType.Name == "" then return end
@@ -179,7 +179,7 @@ function ENT:Draw()--Good
 			self:Screen_Welcome()
 		end
 		if self.MsgBox then
-			ARCBank_Draw:Window_MsgBox(-125,-40,230,"ATM Popup box preview","Error. Your custom ATM is too awesome.",self.DarkMode,6,ARCLib.GetIcon(2,"cancel"),nil,self.ATMType.ForegroundColour)
+			ARCBank_Draw.Window_MsgBox(-125,-40,230,"ATM Popup box preview","Error. Your custom ATM is too awesome.",self.DarkMode,6,ARCLib.GetIcon(2,"cancel"),nil,self.ATMType.ForegroundColour)
 		end
 		if self.SpriteNoZ then
 			surface.SetDrawColor( 255, 0, 0, 255 )

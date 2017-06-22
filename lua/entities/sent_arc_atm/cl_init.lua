@@ -781,7 +781,7 @@ function ENT:HomeScreen()
 	self.ScreenOptions[15].icon = "help"
 	self.ScreenOptions[15].func = function()
 		self.Loading = true
-		ARCLib.FitTextRealtime(ARCBank.About,"ARCBankATMSmall",274,function(per,tab)
+		ARCLib.FitTextRealtime(ARCBank.About,ARCBank_Draw.Font("ARCBankATMSmall"),274,function(per,tab)
 			if !IsValid(self) then return end
 			if per == 1 then
 				self.Percent = 1
@@ -899,7 +899,7 @@ function ENT:Screen_Welcome()
 		local light = 255*ARCLib.BoolToNumber(ARCBank.ATM_DarkTheme)
 		local darkk = 255*ARCLib.BoolToNumber(!ARCBank.ATM_DarkTheme)
 		local halfres = math.Round(self.ATMType.Resolutionx*0.5)
-		ARCBank_Draw:Window_MsgBox((halfres*-1)+2,-150,self.ATMType.Resolutionx-24,ARCBank.Settings["name"],ARCBank.Settings["name_long"],ARCBank.ATM_DarkTheme,0,ARCLib.GetIcon(2,"application"),nil,self.ATMType.ForegroundColour)
+		ARCBank_Draw.Window_MsgBox((halfres*-1)+2,-150,self.ATMType.Resolutionx-24,ARCBank.Settings["name"],ARCBank.Settings["name_long"],ARCBank.ATM_DarkTheme,0,ARCLib.GetIcon(2,"application"),nil,self.ATMType.ForegroundColour)
 
 		for i = 1,8 do
 			--if self.ScreenOptions[i+(self.Page*8)] then
@@ -910,13 +910,13 @@ function ENT:Screen_Welcome()
 					xpos = halfres - 136
 				end
 				local ypos = -80+((math.floor((i-1)/2))*61)
-				local fitstr = ARCLib.FitText(ARCBank.Msgs.ATMMsgs.LoadingMsg,"ARCBankATMNormal",98)
+				local fitstr = ARCLib.FitText(ARCBank.Msgs.ATMMsgs.LoadingMsg,ARCBank_Draw.Font("ARCBankATMNormal"),98)
 				surface.SetDrawColor( darkk, darkk, darkk, 255 )
 				surface.DrawRect( xpos, ypos, 134, 40)
 				surface.SetDrawColor( light, light, light, 255 )
 				surface.DrawOutlinedRect( xpos, ypos, 134, 40)
 				for ii = 1,#fitstr do
-					draw.SimpleText( fitstr[ii], "ARCBankATMNormal",xpos+37+((i%2)*63), ypos+((ii-1)*12), Color(light,light,light,255), (i%2)*2 , TEXT_ALIGN_TOP  )
+					draw.SimpleText( fitstr[ii], ARCBank_Draw.Font("ARCBankATMNormal"),xpos+37+((i%2)*63), ypos+((ii-1)*12), Color(light,light,light,255), (i%2)*2 , TEXT_ALIGN_TOP  )
 				end
 				surface.SetDrawColor( 255, 255, 255, 255 )
 				surface.SetMaterial(ARCLib.GetIcon(2,"page"))
@@ -941,33 +941,33 @@ function ENT:Screen_Welcome()
 			self.hackdtx = self.hackedscrs[#self.hackedscrs]
 		end
 	end
-	ARCBank_Draw:Window(-129, -142, 238, 257,welcomemsg,ARCBank.ATM_DarkTheme,nil,self.ATMType.ForegroundColour)
+	ARCBank_Draw.Window(-129, -142, 238, 257,welcomemsg,ARCBank.ATM_DarkTheme,nil,self.ATMType.ForegroundColour)
 	surface.SetDrawColor( 255, 255, 255, 255 )
 	surface.SetTexture(self.hackdtx)
 	surface.DrawTexturedRect( -128, -122, 256, 256)
---draw.SimpleText( "ARitz Cracker Bank", "ARCBankATMBigger", 0, %%ID%%, Color(255,255,255,255), TEXT_ALIGN_CENTER , TEXT_ALIGN_CENTER  ) 
+--draw.SimpleText( "ARitz Cracker Bank", ARCBank_Draw.Font("ARCBankATMBigger"), 0, %%ID%%, Color(255,255,255,255), TEXT_ALIGN_CENTER , TEXT_ALIGN_CENTER  ) 
 end
 function ENT:Screen_Number()
 	local textcol = 255*ARCLib.BoolToNumber(ARCBank.ATM_DarkTheme)
 	local shiftup = 60*ARCLib.BoolToNumber(self.ATMType.UseTouchScreen)
-	ARCBank_Draw:Window(-105, -45 - shiftup, 190, 50,"Input",ARCBank.ATM_DarkTheme,ARCLib.GetIcon(1,"textfield"),self.ATMType.ForegroundColour)
-	draw.SimpleText(ARCBank.Msgs.ATMMsgs.Keypad, "ARCBankATMBigger", 0, -8 - shiftup, Color(textcol,textcol,textcol,255), TEXT_ALIGN_CENTER , TEXT_ALIGN_CENTER  ) 
+	ARCBank_Draw.Window(-105, -45 - shiftup, 190, 50,"Input",ARCBank.ATM_DarkTheme,ARCLib.GetIcon(1,"textfield"),self.ATMType.ForegroundColour)
+	draw.SimpleText(ARCBank.Msgs.ATMMsgs.Keypad, ARCBank_Draw.Font("ARCBankATMBigger"), 0, -8 - shiftup, Color(textcol,textcol,textcol,255), TEXT_ALIGN_CENTER , TEXT_ALIGN_CENTER  ) 
 	local str = ""
 	if math.sin(CurTime()*2*math.pi) > 0 then
 		str = "|"
 	end
 	if self.InputNum > 0 then
 		if self.InputSteamID then
-			draw.SimpleText(self.InputSID..self.InputNum..str, "ARCBankATMBigger", -98, 10 - shiftup, Color(textcol,textcol,textcol,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_CENTER  ) 
+			draw.SimpleText(self.InputSID..self.InputNum..str, ARCBank_Draw.Font("ARCBankATMBigger"), -98, 10 - shiftup, Color(textcol,textcol,textcol,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_CENTER  ) 
 		else
-			draw.SimpleText(self.InputNum..str, "ARCBankATMBigger", -98, 10 - shiftup, Color(textcol,textcol,textcol,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_CENTER  ) 
+			draw.SimpleText(self.InputNum..str, ARCBank_Draw.Font("ARCBankATMBigger"), -98, 10 - shiftup, Color(textcol,textcol,textcol,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_CENTER  ) 
 		end
 		--draw.SimpleText( ARCBank.ATMMsgs.Enter, "ARCBankATM",0, 140, Color(255,255,255,255), TEXT_ALIGN_CENTER , TEXT_ALIGN_CENTER  ) 
 	else
 		if self.InputSteamID then
-			draw.SimpleText(self.InputSID..str, "ARCBankATMBigger", -98, 10 - shiftup, Color(textcol,textcol,textcol,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_CENTER  ) 
+			draw.SimpleText(self.InputSID..str, ARCBank_Draw.Font("ARCBankATMBigger"), -98, 10 - shiftup, Color(textcol,textcol,textcol,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_CENTER  ) 
 		else
-			draw.SimpleText(str, "ARCBankATMBigger", -98, 10 - shiftup, Color(textcol,textcol,textcol,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_CENTER  ) 
+			draw.SimpleText(str, ARCBank_Draw.Font("ARCBankATMBigger"), -98, 10 - shiftup, Color(textcol,textcol,textcol,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_CENTER  ) 
 		end
 	end
 	surface.SetDrawColor( textcol, textcol, textcol, 255 )
@@ -999,7 +999,7 @@ function ENT:Screen_NewLog()
 	
 	--local filltextcol = 255*ARCLib.BoolToNumber(!ARCBank.ATM_DarkTheme)
 	
-	ARCBank_Draw:Window(-137,-150,254,280,self.RequestedAccountName.." - ("..self.NewLogPage.."/"..self.NewLogPageMax..")",ARCBank.ATM_DarkTheme,ARCLib.GetWebIcon16("file_extension_log"),self.ATMType.ForegroundColour)
+	ARCBank_Draw.Window(-137,-150,254,280,self.RequestedAccountName.." - ("..self.NewLogPage.."/"..self.NewLogPageMax..")",ARCBank.ATM_DarkTheme,ARCLib.GetWebIcon16("file_extension_log"),self.ATMType.ForegroundColour)
 	
 	for i=1,5 do
 		local y = (i-1)*48
@@ -1010,7 +1010,7 @@ function ENT:Screen_NewLog()
 			surface.DrawTexturedRect( -135, -129+y, 12, 12)
 			surface.SetDrawColor( text_color )
 			surface.DrawOutlinedRect( -137, -131+y, 104, 16)
-			draw.SimpleText(os.date("%Y-%m-%d %H:%M:%S",tonumber(entry.timestamp)),"ARCBankATMSmall", -36, -129+y, text_color, TEXT_ALIGN_RIGHT , TEXT_ALIGN_TOP  )
+			draw.SimpleText(os.date("%Y-%m-%d %H:%M:%S",tonumber(entry.timestamp)),ARCBank_Draw.Font("ARCBankATMSmall"), -36, -129+y, text_color, TEXT_ALIGN_RIGHT , TEXT_ALIGN_TOP  )
 			
 			surface.SetDrawColor( 255,255,255,255 )
 			if entry.moneydiff < 0 then
@@ -1021,7 +1021,7 @@ function ENT:Screen_NewLog()
 			surface.DrawTexturedRect( -32, -129+y, 12, 12)
 			surface.SetDrawColor( text_color )
 			surface.DrawOutlinedRect( -34, -131+y, 69, 16)
-			draw.SimpleText(math.abs(entry.moneydiff),"ARCBankATMSmall", 32, -129+y, text_color, TEXT_ALIGN_RIGHT , TEXT_ALIGN_TOP  )
+			draw.SimpleText(math.abs(entry.moneydiff),ARCBank_Draw.Font("ARCBankATMSmall"), 32, -129+y, text_color, TEXT_ALIGN_RIGHT , TEXT_ALIGN_TOP  )
 			
 			surface.SetDrawColor( 255,255,255,255 )
 			surface.SetMaterial(ARCLib.GetWebIcon16("money"))
@@ -1029,7 +1029,7 @@ function ENT:Screen_NewLog()
 			surface.SetDrawColor( text_color )
 			surface.DrawOutlinedRect( 34, -131+y, 103, 16)
 
-			draw.SimpleText(entry.money or "","ARCBankATMSmall", 134, -129+y, text_color, TEXT_ALIGN_RIGHT , TEXT_ALIGN_TOP  )
+			draw.SimpleText(entry.money or "",ARCBank_Draw.Font("ARCBankATMSmall"), 134, -129+y, text_color, TEXT_ALIGN_RIGHT , TEXT_ALIGN_TOP  )
 			
 			surface.SetDrawColor( 255,255,255,255 )
 			surface.SetMaterial(ARCLib.GetWebIcon16(transactionIcons[entry.transaction_type+ARCLib.BoolToNumber(entry.transaction_type == 2 and string.sub(entry.account2,1,1) != "_")]))
@@ -1070,7 +1070,7 @@ function ENT:Screen_NewLog()
 			elseif entry.transaction_type == 512 then
 				txt = ARCBank.Msgs.LogMsgs.Salary
 			end
-			draw.SimpleText(ARCLib.CutOutText(txt,"ARCBankATMSmall",252),"ARCBankATMSmall", -32+14, -129+15+y, text_color, TEXT_ALIGN_LEFT , TEXT_ALIGN_TOP  )
+			draw.SimpleText(ARCLib.CutOutText(txt,ARCBank_Draw.Font("ARCBankATMSmall"),252),ARCBank_Draw.Font("ARCBankATMSmall"), -32+14, -129+15+y, text_color, TEXT_ALIGN_LEFT , TEXT_ALIGN_TOP  )
 			
 			
 			surface.SetDrawColor( 255,255,255,255 )
@@ -1082,14 +1082,14 @@ function ENT:Screen_NewLog()
 			if IsValid(ply) then
 				name = ply:Nick()
 			end
-			draw.SimpleText(ARCLib.CutOutText(name,"ARCBankATMSmall",88),"ARCBankATMSmall", -135 + 14, -129+15+y, text_color, TEXT_ALIGN_LEFT , TEXT_ALIGN_TOP  )
+			draw.SimpleText(ARCLib.CutOutText(name,ARCBank_Draw.Font("ARCBankATMSmall"),88),ARCBank_Draw.Font("ARCBankATMSmall"), -135 + 14, -129+15+y, text_color, TEXT_ALIGN_LEFT , TEXT_ALIGN_TOP  )
 			
 			surface.SetDrawColor( 255,255,255,255 )
 			surface.SetMaterial(ARCLib.GetWebIcon16("textfield"))
 			surface.DrawTexturedRect( -135, -129+30+y, 12, 12)
 			surface.SetDrawColor( text_color )
 			surface.DrawOutlinedRect( -137, -131+30+y, 274, 16)
-			draw.SimpleText(ARCLib.CutOutText(entry.comment,"ARCBankATMSmall",252),"ARCBankATMSmall", -135 + 14, -129+30+y, text_color, TEXT_ALIGN_LEFT , TEXT_ALIGN_TOP  )
+			draw.SimpleText(ARCLib.CutOutText(entry.comment,ARCBank_Draw.Font("ARCBankATMSmall"),252),ARCBank_Draw.Font("ARCBankATMSmall"), -135 + 14, -129+30+y, text_color, TEXT_ALIGN_LEFT , TEXT_ALIGN_TOP  )
 			
 			surface.SetDrawColor( text_color )
 			surface.DrawRect( -137, -131+46+y, 274, 2)
@@ -1114,32 +1114,32 @@ function ENT:Screen_NewLog()
 	
 	surface.SetDrawColor( textcol, textcol, textcol, 255 )
 	surface.DrawOutlinedRect( -137, 112, 274, 20)
-	draw.SimpleText("<< "..ARCBank.Msgs.ATMMsgs.FilePrev,"ARCBankATMBigger", -135, 122, Color(textcol,textcol,textcol,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_CENTER  )
-	draw.SimpleText(ARCBank.Msgs.ATMMsgs.FileNext.." >>","ARCBankATMBigger", 135, 122, Color(textcol,textcol,textcol,255), TEXT_ALIGN_RIGHT , TEXT_ALIGN_CENTER  )
-	draw.SimpleText(ARCBank.Msgs.ATMMsgs.FileClose,"ARCBankATMBigger", 0, 140, Color(textcol,textcol,textcol,255), TEXT_ALIGN_CENTER , TEXT_ALIGN_CENTER  )
+	draw.SimpleText("<< "..ARCBank.Msgs.ATMMsgs.FilePrev,ARCBank_Draw.Font("ARCBankATMBigger"), -135, 122, Color(textcol,textcol,textcol,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_CENTER  )
+	draw.SimpleText(ARCBank.Msgs.ATMMsgs.FileNext.." >>",ARCBank_Draw.Font("ARCBankATMBigger"), 135, 122, Color(textcol,textcol,textcol,255), TEXT_ALIGN_RIGHT , TEXT_ALIGN_CENTER  )
+	draw.SimpleText(ARCBank.Msgs.ATMMsgs.FileClose,ARCBank_Draw.Font("ARCBankATMBigger"), 0, 140, Color(textcol,textcol,textcol,255), TEXT_ALIGN_CENTER , TEXT_ALIGN_CENTER  )
 end
 function ENT:Screen_Log()
 	local textcol = 255*ARCLib.BoolToNumber(ARCBank.ATM_DarkTheme)
 	--self.LogPage = 1
 	--self.LogPageMax = 1
 	
-	ARCBank_Draw:Window(-137,-150,254,280,string.Replace(ARCBank.Msgs.ATMMsgs.File,"%PAGE%","("..self.LogPage.."/"..self.LogPageMax..")"),ARCBank.ATM_DarkTheme,ARCLib.GetIcon(1,"page"),self.ATMType.ForegroundColour)
+	ARCBank_Draw.Window(-137,-150,254,280,string.Replace(ARCBank.Msgs.ATMMsgs.File,"%PAGE%","("..self.LogPage.."/"..self.LogPageMax..")"),ARCBank.ATM_DarkTheme,ARCLib.GetIcon(1,"page"),self.ATMType.ForegroundColour)
 	surface.SetDrawColor( textcol, textcol, textcol, 255 )
 	surface.DrawOutlinedRect( -137, 112, 274, 20)
 	for i = 1,20 do
 		if self.LogTable[i+((self.LogPage-1)*20)] then
-			draw.SimpleText(self.LogTable[i+((self.LogPage-1)*20)],"ARCBankATMSmall", -135, -130+(i*12), Color(textcol,textcol,textcol,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_BOTTOM  )
+			draw.SimpleText(self.LogTable[i+((self.LogPage-1)*20)],ARCBank_Draw.Font("ARCBankATMSmall"), -135, -130+(i*12), Color(textcol,textcol,textcol,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_BOTTOM  )
 		end
 	end
-	draw.SimpleText("<< "..ARCBank.Msgs.ATMMsgs.FilePrev,"ARCBankATMBigger", -135, 122, Color(textcol,textcol,textcol,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_CENTER  )
-	draw.SimpleText(ARCBank.Msgs.ATMMsgs.FileNext.." >>","ARCBankATMBigger", 135, 122, Color(textcol,textcol,textcol,255), TEXT_ALIGN_RIGHT , TEXT_ALIGN_CENTER  )
-	draw.SimpleText(ARCBank.Msgs.ATMMsgs.FileClose,"ARCBankATMBigger", 0, 140, Color(textcol,textcol,textcol,255), TEXT_ALIGN_CENTER , TEXT_ALIGN_CENTER  )
+	draw.SimpleText("<< "..ARCBank.Msgs.ATMMsgs.FilePrev,ARCBank_Draw.Font("ARCBankATMBigger"), -135, 122, Color(textcol,textcol,textcol,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_CENTER  )
+	draw.SimpleText(ARCBank.Msgs.ATMMsgs.FileNext.." >>",ARCBank_Draw.Font("ARCBankATMBigger"), 135, 122, Color(textcol,textcol,textcol,255), TEXT_ALIGN_RIGHT , TEXT_ALIGN_CENTER  )
+	draw.SimpleText(ARCBank.Msgs.ATMMsgs.FileClose,ARCBank_Draw.Font("ARCBankATMBigger"), 0, 140, Color(textcol,textcol,textcol,255), TEXT_ALIGN_CENTER , TEXT_ALIGN_CENTER  )
 end
 function ENT:Screen_Options()
 	local light = 255*ARCLib.BoolToNumber(ARCBank.ATM_DarkTheme)
 	local darkk = 255*ARCLib.BoolToNumber(!ARCBank.ATM_DarkTheme)
 	local halfres = math.Round(self.ATMType.Resolutionx*0.5)
-	ARCBank_Draw:Window_MsgBox((halfres*-1)+2,-150,self.ATMType.Resolutionx-24,self.Title,self.TitleText,ARCBank.ATM_DarkTheme,0,ARCLib.GetIcon(2,self.TitleIcon),nil,self.ATMType.ForegroundColour)
+	ARCBank_Draw.Window_MsgBox((halfres*-1)+2,-150,self.ATMType.Resolutionx-24,self.Title,self.TitleText,ARCBank.ATM_DarkTheme,0,ARCLib.GetIcon(2,self.TitleIcon),nil,self.ATMType.ForegroundColour)
 
 	for i = 1,8 do
 		if self.ScreenOptions[i+(self.Page*8)] then
@@ -1150,13 +1150,13 @@ function ENT:Screen_Options()
 				xpos = halfres - 136
 			end
 			local ypos = -80+((math.floor((i-1)/2))*61)
-			local fitstr = ARCLib.FitText(self.ScreenOptions[i+(self.Page*8)].text,"ARCBankATMNormal",98)
+			local fitstr = ARCLib.FitText(self.ScreenOptions[i+(self.Page*8)].text,ARCBank_Draw.Font("ARCBankATMNormal"),98)
 			surface.SetDrawColor( darkk, darkk, darkk, 255 )
 			surface.DrawRect( xpos, ypos, 134, 40)
 			surface.SetDrawColor( light, light, light, 255 )
 			surface.DrawOutlinedRect( xpos, ypos, 134, 40)
 			for ii = 1,#fitstr do
-				draw.SimpleText( fitstr[ii], "ARCBankATMNormal",xpos+37+((i%2)*63), ypos+((ii-1)*12), Color(light,light,light,255), (i%2)*2 , TEXT_ALIGN_TOP  )
+				draw.SimpleText( fitstr[ii], ARCBank_Draw.Font("ARCBankATMNormal"),xpos+37+((i%2)*63), ypos+((ii-1)*12), Color(light,light,light,255), (i%2)*2 , TEXT_ALIGN_TOP  )
 			end
 			surface.SetDrawColor( 255, 255, 255, 255 )
 			surface.SetMaterial(ARCLib.GetIcon(2,self.ScreenOptions[i+(self.Page*8)].icon))
@@ -1175,7 +1175,7 @@ local sdhusai = surface.GetTextureID( "arc/atm_base/screen/takemoneh" )
 function ENT:Screen_Loading()
 	if self.MoneyMsg == 0 then
 		if (self.ATMType.UseTouchScreen && self.Percent == 0) then return end
-		ARCBank_Draw:Window(-125, -60, 230, 70,ARCBank.Msgs.ATMMsgs.Loading,ARCBank.ATM_DarkTheme,nil,self.ATMType.ForegroundColour)
+		ARCBank_Draw.Window(-125, -60, 230, 70,ARCBank.Msgs.ATMMsgs.Loading,ARCBank.ATM_DarkTheme,nil,self.ATMType.ForegroundColour)
 
 		surface.SetDrawColor( 255, 255, 255, 200 )
 		
@@ -1183,28 +1183,28 @@ function ENT:Screen_Loading()
 		surface.DrawTexturedRectRotated(-100, -16, 32, 32,90 + ((math.sin(CurTime()*2) * math.sin(CurTime()) + math.cos(CurTime()))*75)) 
 		
 		local wcolr = 255*ARCLib.BoolToNumber(ARCBank.ATM_DarkTheme)
-		--draw.SimpleText( self.NotifyMsg, "ARCBankATMBigger", 0, 8, Color(255,255,255,255), TEXT_ALIGN_CENTER , TEXT_ALIGN_CENTER  ) 
+		--draw.SimpleText( self.NotifyMsg, ARCBank_Draw.Font("ARCBankATMBigger"), 0, 8, Color(255,255,255,255), TEXT_ALIGN_CENTER , TEXT_ALIGN_CENTER  ) 
 		surface.SetDrawColor( wcolr, wcolr, wcolr, 255 )
 		surface.DrawOutlinedRect( -120, 10, 240, 14) 
 		
 		if self.Percent == 0 then
 			local xpox = (math.tan(CurTime()*1.25)*35)-20
 			surface.DrawRect( math.Clamp(xpox,-120,200), 10, math.Clamp(xpox+160,0,40)-math.Clamp(xpox-80,0,40), 14)
-			draw.SimpleText(ARCBank.Msgs.ATMMsgs.LoadingMsg, "ARCBankATMBigger", -78, -16, Color(wcolr,wcolr,wcolr,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_CENTER  ) 
+			draw.SimpleText(ARCBank.Msgs.ATMMsgs.LoadingMsg, ARCBank_Draw.Font("ARCBankATMBigger"), -78, -16, Color(wcolr,wcolr,wcolr,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_CENTER  ) 
 		else
 
 			surface.DrawRect( -120, 10, 240*self.Percent, 14)
-			draw.SimpleText(ARCBank.Msgs.ATMMsgs.LoadingMsg.." ("..math.floor(self.Percent*100).."%"..")", "ARCBankATMBigger", -78, -16, Color(wcolr,wcolr,wcolr,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_CENTER  ) 
+			draw.SimpleText(ARCBank.Msgs.ATMMsgs.LoadingMsg.." ("..math.floor(self.Percent*100).."%"..")", ARCBank_Draw.Font("ARCBankATMBigger"), -78, -16, Color(wcolr,wcolr,wcolr,255), TEXT_ALIGN_LEFT , TEXT_ALIGN_CENTER  ) 
 		end
 		
 		
 	elseif self.MoneyMsg == 1 then
-		ARCBank_Draw:Window(-129, -78, 238, 129,ARCBank.Msgs.ATMMsgs.GiveCash,ARCBank.ATM_DarkTheme,nil,self.ATMType.ForegroundColour)
+		ARCBank_Draw.Window(-129, -78, 238, 129,ARCBank.Msgs.ATMMsgs.GiveCash,ARCBank.ATM_DarkTheme,nil,self.ATMType.ForegroundColour)
 		surface.SetDrawColor( 255, 255, 255, 255 )
 		surface.SetTexture( ghgjhgshjghjsad )
 		surface.DrawTexturedRect( -128, -58, 256, 128)
 	elseif self.MoneyMsg == 2 then
-		ARCBank_Draw:Window(-129, -78, 238, 129,ARCBank.Msgs.ATMMsgs.TakeCash,ARCBank.ATM_DarkTheme,nil,self.ATMType.ForegroundColour)
+		ARCBank_Draw.Window(-129, -78, 238, 129,ARCBank.Msgs.ATMMsgs.TakeCash,ARCBank.ATM_DarkTheme,nil,self.ATMType.ForegroundColour)
 		surface.SetDrawColor( 255, 255, 255, 255 )
 		surface.SetTexture( sdhusai )
 		surface.DrawTexturedRect( -128, -58, 256, 128)
@@ -1243,8 +1243,8 @@ function ENT:Screen_HAX()
 		end
 	end
 	--[[
-	ARCBank_Draw:Window(-136, -150, 252, 20,ARCLib16["application"],"ATM_CRACKER")
-	draw.SimpleText( hackmsg, "ARCBankATMBigger",0, -120, Color(0,0,0,255), TEXT_ALIGN_CENTER , TEXT_ALIGN_CENTER  )
+	ARCBank_Draw.Window(-136, -150, 252, 20,ARCLib16["application"],"ATM_CRACKER")
+	draw.SimpleText( hackmsg, ARCBank_Draw.Font("ARCBankATMBigger"),0, -120, Color(0,0,0,255), TEXT_ALIGN_CENTER , TEXT_ALIGN_CENTER  )
 	]]
 end
 net.Receive( "arcbank_atm_reboot", function(length,ply)
@@ -1348,49 +1348,49 @@ function ENT:Screen_Main()
 			self:Screen_Number()
 		end
 		if self.MsgBox && self.MsgBox.Type > 0 then
-			self.boxY,self.boxGX,self.boxRX,self.boxYX = ARCBank_Draw:Window_MsgBox(-130,-90,240,self.MsgBox.Title,self.MsgBox.Text,ARCBank.ATM_DarkTheme,self.MsgBox.Type,ARCLib.GetIcon(2,self.MsgBox.TextIcon),ARCLib.GetIcon(1,self.MsgBox.TitleIco),self.ATMType.ForegroundColour)
+			self.boxY,self.boxGX,self.boxRX,self.boxYX = ARCBank_Draw.Window_MsgBox(-130,-90,240,self.MsgBox.Title,self.MsgBox.Text,ARCBank.ATM_DarkTheme,self.MsgBox.Type,ARCLib.GetIcon(2,self.MsgBox.TextIcon),ARCLib.GetIcon(1,self.MsgBox.TitleIco),self.ATMType.ForegroundColour)
 		end
 		if self.RebootTime -7 < CurTime() && self.RebootTime > CurTime() then
-			ARCBank_Draw:Window_MsgBox(-125,-40,230,ARCBank.Settings.name,"System is starting up!",ARCBank.ATM_DarkTheme,0,ARCLib.GetIcon(2,"information"),nil,self.ATMType.ForegroundColour)
+			ARCBank_Draw.Window_MsgBox(-125,-40,230,ARCBank.Settings.name,"System is starting up!",ARCBank.ATM_DarkTheme,0,ARCLib.GetIcon(2,"information"),nil,self.ATMType.ForegroundColour)
 		end
 		if self.Broken then
-			ARCBank_Draw:Window_MsgBox(-125,-40,230,"Criticao EräÞr",ARCBank.Msgs.ATMMsgs.HackingError,ARCBank.ATM_DarkTheme,0,ARCLib.GetIcon(2,"emotion_dead"),nil,self.ATMType.ForegroundColour)
+			ARCBank_Draw.Window_MsgBox(-125,-40,230,"Criticao EräÞr",ARCBank.Msgs.ATMMsgs.HackingError,ARCBank.ATM_DarkTheme,0,ARCLib.GetIcon(2,"emotion_dead"),nil,self.ATMType.ForegroundColour)
 		end
 		if self.Loading then
 			self:Screen_Loading()
 		end
 		
 		if !self.ARCBankLoaded then
-			ARCBank_Draw:Window_MsgBox(-120,-50,220,ARCBank.Msgs.ATMMsgs.NetworkErrorTitle,ARCBank.Msgs.ATMMsgs.NetworkError,ARCBank.ATM_DarkTheme,0,ARCLib.GetIcon(2,"server_error"),nil,self.ATMType.ForegroundColour)
+			ARCBank_Draw.Window_MsgBox(-120,-50,220,ARCBank.Msgs.ATMMsgs.NetworkErrorTitle,ARCBank.Msgs.ATMMsgs.NetworkError,ARCBank.ATM_DarkTheme,0,ARCLib.GetIcon(2,"server_error"),nil,self.ATMType.ForegroundColour)
 		end
 		if self.ATMType.UseTouchScreen && self.RebootTime -7.1 < CurTime() && !self.Hacked then
 			self:Screen_Touch()
 		end
-		--ARCBank_Draw:Window_MsgBox(-120,-50,220,"","Hello\nBob!\n!!!! Wow this is cool! It supports \n and everything!",false,0,ARCLib.GetIcon(2,"cancel"),nil)
+		--ARCBank_Draw.Window_MsgBox(-120,-50,220,"","Hello\nBob!\n!!!! Wow this is cool! It supports \n and everything!",false,0,ARCLib.GetIcon(2,"cancel"),nil)
 		if self.Hacked then
 			if self.Percent > 0.0415 && self.Percent < 1 then
-				ARCBank_Draw:Window_MsgBox(-120,-50,220,"/usr/bin/arcbank-client","",ARCBank.ATM_DarkTheme,1,ARCLib.GetIcon(2,"cancel"),nil,self.ATMType.ForegroundColour)
+				ARCBank_Draw.Window_MsgBox(-120,-50,220,"/usr/bin/arcbank-client","",ARCBank.ATM_DarkTheme,1,ARCLib.GetIcon(2,"cancel"),nil,self.ATMType.ForegroundColour)
 			end
 			if self.Percent > 0.0515 && self.Percent < 1 then
-				ARCBank_Draw:Window_MsgBox(-120,-50,220,"/usr/bin/arcbank-client","sudo: user is not in the sudoers file. This incident will be reported.",ARCBank.ATM_DarkTheme,1,ARCLib.GetIcon(2,"cancel"),nil,self.ATMType.ForegroundColour)
+				ARCBank_Draw.Window_MsgBox(-120,-50,220,"/usr/bin/arcbank-client","sudo: user is not in the sudoers file. This incident will be reported.",ARCBank.ATM_DarkTheme,1,ARCLib.GetIcon(2,"cancel"),nil,self.ATMType.ForegroundColour)
 			end
 			if self.Percent > 0.1 && self.Percent < 1 then
-				ARCBank_Draw:Window_MsgBox(-135,-150,250,"Segmentation fault","The instruction at '0x18a5ef73' referenced memory at '0x28fe5a7c'. \nThe memory could not be written.",ARCBank.ATM_DarkTheme,6,ARCLib.GetIcon(2,"cancel"),nil,self.ATMType.ForegroundColour)
+				ARCBank_Draw.Window_MsgBox(-135,-150,250,"Segmentation fault","The instruction at '0x18a5ef73' referenced memory at '0x28fe5a7c'. \nThe memory could not be written.",ARCBank.ATM_DarkTheme,6,ARCLib.GetIcon(2,"cancel"),nil,self.ATMType.ForegroundColour)
 			end
 			if self.Percent > 0.12 && self.Percent < 1 then
-				ARCBank_Draw:Window_MsgBox(-135,-120,250,"Segmentation fault","The instruction at '0x28fe5a7c' referenced memory at '0x04d42f78'. \nThe memory could not be written.",ARCBank.ATM_DarkTheme,6,ARCLib.GetIcon(2,"cancel"),nil,self.ATMType.ForegroundColour)
+				ARCBank_Draw.Window_MsgBox(-135,-120,250,"Segmentation fault","The instruction at '0x28fe5a7c' referenced memory at '0x04d42f78'. \nThe memory could not be written.",ARCBank.ATM_DarkTheme,6,ARCLib.GetIcon(2,"cancel"),nil,self.ATMType.ForegroundColour)
 			end
 			if self.Percent > 0.14 && self.Percent < 1 then
-				ARCBank_Draw:Window_MsgBox(-135,-90,250,"Segmentation fault","The instruction at '0x28fe5a7c' referenced memory at '0x00000000'. \nThe memory could not be read.",ARCBank.ATM_DarkTheme,6,ARCLib.GetIcon(2,"cancel"),nil,self.ATMType.ForegroundColour)
+				ARCBank_Draw.Window_MsgBox(-135,-90,250,"Segmentation fault","The instruction at '0x28fe5a7c' referenced memory at '0x00000000'. \nThe memory could not be read.",ARCBank.ATM_DarkTheme,6,ARCLib.GetIcon(2,"cancel"),nil,self.ATMType.ForegroundColour)
 			end
 			if self.Percent > 0.16 && self.Percent < 1 then
-				ARCBank_Draw:Window_MsgBox(-135,-60,250,"Segmentation fault","The instruction at '0x00000000' referenced memory at '0xffffffff'. \nThe memory could not be read.",ARCBank.ATM_DarkTheme,6,ARCLib.GetIcon(2,"cancel"),nil,self.ATMType.ForegroundColour)
+				ARCBank_Draw.Window_MsgBox(-135,-60,250,"Segmentation fault","The instruction at '0x00000000' referenced memory at '0xffffffff'. \nThe memory could not be read.",ARCBank.ATM_DarkTheme,6,ARCLib.GetIcon(2,"cancel"),nil,self.ATMType.ForegroundColour)
 			end
 			if self.Percent > 0.18 && self.Percent < 1 then
 				if self.Percent < 0.25 then
-					ARCBank_Draw:Window_MsgBox(-110,-30,200,"","SECURITY ERROR! Arbitrary memory access detected.",ARCBank.ATM_DarkTheme,1,ARCLib.GetIcon(2,"cancel"),nil,self.ATMType.ForegroundColour)
+					ARCBank_Draw.Window_MsgBox(-110,-30,200,"","SECURITY ERROR! Arbitrary memory access detected.",ARCBank.ATM_DarkTheme,1,ARCLib.GetIcon(2,"cancel"),nil,self.ATMType.ForegroundColour)
 				else
-					ARCBank_Draw:Window_MsgBox(-110,-30,200,"",table.Random({"UNKNOWN ERROR!\nUNKNOWN ERROR!\nUNKNOWN ERROR!\nUNKNOWN ERROR!","ERROR: P3N15","^&*DGY*SGY *7fg8egg8y f87a t8G**^SFG8g f6g8 8^T*98ds//f a78","BDSM GEY BUTTSECKS","HAAAAAAX!!\nDUH HAAAAAX!"}),ARCBank.ATM_DarkTheme,1,ARCLib.GetIcon(2,"cancel"),nil,self.ATMType.ForegroundColour)
+					ARCBank_Draw.Window_MsgBox(-110,-30,200,"",table.Random({"UNKNOWN ERROR!\nUNKNOWN ERROR!\nUNKNOWN ERROR!\nUNKNOWN ERROR!","ERROR: P3N15","^&*DGY*SGY *7fg8egg8y f87a t8G**^SFG8g f6g8 8^T*98ds//f a78","BDSM GEY BUTTSECKS","HAAAAAAX!!\nDUH HAAAAAX!"}),ARCBank.ATM_DarkTheme,1,ARCLib.GetIcon(2,"cancel"),nil,self.ATMType.ForegroundColour)
 				end
 			end
 			
@@ -1461,7 +1461,7 @@ function ENT:Screen_Touch()
 			end
 		elseif self.InputtingNumber then
 			
-			ARCBank_Draw:Window(-80, -28, 160 - 22, 146,"Touch Keypad",ARCBank.ATM_DarkTheme,ARCLib.GetIcon(1,"keyboard"),self.ATMType.ForegroundColour)
+			ARCBank_Draw.Window(-80, -28, 160 - 22, 146,"Touch Keypad",ARCBank.ATM_DarkTheme,ARCLib.GetIcon(1,"keyboard"),self.ATMType.ForegroundColour)
 			surface.SetDrawColor( light, light, light, 255 )
 			
 			for i=0,8 do
@@ -1473,7 +1473,7 @@ function ENT:Screen_Touch()
 				self.TouchIcons[len].h = 32
 				self.TouchIcons[len].button = i+1
 				surface.DrawOutlinedRect( self.TouchIcons[len].x, self.TouchIcons[len].y, 32, 32)
-				draw.SimpleText(i+1, "ARCBankATMBigger",  self.TouchIcons[len].x + 16, self.TouchIcons[len].y + 16, Color(light,light,light,255), TEXT_ALIGN_CENTER , TEXT_ALIGN_CENTER  ) 
+				draw.SimpleText(i+1, ARCBank_Draw.Font("ARCBankATMBigger"),  self.TouchIcons[len].x + 16, self.TouchIcons[len].y + 16, Color(light,light,light,255), TEXT_ALIGN_CENTER , TEXT_ALIGN_CENTER  ) 
 			end
 			len = len + 1
 			self.TouchIcons[len] = self.TouchIcons[len] || {}
@@ -1483,7 +1483,7 @@ function ENT:Screen_Touch()
 			self.TouchIcons[len].h = 32
 			self.TouchIcons[len].button = 0
 			surface.DrawOutlinedRect( 32 - 70, 96, 32, 32)
-			draw.SimpleText(0, "ARCBankATMBigger",  32 - 70 + 16, 96 + 16, Color(light,light,light,255), TEXT_ALIGN_CENTER , TEXT_ALIGN_CENTER  ) 
+			draw.SimpleText(0, ARCBank_Draw.Font("ARCBankATMBigger"),  32 - 70 + 16, 96 + 16, Color(light,light,light,255), TEXT_ALIGN_CENTER , TEXT_ALIGN_CENTER  ) 
 
 			
 			for i=0,2 do
@@ -1532,7 +1532,7 @@ function ENT:Screen_Touch()
 						xpos = halfres - 136
 					end
 					local ypos = -80+((math.floor((i-1)/2))*61)
-					local fitstr = ARCLib.FitText(self.ScreenOptions[i+(self.Page*8)].text,"ARCBankATMNormal",98)
+					local fitstr = ARCLib.FitText(self.ScreenOptions[i+(self.Page*8)].text,ARCBank_Draw.Font("ARCBankATMNormal"),98)
 					len = len + 1
 					self.TouchIcons[len] = self.TouchIcons[len] || {}
 					self.TouchIcons[len].x = xpos
@@ -1567,9 +1567,9 @@ end
 
 function ENT:DrawHolo()--Good
 	if self.Hacked && math.random(1,3) == 1 then
-		draw.SimpleText(tostring(ARCBank.Settings["atm_holo_text"]), "ARCBankHolo",math.Rand(-4,4), math.Rand(0,0.5), Color(255,255,255,math.random(5,180)), TEXT_ALIGN_CENTER , TEXT_ALIGN_CENTER  ) 
+		draw.SimpleText(tostring(ARCBank.Settings["atm_holo_text"]), ARCBank_Draw.Font("ARCBankHolo"),math.Rand(-4,4), math.Rand(0,0.5), Color(255,255,255,math.random(5,180)), TEXT_ALIGN_CENTER , TEXT_ALIGN_CENTER  ) 
 	else
-		draw.SimpleText(tostring(ARCBank.Settings["atm_holo_text"]), "ARCBankHolo",0,0, Color(255,255,255,175), TEXT_ALIGN_CENTER , TEXT_ALIGN_CENTER  ) 
+		draw.SimpleText(tostring(ARCBank.Settings["atm_holo_text"]), ARCBank_Draw.Font("ARCBankHolo"),0,0, Color(255,255,255,175), TEXT_ALIGN_CENTER , TEXT_ALIGN_CENTER  ) 
 	end
 	--[[
 	surface.SetDrawColor( 255, 255, 255, 255 )

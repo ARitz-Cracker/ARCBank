@@ -27,7 +27,7 @@ local commands = {
 local cmd = {
 	"cmd",
 	"name",
-	"name",
+	"ammoType",
 	"name"
 }
 local itemPrices = {
