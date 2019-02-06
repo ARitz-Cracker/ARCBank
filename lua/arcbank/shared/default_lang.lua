@@ -2,7 +2,7 @@
 
 -- This file is under copyright, and is bound to the agreement stated in the EULA.
 -- Any 3rd party content has been used as either public domain or with permission.
--- © Copyright 2014-2017 Aritz Beobide-Cardinal All rights reserved.
+-- © Copyright 2014-2018 Aritz Beobide-Cardinal All rights reserved.
 
 ARCBank.Msgs = ARCBank.Msgs or {}
 ARCBank.Msgs.Time = ARCBank.Msgs.Time or {}
@@ -358,6 +358,8 @@ ARCBank.Msgs.UserMsgs.WithdrawATM = "Use the money to pick it up. (Press E)"
 
 ARCBank.Msgs.UserMsgs.F4MenuAsk = "Would you like to purchase this item using your ARCBank account?"
 
+
+ARCBank.Msgs.AdminMenu.Unlock = "Unlock account"
 ARCBank.Msgs.AdminMenu.SearchBalance = "Search by Balance"
 ARCBank.Msgs.AdminMenu.Bigger = "Greater than"
 ARCBank.Msgs.AdminMenu.Same = "Equal to"
@@ -435,7 +437,9 @@ ARCBank.Msgs.Commands["atm_save"] = "Save and freeze all ATMs"
 ARCBank.Msgs.Commands["atm_unsave"] = "Unsave and unfreeze all ATMs"
 ARCBank.Msgs.Commands["atm_respawn"] = "Respawn frozen ATMs"
 ARCBank.Msgs.Commands["atm_spawn"] = "Spawn an ATM where you're looking"
-
+ARCBank.Msgs.Commands["reset_settings"] = "Set settings to default"
+ARCBank.Msgs.Commands["purge_accounts"] = "Delete all accounts"
+ARCBank.Msgs.Commands["purge_transactions"] = "Reset transaction log"
 
 
 ARCBank.SettingsDesc["name"] = "The displayed \"short\" name of the addon."
@@ -483,6 +487,7 @@ ARCBank.SettingsDesc["account_corruption_check"] = "Checks and corrects corrupte
 ARCBank.SettingsDesc["account_debt_limit"] = "How much below 0 an account can get"
 ARCBank.SettingsDesc["account_starting_cash"] = "Players will start with this amount of money when they open a bank account."
 ARCBank.SettingsDesc["account_group_limit"] = "A player can only create this many group accounts"
+ARCBank.SettingsDesc["account_group_member_limit"] = "A group can only have this amount of members (Any value above 128 may cause errors)"
 
 ARCBank.SettingsDesc["death_money_remove"] = "The % of money that should be removed from the player when the die."
 ARCBank.SettingsDesc["death_money_drop"] = "The % of money that should spawned where the player dies. (This should always be lower than death_money_remove)"

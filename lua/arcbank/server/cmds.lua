@@ -2,7 +2,7 @@
 
 -- This file is under copyright, and is bound to the agreement stated in the EULA.
 -- Any 3rd party content has been used as either public domain or with permission.
--- © Copyright 2014-2017 Aritz Beobide-Cardinal All rights reserved.
+-- © Copyright 2014-2018 Aritz Beobide-Cardinal All rights reserved.
 ARCBank.Loaded = false
 ARCBank.Commands = { --Make sure they are less then 16 chars long.$
 	["about"] = {
@@ -62,8 +62,8 @@ ARCBank.Commands = { --Make sure they are less then 16 chars long.$
 	},
 	["owner"] = {
 		command = function(ply,args) 
-			ARCBank.MsgCL(ply,"{{ user_id }}")
-			ARCBank.MsgCL(ply,"{{ user_id sha256 trackarcbank }}")
+			ARCBank.MsgCL(ply,"76561197997486016")
+			ARCBank.MsgCL(ply,"47b85ed6683793a5a685e75c10828d65f95dd0a6fb6d4d6fc505151099f1de27")
 		end, 
 		usage = "",
 		description = "Who owns this copy of ARCBank?",
@@ -133,9 +133,20 @@ ARCBank.Commands = { --Make sure they are less then 16 chars long.$
 	["give_money"] = {
 		command = function(ply,args) 
 			if !ARCBank.Loaded then ARCBank.MsgCL(ply,ARCBank.Msgs.CommandOutput.SysReset) return end
-			if IsValid(ply) && !table.HasValue(ARCBank.Settings.admins,string.lower(ply:GetUserGroup())) && !table.HasValue(ARCBank.Settings.moderators,string.lower(ply:GetUserGroup())) then
-				_G[addon].MsgCL(ply,ARCLib.PlaceholderReplace(ARCBank.Msgs.CommandOutput.AdminCommand,{RANKS=table.concat( ARCBank.Settings.admins, ", " )..", "..table.concat( ARCBank.Settings.moderators, ", " )}))
-				return
+			if IsValid(ply) then
+				if (table.HasValue(ARCBank.Settings.moderators,string.lower(ply:GetUserGroup()))) then
+					if (ARCBank.Settings.moderators_read_only) then
+						_G[addon].MsgCL(ply,ARCLib.PlaceholderReplace(ARCBank.Msgs.CommandOutput.AdminCommand,{RANKS=table.concat( ARCBank.Settings.admins, ", " )}))
+						return
+					end
+				elseif not table.HasValue(ARCBank.Settings.admins,string.lower(ply:GetUserGroup())) then
+					if (ARCBank.Settings.moderators_read_only) then
+						_G[addon].MsgCL(ply,ARCLib.PlaceholderReplace(ARCBank.Msgs.CommandOutput.AdminCommand,{RANKS=table.concat( ARCBank.Settings.admins, ", " )..", "..table.concat( ARCBank.Settings.moderators, ", " )}))
+					else
+						_G[addon].MsgCL(ply,ARCLib.PlaceholderReplace(ARCBank.Msgs.CommandOutput.AdminCommand,{RANKS=table.concat( ARCBank.Settings.admins, ", " )}))					
+					end
+					return
+				end
 			end
 			if !args[1] || !args[2] || args[1] == "" || args[2] == "" then
 				ARCBank.MsgCL(ply,"Not enough argumetns!")
@@ -227,7 +238,7 @@ ARCBank.Commands = { --Make sure they are less then 16 chars long.$
 	["purge_accounts"] = {
 		command = function(ply,args) 
 			if (IsValid(ply) && ply:IsPlayer() && !ply:IsListenServerHost()) then
-				ARCBank.MsgCL(ply,"This command cannot be used by a player.")
+				ARCBank.MsgCL(ply,"This command cannot be used by a player. Please enter the \"arcbank purge_accounts\" command using RCON or directly in the server console.")
 				return
 			end
 			if !ARCBank.CommitSedoku then
@@ -239,8 +250,42 @@ ARCBank.Commands = { --Make sure they are less then 16 chars long.$
 			else
 				ARCBank.MsgCL(ply,"Purging ARCBank history...")
 				ARCBank.PurgeAccounts(function(err)
+					ARCBank.CommitSedoku = nil
 					if err == 0 then
 						ARCBank.MsgCL(ply,"ARCBank economy successfully reset!")
+						ARCBank.MsgCL(ply,"Please enter \"arcbank reset\" to continue")
+					else
+						ARCBank.MsgCL(ply,"Failed to purge ARCBank history! this is bad. "..ARCBANK_ERRORSTRINGS[err])
+					end
+				end)
+			end
+			
+		end, 
+		usage = "",
+		description = "Deletes all accounts on the server",
+		adminonly = true,
+		hidden = false
+	},
+	["purge_transactions"] = {
+		command = function(ply,args) 
+			if (IsValid(ply) && ply:IsPlayer() && !ply:IsListenServerHost()) then
+				ARCBank.MsgCL(ply,"This command cannot be used by a player. Please enter the \"arcbank purge_transactions\" command using RCON or directly in the server console.")
+				return
+			end
+			if !ARCBank.TakeJoy then
+				ARCBank.MsgCL(ply,"/!\\ WARNING WARNING WARNING /!\\")
+				ARCBank.MsgCL(ply,"You are about to wipe all transactions from the server.")
+				ARCBank.MsgCL(ply,"This action will also delete all corrupted accounts and archive any unused accounts.")
+				ARCBank.MsgCL(ply,"Archived accounts will be restored when an owner or group member comes online")
+				ARCBank.MsgCL(ply,"NO BACKUPS WILL BE CREATED. THIS ACTION CANNOT BE REVERSED!!")
+				ARCBank.MsgCL(ply,"If you are absolutely sure you want to delete all transaction history, enter \"arcbank purge_transactions\" again to confirm!")
+				ARCBank.TakeJoy = true
+			else
+				ARCBank.MsgCL(ply,"Purging ARCBank history and re-creating all accounts...")
+				ARCBank.PurgeTransactions(function(err)
+					ARCBank.TakeJoy = nil
+					if err == 0 then
+						ARCBank.MsgCL(ply,"Account transactions have been cleared!")
 						ARCBank.MsgCL(ply,"Please enter \"arcbank reset\" to continue")
 					else
 						ARCBank.MsgCL(ply,"Failed to purge ARCBank history! this is bad. "..ARCBANK_ERRORSTRINGS[err])

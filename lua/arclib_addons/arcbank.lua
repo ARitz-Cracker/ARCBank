@@ -1,6 +1,6 @@
 -- This code is under copyright, and is bound to the agreement stated in the EULA.
 -- Any 3rd party content has been used as either public domain or with permission.
--- © Copyright 2014-2017 Aritz Beobide-Cardinal All rights reserved.
+-- © Copyright 2014-2018 Aritz Beobide-Cardinal All rights reserved.
 
 
 ARCBank = ARCBank or {}
@@ -15,20 +15,20 @@ function ARCBank.Msg(msg)
 	end
 end
 ARCBank.Msg("Running...\n ____ ____ _ ___ ___     ____ ____ ____ ____ _  _ ____ ____    ___  ____ _  _ _  _ _ _  _ ____ \n |__| |__/ |  |    /     |    |__/ |__| |    |_/  |___ |__/    |__] |__| |\\ | |_/  | |\\ | | __ \n |  | |  \\ |  |   /__    |___ |  \\ |  | |___ | \\_ |___ |  \\    |__] |  | | \\| | \\_ | | \\| |__] \n")
-ARCBank.Msg(table.Random({"I'm going to run out of letters in the alphabet if I keep these patches up!","Product of BlueStone Technological Enterprises Inc. (Even before that company existed)","tbh script enforcer is kinda shit.","I am embarrassed to say that there was a bug from v1.0 to v1.3 that made arguably one of the most important settings useless...","Eh, ARCLoad was a paranoid idiots dream anyway...","Super fukin' Sexy edition!","The most realistic ATM system you'll ever see!","Wohoo! Manual Updates!","...I can never get a vacation...","I love you.","Isn't this amazing?","That's one fiiiine addon you got there!","Update, Update, Update!","You can ACTUALLY use an ATM!","Fixin' Bugs!"}))
-ARCBank.Msg("© Copyright 2014-2017 Aritz Beobide-Cardinal (ARitz Cracker) All rights reserved.")
+ARCBank.Msg(table.Random({"I'm going to run out of letters in the alphabet if I keep these patches up!","Product of BlueStone Technological Enterprises Inc. (Even before that company existed)","Sometimes I wonder when this chapter of my life is going to end.","I am embarrassed to say that there was a bug from v1.0 to v1.3 that made arguably one of the most important settings useless...","Eh, ARCLoad was a paranoid idiot's dream anyway...","Super fukin' Sexy edition!","The most realistic ATM system you'll ever see!","Wohoo! Manual Updates!","...I can never get a vacation...","I love you.","Isn't this amazing?","That's one fiiiine addon you got there!","Update, Update, Update!","You can ACTUALLY use an ATM!","Fixin' Bugs!"}))
+ARCBank.Msg("© Copyright 2014-2018 Aritz Beobide-Cardinal (ARitz Cracker) All rights reserved.")
 
 
 ARCBank.Features = {}
 ARCBank.Features["hackapi"] = true
 
-ARCBank.Update = "June 22nd 2017"
-ARCBank.Version = "1.4.2b"
+ARCBank.Update = "May 15th 2018"
+ARCBank.Version = "1.4.3h"
 
 
 ARCBank.About = [[
              *** ARitz Cracker Bank ***
-    © Copyright Aritz Beobide-Cardinal 2014-2017
+    © Copyright Aritz Beobide-Cardinal 2014-2018
                 All rights reserved.
 				
 				

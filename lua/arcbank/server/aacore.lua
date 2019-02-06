@@ -2,7 +2,7 @@
 
 -- This file is under copyright, and is bound to the agreement stated in the EULA.
 -- Any 3rd party content has been used as either public domain or with permission.
--- © Copyright 2014-2017 Aritz Beobide-Cardinal All rights reserved.
+-- © Copyright 2014-2018 Aritz Beobide-Cardinal All rights reserved.
 
 -- You know, I hate it that I have to use a billion callback functions now that SQL was implimented.
 -- An entire rework of the account system is due at v1.3.7
@@ -126,6 +126,14 @@ function ARCBank.Load()
 			ARCBank.Msg("CRITICAL ERROR! FAILED TO CREATE ROOT FOLDER!")
 			ARCBank.Msg("LOADING FALIURE!")
 			return
+		end
+		if !file.IsDir( ARCBank.Dir.."/groups_1.4_unused","DATA" ) then
+			ARCBank.Msg("Created Folder: "..ARCBank.Dir.."/groups_1.4_unused")
+			file.CreateDir(ARCBank.Dir.."/groups_1.4_unused")
+		end
+		if !file.IsDir( ARCBank.Dir.."/accounts_1.4","DATA" ) then
+			ARCBank.Msg("Created Folder: "..ARCBank.Dir.."/accounts_1.4_unused")
+			file.CreateDir(ARCBank.Dir.."/accounts_1.4_unused")
 		end
 		if !file.IsDir( ARCBank.Dir.."/groups_1.4","DATA" ) then
 			ARCBank.Msg("Created Folder: "..ARCBank.Dir.."/groups_1.4")

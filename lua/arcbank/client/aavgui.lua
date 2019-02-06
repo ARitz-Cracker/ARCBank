@@ -1,9 +1,9 @@
 -- _vgui.lua - GUI for ARCBank
 
--- This file is under a Creative Commons Attribution 4.0 International Licence
--- http://creativecommons.org/licenses/by/4.0/
--- You can mess around with it, mod it to your liking, and even redistribute it.
--- However, you must credit me.
+-- This file is under copyright, and is bound to the agreement stated in the EULA.
+-- Any 3rd party content has been used as either public domain or with permission.
+-- © Copyright 2014-2018 Aritz Beobide-Cardinal All rights reserved.
+
 ARCBank.Loaded = false
 ARCBank_Draw = {}
 surface.CreateFont( "88888888", {

@@ -1,7 +1,7 @@
 -- clcomm.lua - Client/Server communications for ARCBank
 -- This file is under copyright, and is bound to the agreement stated in the EULA.
 -- Any 3rd party content has been used as either public domain or with permission.
--- © Copyright 2014-2017 Aritz Beobide-Cardinal All rights reserved.
+-- © Copyright 2014-2018 Aritz Beobide-Cardinal All rights reserved.
 
 util.AddNetworkString( "arcbank_viewsettings" )
 
@@ -168,7 +168,7 @@ net.Receive( "arcbank_comm_get_account_log", function(length,ply)
 			data[datalen] = ply
 			--datalen = datalen + 1
 			--data[datalen] = ent
-			readLogs[#readLogs + 1] = data 
+			readLogs[#readLogs + 1] = data
 		elseif err != ARCBANK_ERROR_DOWNLOADING then
 			net.Start("arcbank_comm_get_account_log")
 			net.WriteInt(err,ARCBANK_ERRORBITRATE)
@@ -192,15 +192,45 @@ ARCLib.AddThinkFunc("ARCBank SendUserLogs",function()
 		local ply = table.remove(entries)
 		--local ent = table.remove(entries)
 		local bigstring = ""
-		for k,v in ipairs(entries) do 
-			bigstring = bigstring .. v.transaction_id.."\t"..v.timestamp.."\t"..v.account1.."\t"..v.account2.."\t"..v.user1.."\t"..v.user2.."\t"..v.moneydiff.."\t"..(v.money or "").."\t"..v.transaction_type.."\t"..string.Replace( v.comment, "\r\n", " " ).."\r\n"
+		local cutoff = false
+		
+		--for k,v in ipairs(entries) do
+		local nextPer = 0.0
+		
+		local entLen = #entries
+		local entFulLLen = entLen
+		while (entLen > 0) do
+			local v = entries[entLen]
+			table.remove(entries)
+			entLen = entLen - 1
+			-- TODO: FInd out why table.remove thing isn't working properly
+			coroutine.yield()
+			local newline = v.transaction_id.."\t"..v.timestamp.."\t"..v.account1.."\t"..v.account2.."\t"..v.user1.."\t"..v.user2.."\t"..v.moneydiff.."\t"..(v.money or "").."\t"..v.transaction_type.."\t"..string.Replace( v.comment, "\r\n", " " ).."\r\n"
+			
+			local newLineLen = #bigstring + #newline
+			
+			local per = ((entLen/entFulLLen)*-1)+1
+			local per2 = newLineLen/maxloglen
+			if per2 > per then
+				per = per2
+			end
+			if per > 1 then
+				per = 1
+			end
+			if per >= nextPer then
+				ARCBank.MsgCL(ply,ARCBank.Msgs.ATMMsgs.ViewLog..": (%"..math.floor(per*100)..")")
+				nextPer = math.Round(per*100/5)*0.05 + 0.05
+			end
+			if #bigstring + #newline > maxloglen then
+				cutoff = true
+				break
+			end
+			bigstring = newline..bigstring
 			coroutine.yield()
 			if !IsValid(ply) then break end
 		end
 		if IsValid(ply) then
-			if #bigstring > maxloglen then
-				local place = string.find( bigstring, "\r\n", -maxloglen, true )
-				bigstring = string.sub(bigstring,place)
+			if cutoff then
 				ARCBank.MsgCL(ply,"The log was too big to send, the oldest stuff has been cut off.")
 			end
 			--I would compress the data before sending if util.Compress didn't block the entire server. (It takes 1.5 seconds to compress 4.4KB on my Intel i7 5820k, I don't want to freeze the server just because some idiot wants to look at 3 years of transaction history)

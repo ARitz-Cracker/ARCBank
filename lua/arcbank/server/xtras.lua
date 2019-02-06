@@ -2,12 +2,12 @@
 
 -- This file is under copyright, and is bound to the agreement stated in the EULA.
 -- Any 3rd party content has been used as either public domain or with permission.
--- © Copyright 2014-2017 Aritz Beobide-Cardinal All rights reserved.
+-- © Copyright 2014-2018 Aritz Beobide-Cardinal All rights reserved.
 
 function ARCBank.OnSettingChanged(key,val)
 	if string.StartWith( key, "usergroup_" ) then
 		for i=1,#val do
-			print(val[i])
+			--print(val[i])
 			val[i] = string.lower(val[i])
 		end
 	end
@@ -115,7 +115,12 @@ local corruptThinkFunc = function() -- Look at this guy, re-inventing the wheel
 			ARCBank.Msg("Failed to get transaction history for "..account1..": "..ARCBANK_ERRORSTRINGS[log])
 			continue --This is a GMod addon. I'm allowed to use this
 		end
-		if (log[1] and log[1].transaction_type == ARCBANK_TRANSACTION_CREATE) then
+		if (not istable(log[1])) then
+			ARCBank.Msg("Looks like "..account1.." doesn't have any transactions, which probably means that the server was shut down while it was being created. Deleting...")
+			file.Delete(ARCBank.Dir.."/accounts_1.4/"..account1..".txt")
+			file.Delete(ARCBank.Dir.."/groups_1.4/"..account1..".txt") -- Just in case...
+		
+		elseif (log[1].transaction_type == ARCBANK_TRANSACTION_CREATE) then
 			local owner = log[1].user1
 			local name
 			local minrank

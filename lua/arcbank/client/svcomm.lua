@@ -1,7 +1,7 @@
 -- svcomm.lua - Client/Server communications for ARCBank
 -- This file is under copyright, and is bound to the agreement stated in the ELUA.
 -- Any 3rd party content has been used as either public domain or with permission.
--- © Copyright 2014-2017 Aritz Beobide-Cardinal All rights reserved.
+-- © Copyright 2014-2018 Aritz Beobide-Cardinal All rights reserved.
 
 
 net.Receive( "arcbank_viewsettings", function(length)
@@ -325,7 +325,7 @@ ARCLib.AddThinkFunc("ARCBank SortLog",function()
 			ARCBank_AccountLog_PlaceSort = -1
 			ARCBank_AccountLog_ArgsSort = {}
 		end
-		collectgarbage()
+		--collectgarbage()
 		coroutine.yield()
 	end
 end)

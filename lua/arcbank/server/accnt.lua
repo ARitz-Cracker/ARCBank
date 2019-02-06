@@ -2,7 +2,7 @@
 
 -- This file is under copyright.
 -- Any 3rd party content has been used as either public domain or with permission.
--- © Copyright 2016-2017 Aritz Beobide-Cardinal All rights reserved.
+-- © Copyright 2016-2018 Aritz Beobide-Cardinal All rights reserved.
 
 -- Group members are stored seperatly from group accounts
 -- 
@@ -12,6 +12,8 @@ Ventz: to list accounts in order of balance
 Ventz: cos its useful to find ppl who somehow glitched money
 Ventz: if that ever happens#
 ]]
+
+
 
 local function specialAccess(ply,readPerm)
 	return (isentity(ply) and IsValid(ply) and ply:IsPlayer() and (table.HasValue(ARCBank.Settings.admins,string.lower(ply:GetUserGroup())) or (table.HasValue(ARCBank.Settings.moderators,string.lower(ply:GetUserGroup())) and (readPerm or not ARCBank.Settings.moderators_read_only) ))) or ply == "__SYSTEM" or ply == "__UNKNOWN"
@@ -36,30 +38,378 @@ local function sterilizePlayerAccount(ply,accnt)
 end
 
 
-function ARCBank.PurgeAccounts(callback)
-	if !ARCBank.Loaded then callback(ARCBANK_ERROR_NOT_LOADED) return end
+local function createAccountFromTab(account,callback)
+	--print("TOO: "..tostring(account))
+	--PrintTable(account)
+	local arcbank_accounts
+	local arcbank_groups
 	if ARCBank.IsMySQLEnabled() then
-		ARCBank.MySQL.Query("DROP TABLE arcbank_log;",function(err,data)
+		arcbank_accounts = "arcbank_accounts"
+		arcbank_groups = "arcbank_groups"
+		if (not account.used) then
+			arcbank_accounts = arcbank_accounts .. "_unused"
+			arcbank_groups = arcbank_groups .. "_unused"
+		end
+	else
+		arcbank_accounts = "/accounts_1.4"
+		arcbank_groups = "/groups_1.4"
+		if (account.used) then
+			arcbank_accounts = arcbank_accounts .. "/"
+			arcbank_groups = arcbank_groups .. "/"
+		else
+			arcbank_accounts = arcbank_accounts .. "_unused/"
+			arcbank_groups = arcbank_groups .. "_unused/"
+		end
+	end
+	--[[
+	
+	local cb = function(err)
+		if err then
+			callback(ARCBANK_ERROR_WRITE_FAILURE)
+		else
+			ARCBank.WriteTransaction(account,nil,owner,nil,amount,amount,ARCBANK_TRANSACTION_CREATE,"Transaction history wipe",function(errcode)
+				callback(errcode,account)
+				
+				
+				ARCBank.WriteTransaction(account,nil,owner,v,0,nil,ARCBANK_TRANSACTION_GROUP_ADD,"Transaction history wipe",function(err)
+					callback()
+				end)
+			end)
+		end
+	end
+	
+	--]]
+	
+	
+	local cb = function(err)
+		if (err) then
+			callback(ARCBANK_ERROR_WRITE_FAILURE)
+			return
+		end
+		local cb2 = function(err)
+			if (err) then
+				callback(ARCBANK_ERROR_WRITE_FAILURE)
+				return
+			end
+			if (account.used) then
+				ARCBank.WriteTransaction(account.account,nil,account.owner,nil,account.money,account.money,ARCBANK_TRANSACTION_CREATE,"Transaction history wipe",function(errcode)
+					if (errcode ~= ARCBANK_ERROR_NONE) then
+						callback(errcode)
+						return
+					end
+					ARCLib.ForEachAsync(account.members,function(k,v,callback)
+						ARCBank.WriteTransaction(account.account,nil,account.owner,v,0,nil,ARCBANK_TRANSACTION_GROUP_ADD,"Transaction history wipe",function(err) --I know I don't check errcode here shhh
+							callback()
+						end)
+					end,function()
+						callback(ARCBANK_ERROR_NONE)
+					end)
+				end)
+			else
+				callback(ARCBANK_ERROR_NONE)
+			end
+			--table.concat( Table, " " )
+		end
+		if ARCBank.IsMySQLEnabled() then
+			if (account.members[1]) then
+				local queries = {}
+				local qi = 1
+				queries[qi] = "INSERT INTO "..arcbank_groups.."(account,user) VALUES('"..ARCBank.MySQL.Escape(account.account).."','"..ARCBank.MySQL.Escape(account.members[1]).."')"
+				for i=2,#account.members do
+					local mems = "('"..ARCBank.MySQL.Escape(account.account).."','"..ARCBank.MySQL.Escape(account.members[i]).."')"
+					if (#mems + #queries[qi] + #arcbank_groups + 20 > ARCBank.MySQL.MaxLength) then
+						queries[qi] = queries[qi] .. ";"
+						qi = qi + 1
+						queries[qi] = "INSERT INTO "..arcbank_groups.."(account,user) VALUES"..mems
+					else
+						queries[qi] = queries[qi] .. "," .. mems
+					end
+				end
+				queries[qi] = queries[qi] .. ";"
+				qi = 0
+				local cb3
+				cb3 = function(err)
+					if (err) then
+						cb2(err)
+					end
+					qi = qi + 1
+					if (qi > #queries) then
+						cb2(nil)
+						return
+					end
+					ARCBank.MySQL.Query(queries[qi],cb3)
+				end
+				cb3(nil)
+			else
+				cb2(nil)
+			end
+		else
+			if (#account.members == 0) then
+				cb2(nil)
+				return
+			end
+			local fullpath = ARCBank.Dir..arcbank_groups..tostring(account.account)..".txt"
+			file.Write( fullpath, table.concat(account.members, "," ).."," )
+			if file.Exists(fullpath,"DATA") then
+				cb2(nil)
+			else
+				cb2("Shits fucked up")
+				ARCBank.Msg("Failed to write "..fullpath)
+			end
+		end
+	end
+	if ARCBank.IsMySQLEnabled() then
+		if (account.used) then
+			ARCBank.MySQL.Query("INSERT INTO "..arcbank_accounts.."(account,name,owner,rank) VALUES('"..ARCBank.MySQL.Escape(account.account).."','"..ARCBank.MySQL.Escape(account.name).."','"..ARCBank.MySQL.Escape(account.owner).."',"..account.rank..");",cb)
+		else
+			ARCBank.MySQL.Query("INSERT INTO "..arcbank_accounts.."(account,name,owner,money,rank) VALUES('"..ARCBank.MySQL.Escape(account.account).."','"..ARCBank.MySQL.Escape(account.name).."','"..ARCBank.MySQL.Escape(account.owner).."',"..account.money..","..account.rank..");",cb)
+		end
+	else
+		local fullpath = ARCBank.Dir..arcbank_accounts..tostring(account.account)..".txt"
+		local tab = {}
+		tab.account = account.account
+		tab.name = account.name
+		tab.owner = account.owner
+		tab.rank = account.rank
+		if (not account.used) then
+			tab.money = account.money
+		end
+		file.Write(fullpath,util.TableToJSON(tab))
+		if file.Exists(fullpath,"DATA") then
+			cb(nil)
+		else
+			cb("Shits fucked up")
+			ARCBank.Msg("Failed to write "..fullpath)
+		end
+	end
+	
+	--[[
+
+	if ARCBank.IsMySQLEnabled() then
+		ARCBank.MySQL.Query("INSERT INTO arcbank_groups(account,user) VALUES('"..ARCBank.MySQL.Escape(filename).."','"..ARCBank.MySQL.Escape(person).."');",function(err,ddata)
+			if err then
+				callback(ARCBANK_ERROR_WRITE_FAILURE)
+			else
+				callback(ARCBANK_ERROR_NONE)
+			end
+		end)
+	else
+		local fullpath = ARCBank.Dir.."/groups_1.4/"..tostring(filename)..".txt"
+		file.Append( fullpath, person.."," )
+		timer.Simple(0.0001, function() callback(ARCBANK_ERROR_NONE) end)
+	end
+	
+				ARCLib.ForEachAsync(accountdata.members,function(k,v,callback)
+					ARCBank.WriteGroupMemberAdd(filename,v,function(errcode) 
+						if errcode == ARCBANK_ERROR_NONE then
+							ARCBank.WriteTransaction(filename,nil,owner,v,0,nil,ARCBANK_TRANSACTION_GROUP_ADD,"Converted from an older version of ARCBank",function(err) --I know I don't check errcode here shhh
+								callback()
+							end)
+						else
+							callback()
+						end
+						callback()
+					end)					
+				end,function()
+					createOldAccount(oldAccounts,i+1)
+				end)
+	
+	]]
+
+end
+
+function ARCBank.RestoreUnusedAccount(filename,callback)
+	ARCBank.ReadAccountProperties(filename,function(err,account)
+		if (err ~= ARCBANK_ERROR_NONE) then
+			callback(err)
+			return
+		end
+		ARCBank.ReadGroupMembers(filename,function(err,members)
+			if (err ~= ARCBANK_ERROR_NONE) then
+				callback(err)
+				return
+			end
+			table.RemoveByValue(members,account.owner)
+			account.members = members
+			account.used = true
+			createAccountFromTab(account,function(err)
+				if (err ~= ARCBANK_ERROR_NONE) then
+					callback(err)
+					return
+				end
+				--TODO: Delete from archives
+				ARCBank.EraseAccount(account.account,"__SYSTEM","",callback,nil,true)
+			end)
+		end,true)
+	end,true)
+end
+function ARCBank.ReadUnusedAccounts(userid,callback)
+	ARCBank.ReadMemberedAccounts(userid,callback,true)
+end
+
+local function showPurgePercentage(part,whole)
+	local per = math.Round( part/whole*100, 2 )
+	ARCBank.Msg("Re-creating accounts... ("..per.."%) DO NOT SHUT DOWN THE SERVER!")
+	for _,plys in ipairs(player.GetAll()) do
+		ARCBank.MsgCL(plys,"Re-creating accounts... ("..per.."%) DO NOT SHUT DOWN THE SERVER!")
+	end
+end
+
+function ARCBank.PurgeTransactions(callback)
+	ARCBank.Busy = true
+	showPurgePercentage(0,1)
+	ARCBank.ReadAllAccountProperties(function(errcode,accounts)
+		local accountLen = #accounts*2 + 3
+		local accountProgress = 0
+		accountProgress = accountProgress + 1
+		showPurgePercentage(accountProgress,accountLen)
+		--PrintTable(accounts)
+		ARCLib.ForEachAsync(accounts,function(k,v,callback)
+			ARCBank.Msg("Reading balance for "..v.account)
+			
+			accountProgress = accountProgress + 0.2
+			showPurgePercentage(accountProgress,accountLen)
+			
+			ARCBank.ReadBalance(v.account,function(err,currentbalance)
+				accountProgress = accountProgress + 0.4
+				showPurgePercentage(accountProgress,accountLen)
+			
+				if err == ARCBANK_ERROR_NONE then
+					v.money = currentbalance
+				else
+					v.money = 0
+				end
+				ARCBank.ReadTransactions(v.account,os.time()-(ARCBank.Settings["account_interest_time_limit"]*86400),bit.band(ARCBANK_TRANSACTION_EVERYTHING,bit.bnot(ARCBANK_TRANSACTION_INTEREST)),function(errcode,progress,data)
+					ARCBank.Msg("Reading transactions for "..v.account)
+					if errcode == ARCBANK_ERROR_NONE then
+						v.used = #data > 0
+					elseif errcode == ARCBANK_ERROR_DOWNLOADING then
+						return
+					else
+						ARCBank.Msg("Failed to get transactions for "..v.account.." "..errcode)
+						v.used = false
+					end
+					accountProgress = accountProgress + 0.4
+					--accountProgress = accountProgress + 1
+					showPurgePercentage(accountProgress,accountLen)
+					
+					if string.sub(v.account,1,1) == "_" then
+						if (v.used) then
+							v.members = {}
+						else
+							v.members = {v.owner}
+						end
+						callback()
+					else
+						ARCBank.ReadGroupMembers(v.account, function(errorcode, group_members)
+							if errorcode == ARCBANK_ERROR_NONE then
+								v.members = group_members
+							else
+								v.members = {}
+							end
+							if (not v.used) then
+								table.insert( v.members, v.owner)
+							end
+							callback()
+						end)						
+					end
+				end)
+			end)
+		end,function()
+			accountProgress = accountProgress + 1
+			showPurgePercentage(accountProgress,accountLen)
+			ARCBank.PurgeAccounts(function(err)
+				if err ~= ARCBANK_ERROR_NONE then
+					ARCBank.Msg("Just nuke ARCBank, you've lost all hope.")
+					return
+				end
+				accountProgress = accountProgress + 1
+				showPurgePercentage(accountProgress,accountLen)
+				ARCBank.Loaded = true
+				ARCLib.ForEachAsync(accounts,function(k,v,callback)
+					createAccountFromTab(v,function(err)
+						accountProgress = accountProgress + 1
+						showPurgePercentage(accountProgress,accountLen)
+						if err ~= ARCBANK_ERROR_NONE then
+							ARCBank.Msg("Failed to re-create account "..v.name.." ("..v.account..") "..tostring(err))
+						end
+						callback()
+					end)
+				
+				end,function()
+					showPurgePercentage(1,1)
+					ARCBank.Busy = false
+				end)
+			end,true)
+		end)
+	end)
+end
+
+
+
+function ARCBank.PurgeAccounts(callback,skipunused)
+	if !ARCBank.Loaded then callback(ARCBANK_ERROR_NOT_LOADED) return end
+	ARCBank.Loaded = false
+	ARCLib.DeleteAll(ARCBank.Dir.."/accounts_1.4")
+	ARCLib.DeleteAll(ARCBank.Dir.."/groups_1.4")
+	ARCLib.DeleteAll(ARCBank.Dir.."/logs_1.4")
+	ARCLib.DeleteAll(ARCBank.Dir.."/syslogs")
+	file.CreateDir(ARCBank.Dir.."/accounts_1.4")
+	file.CreateDir(ARCBank.Dir.."/groups_1.4")
+	file.CreateDir(ARCBank.Dir.."/logs_1.4")
+	file.CreateDir(ARCBank.Dir.."/syslogs")
+	if not skipunused then
+		ARCLib.DeleteAll(ARCBank.Dir.."/accounts_1.4_unused")
+		ARCLib.DeleteAll(ARCBank.Dir.."/groups_1.4_unused")
+		file.CreateDir(ARCBank.Dir.."/accounts_1.4_unused")
+		file.CreateDir(ARCBank.Dir.."/groups_1.4_unused")
+	end
+	ARCBank.ClearLogCache()
+	if ARCBank.IsMySQLEnabled() then
+		ARCBank.Busy = true
+		ARCBank.MySQL.Query("TRUNCATE TABLE arcbank_log;",function(err,data)
 			if err then
 				ARCBank.Msg(err)
 				callback(ARCBANK_ERROR_WRITE_FAILURE)
 			else
-				ARCBank.MySQL.Query("DROP TABLE arcbank_accounts;",function(err,data)
+				ARCBank.MySQL.Query("TRUNCATE TABLE arcbank_accounts;",function(err,data)
 					if err then
 						ARCBank.Msg(err)
 						callback(ARCBANK_ERROR_WRITE_FAILURE)
 					else
-						ARCBank.MySQL.Query("DROP TABLE arcbank_groups;",function(err,data)
+						ARCBank.MySQL.Query("TRUNCATE TABLE arcbank_groups;",function(err,data)
 							if err then
 								ARCBank.Msg(err)
 								callback(ARCBANK_ERROR_WRITE_FAILURE)
 							else
-								ARCBank.MySQL.Query("DROP TABLE arcbank_lock;",function(err,data)
+								ARCBank.MySQL.Query("TRUNCATE TABLE arcbank_lock;",function(err,data)
 									if err then
 										callback(ARCBANK_ERROR_WRITE_FAILURE)
 									else
-										callback(ARCBANK_ERROR_NONE)
-										ARCBank.Loaded = false
+										if skipunused then
+											ARCBank.Busy = false
+											ARCBank.Loaded = false
+											callback(ARCBANK_ERROR_NONE)
+										else
+											ARCBank.MySQL.Query("TRUNCATE TABLE arcbank_accounts_unused;",function(err,data)
+												if err then
+													ARCBank.Msg(err)
+													callback(ARCBANK_ERROR_WRITE_FAILURE)
+												else
+													ARCBank.MySQL.Query("TRUNCATE TABLE arcbank_groups_unused;",function(err,data)
+														if err then
+															ARCBank.Msg(err)
+															callback(ARCBANK_ERROR_WRITE_FAILURE)
+														else
+															ARCBank.Busy = false
+															ARCBank.Loaded = false
+															callback(ARCBANK_ERROR_NONE)
+														end
+													end)
+												end
+											end)
+										end
+										
 									end
 								end)
 							end
@@ -69,13 +419,8 @@ function ARCBank.PurgeAccounts(callback)
 			end
 		end)
 	else
-		ARCLib.DeleteAll(ARCBank.Dir.."/accounts_1.4")
-		ARCLib.DeleteAll(ARCBank.Dir.."/groups_1.4")
-		ARCLib.DeleteAll(ARCBank.Dir.."/logs_1.4")
 		callback(ARCBANK_ERROR_NONE)
-		ARCBank.Loaded = false
 	end
-	ARCLib.DeleteAll(ARCBank.Dir.."/syslogs")
 end
 
 function ARCBank.GetAccountName(account,callback)
@@ -682,9 +1027,13 @@ function ARCBank.CreateAccount(ply,groupname,rank,callback)
 	
 	local name = ply:Nick()
 	local initbalance = 0
-	if !groupname || groupname == "" then
+	if !groupname or groupname == "" then
 		if rank <= 0 then
 			callback(ARCBANK_ERROR_INVALID_RANK)
+			return
+		end
+		if rank >= ARCBANK_GROUPACCOUNTS_ then
+			callback(ARCBANK_ERROR_INVALID_NAME)
 			return
 		end
 		initbalance = ARCBank.Settings["account_starting_cash"]
@@ -823,12 +1172,12 @@ local function accountInterest(accounts,i,callback)
 							--ARCBank.Msg("Gave interest to "..accounts[i].account)
 						end
 						accountInterest(accounts,i + 1,callback)
-					end,ARCBank.Settings["interest_perpetual_debt"])
+					end,ARCBank.Settings["interest_perpetual_debt"],ARCBank.Settings["money_max_"..accounts[i].rank.."_"..ARCBANK_ACCOUNTSTRINGS[accounts[i].rank]])
 				else
 					--ARCBank.Msg(accounts[i].account.." is unused")
 					accountInterest(accounts,i + 1,callback)
 				end
-			elseif errcode != ARCBANK_ERROR_DOWNLOADING then
+			elseif errcode ~= ARCBANK_ERROR_DOWNLOADING and errcode ~= ARCBANK_ERROR_TOO_MUCH_CASH then
 				ARCBank.Msg("Failed to give interest to "..accounts[i].account..". "..ARCBANK_ERRORSTRINGS[errcode])
 				accountInterest(accounts,i + 1,callback)
 			end
@@ -856,9 +1205,13 @@ function ARCBank.AddAccountInterest(callback)
 end
 
 local fsReadAllProperties = {}
-function ARCBank.ReadAllAccountProperties(callback)
+function ARCBank.ReadAllAccountProperties(callback,unused)
 	if !ARCBank.Loaded then callback(ARCBANK_ERROR_NOT_LOADED) return end
 	if ARCBank.IsMySQLEnabled() then
+		local fol = "arcbank_accounts"
+		if (unused) then
+			fol = fol.."_unused"
+		end
 		ARCBank.MySQL.Query("SELECT * FROM arcbank_accounts;",function(err,data)
 			if err then
 				callback(ARCBANK_ERROR_READ_FAILURE)
@@ -867,7 +1220,13 @@ function ARCBank.ReadAllAccountProperties(callback)
 			end
 		end)
 	else
-		local files = file.Find(ARCBank.Dir.."/accounts_1.4/*","DATA")
+		local fol = "/accounts_1.4"
+		if (unused) then
+			fol = fol.."_unused"
+		end
+		fol = fol.."/"
+		local files = file.Find(ARCBank.Dir..fol.."*","DATA")
+		files[#files + 1] = fol
 		files[#files + 1] = callback
 		fsReadAllProperties[#fsReadAllProperties + 1] = files
 	end
@@ -903,10 +1262,17 @@ function ARCBank.ReadOwnedAccounts(user,callback)
 	end
 end
 local fsReadMembers = {}
-function ARCBank.ReadMemberedAccounts(user,callback)
+
+
+
+function ARCBank.ReadMemberedAccounts(user,callback,unused)
 	if !ARCBank.Loaded then callback(ARCBANK_ERROR_NOT_LOADED) return end
 	if ARCBank.IsMySQLEnabled() then
-		ARCBank.MySQL.Query("SELECT * FROM arcbank_groups WHERE user='"..ARCBank.MySQL.Escape(user).."';",function(err,data)
+		local fol = "arcbank_groups"
+		if (unused) then
+			fol = fol.."_unused"
+		end
+		ARCBank.MySQL.Query("SELECT * FROM "..fol.." WHERE user='"..ARCBank.MySQL.Escape(user).."';",function(err,data)
 			if err then
 				callback(ARCBANK_ERROR_READ_FAILURE)
 			else
@@ -920,17 +1286,27 @@ function ARCBank.ReadMemberedAccounts(user,callback)
 			end
 		end)
 	else
-		local files = file.Find(ARCBank.Dir.."/groups_1.4/*","DATA")
+		local fol = "/groups_1.4"
+		if (unused) then
+			fol = fol.."_unused"
+		end
+		fol = fol.."/"
+		local files = file.Find(ARCBank.Dir..fol.."*","DATA")
 		local i = #files
 		i = i + 1
+		files[i] = fol
+		i = i + 1
 		files[i] = user
+		i = i + 1
+		files[i] = fol
 		i = i + 1
 		files[i] = callback
 		fsReadMembers[#fsReadMembers + 1] = files
 	end
 end
 
-function ARCBank.EraseAccount(account,person,comment,callback,curbal)
+function ARCBank.EraseAccount(account,person,comment,callback,curbal,unused)
+
 	curbal = tonumber(curbal)
 	if curbal then
 		curbal = -curbal
@@ -938,13 +1314,23 @@ function ARCBank.EraseAccount(account,person,comment,callback,curbal)
 	account = tostring(account)
 	if not ARCBank.Loaded then callback(ARCBANK_ERROR_NOT_LOADED) return end
 	if ARCBank.IsMySQLEnabled() then
-		ARCBank.MySQL.Query("DELETE FROM arcbank_accounts WHERE account='"..ARCBank.MySQL.Escape(account).."';",function(err,ddata)
+		local arcbank_accounts = "arcbank_accounts"
+		if (unused) then
+			arcbank_accounts = arcbank_accounts.."_unused"
+		end
+		local arcbank_groups = "arcbank_groups"
+		if (unused) then
+			arcbank_groups = arcbank_groups.."_unused"
+		end
+		ARCBank.MySQL.Query("DELETE FROM "..arcbank_accounts.." WHERE account='"..ARCBank.MySQL.Escape(account).."';",function(err,ddata)
 			if err then
 				callback(ARCBANK_ERROR_WRITE_FAILURE)
 			else
-				ARCBank.MySQL.Query("DELETE FROM arcbank_groups WHERE account='"..ARCBank.MySQL.Escape(account).."';",function(err,ddata)
+				ARCBank.MySQL.Query("DELETE FROM "..arcbank_groups.." WHERE account='"..ARCBank.MySQL.Escape(account).."';",function(err,ddata)
 					if err then
 						callback(ARCBANK_ERROR_WRITE_FAILURE)
+					elseif unused then
+						callback(ARCBANK_ERROR_NONE)
 					else
 						ARCBank.WriteTransaction(account,nil,person,nil,nil,nil,ARCBANK_TRANSACTION_DELETE,comment,callback)
 					end
@@ -952,9 +1338,24 @@ function ARCBank.EraseAccount(account,person,comment,callback,curbal)
 			end
 		end)
 	else
-		file.Delete( ARCBank.Dir.."/accounts_1.4/"..account..".txt" ) 
-		file.Delete( ARCBank.Dir.."/groups_1.4/"..account..".txt" ) 
-		timer.Simple(0.0001, function() callback(ARCBANK_ERROR_NONE) end)
+		local accounts = "/accounts_1.4"
+		if (unused) then
+			accounts = accounts.."_unused"
+		end
+		accounts = accounts.."/"
+		local groups = "/groups_1.4"
+		if (unused) then
+			groups = groups.."_unused"
+		end
+		groups = groups.."/"
+		file.Delete( ARCBank.Dir..accounts..account..".txt" ) 
+		file.Delete( ARCBank.Dir..groups..account..".txt" ) 
+		if unused then
+			timer.Simple(0.0001, function() callback(ARCBANK_ERROR_NONE) end)
+		else
+			ARCBank.WriteTransaction(account,nil,person,nil,nil,nil,ARCBANK_TRANSACTION_DELETE,comment,callback)
+		end
+		
 	end
 end
 
@@ -963,14 +1364,14 @@ function ARCBank.WriteNewAccount(name,owner,rank,amount,comment,callback)
 	owner = tostring(owner)
 	amount = tonumber(amount) or 0
 	rank = tonumber(rank) or 1
-	if string.sub(name,#name) == "_" then
-		timer.Simple(0.0001, function() callback(ARCBANK_ERROR_INVALID_NAME) end)
-		return
-	end
 	local account
 	if rank < ARCBANK_GROUPACCOUNTS_ then
 		account = "_"..string.lower(ARCLib.basexx.to_base32(owner)).."_"
 	else
+		if string.sub(name,#name) == "_" then
+			timer.Simple(0.0001, function() callback(ARCBANK_ERROR_INVALID_NAME) end)
+			return
+		end
 		account = string.lower(ARCLib.basexx.to_base32(name)).."_"
 	end
 	
@@ -981,31 +1382,39 @@ function ARCBank.WriteNewAccount(name,owner,rank,amount,comment,callback)
 	
 	ARCBank.ReadAccountProperties(account,function(errcode,data)
 		if errcode == ARCBANK_ERROR_NIL_ACCOUNT then
-			local cb = function(err)
-				if err then
-					callback(ARCBANK_ERROR_WRITE_FAILURE)
+			ARCBank.ReadAccountProperties(account,function(errcode,data)
+				if errcode == ARCBANK_ERROR_NIL_ACCOUNT then
+					local cb = function(err)
+						if err then
+							callback(ARCBANK_ERROR_WRITE_FAILURE)
+						else
+							ARCBank.WriteTransaction(account,nil,owner,nil,amount,amount,ARCBANK_TRANSACTION_CREATE,comment,function(errcode)
+								callback(errcode,account)
+							end)
+						end
+					end
+					if ARCBank.IsMySQLEnabled() then
+						ARCBank.MySQL.Query("INSERT INTO arcbank_accounts(account,name,owner,rank) VALUES('"..ARCBank.MySQL.Escape(account).."','"..ARCBank.MySQL.Escape(name).."','"..ARCBank.MySQL.Escape(owner).."',"..rank..");",cb)
+					else
+						local fullpath = ARCBank.Dir.."/accounts_1.4/"..tostring(account)..".txt"
+						local tab = {}
+						tab.account = account
+						tab.name = name
+						tab.owner = owner
+						tab.rank = rank
+						file.Write(fullpath,util.TableToJSON(tab))
+						if file.Exists(fullpath,"DATA") then
+							cb(nil)
+						else
+							cb("Shits fucked up")
+						end
+					end
+				elseif errcode == ARCBANK_ERROR_NONE then
+					callback(ARCBANK_ERROR_NAME_DUPE)
 				else
-					ARCBank.WriteTransaction(account,nil,owner,nil,amount,amount,ARCBANK_TRANSACTION_CREATE,comment,function(errcode)
-						callback(errcode,account)
-					end)
+					callback(errcode)
 				end
-			end
-			if ARCBank.IsMySQLEnabled() then
-				ARCBank.MySQL.Query("INSERT INTO arcbank_accounts(account,name,owner,rank) VALUES('"..ARCBank.MySQL.Escape(account).."','"..ARCBank.MySQL.Escape(name).."','"..ARCBank.MySQL.Escape(owner).."',"..rank..");",cb)
-			else
-				local fullpath = ARCBank.Dir.."/accounts_1.4/"..tostring(account)..".txt"
-				local tab = {}
-				tab.account = account
-				tab.name = name
-				tab.owner = owner
-				tab.rank = rank
-				file.Write(fullpath,util.TableToJSON(tab))
-				if file.Exists(fullpath,"DATA") then
-					cb(nil)
-				else
-					cb("Shits fucked up")
-				end
-			end
+			end,true)
 		elseif errcode == ARCBANK_ERROR_NONE then
 			callback(ARCBANK_ERROR_NAME_DUPE)
 		else
@@ -1173,6 +1582,14 @@ local currentLogs = file.Find( ARCBank.Dir.."/logs_1.4/*", "DATA")
 local currentLogLine = -1
 local logCache = {}
 local lastClearCash = 0
+function ARCBank.ClearLogCache()
+	currentLogFile = ""
+	currentLogs = file.Find( ARCBank.Dir.."/logs_1.4/*", "DATA")
+	currentLogLine = -1
+	logCache = {}
+	lastClearCash = 0
+end
+
 local function readLog(v)
 	if v == string.GetFileFromFilename(currentLogFile) then
 		return file.Read(currentLogFile,"DATA")
@@ -1466,10 +1883,15 @@ function ARCBank.WriteGroupMemberAdd(filename,person,callback)
 	end
 end
 
-function ARCBank.ReadGroupMembers(filename,callback)
+
+function ARCBank.ReadGroupMembers(filename,callback,unused)
 	if not ARCBank.Loaded then callback(ARCBANK_ERROR_NOT_LOADED) return end
 	if ARCBank.IsMySQLEnabled() then
-		ARCBank.MySQL.Query("SELECT * FROM arcbank_groups WHERE account='"..ARCBank.MySQL.Escape(filename).."';",function(err,ddata)
+		local fol = "arcbank_groups"
+		if (unused) then
+			fol = fol.."_unused"
+		end
+		ARCBank.MySQL.Query("SELECT * FROM "..fol.." WHERE account='"..ARCBank.MySQL.Escape(filename).."';",function(err,ddata)
 			if err then
 				callback(ARCBANK_ERROR_READ_FAILURE)
 			else
@@ -1483,7 +1905,12 @@ function ARCBank.ReadGroupMembers(filename,callback)
 			end
 		end)
 	else
-		local fullpath = ARCBank.Dir.."/groups_1.4/"..tostring(filename)..".txt"
+		local fol = "/groups_1.4"
+		if (unused) then
+			fol = fol.."_unused"
+		end
+		fol = fol.."/"
+		local fullpath = ARCBank.Dir..fol..tostring(filename)..".txt"
 		if file.Exists( fullpath, "DATA" ) then
 			local tab = string.Explode( ",", file.Read( fullpath, "DATA"))
 			if tab and tab[2] then
@@ -1498,10 +1925,14 @@ function ARCBank.ReadGroupMembers(filename,callback)
 	end
 end
 
-function ARCBank.ReadAccountProperties(filename,callback)
+function ARCBank.ReadAccountProperties(filename,callback,unused)
 	if !ARCBank.Loaded then callback(ARCBANK_ERROR_NOT_LOADED) return end
 	if ARCBank.IsMySQLEnabled() then
-		ARCBank.MySQL.Query("SELECT * FROM arcbank_accounts WHERE account='"..ARCBank.MySQL.Escape(filename).."';",function(err,data)
+		local fol = "arcbank_accounts"
+		if (unused) then
+			fol = fol.."_unused"
+		end
+		ARCBank.MySQL.Query("SELECT * FROM "..fol.." WHERE account='"..ARCBank.MySQL.Escape(filename).."';",function(err,data)
 			if err then
 				callback(ARCBANK_ERROR_READ_FAILURE)
 			else
@@ -1513,7 +1944,12 @@ function ARCBank.ReadAccountProperties(filename,callback)
 			end
 		end)
 	else
-		local fullpath = ARCBank.Dir.."/accounts_1.4/"..tostring(filename)..".txt"
+		local fol = "/accounts_1.4"
+		if (unused) then
+			fol = fol.."_unused"
+		end
+		fol = fol.."/"
+		local fullpath = ARCBank.Dir..fol..tostring(filename)..".txt"
 		if file.Exists( fullpath, "DATA" ) then
 			data = file.Read( fullpath, "DATA")
 			if !data || data == "" then 
@@ -1647,7 +2083,6 @@ ARCLib.AddThinkFunc("ARCBank ReadTransactions",function() -- Look at this guy, r
 		local data = {}
 		for k,v in ipairs(files) do 
 			local line = string.Explode( "\r\n", readLog(v) or "")
-			
 			coroutine.yield()
 			line[#line] = nil --Last line of a log is always blank
 			for kk,vv in ipairs(line) do
@@ -1739,12 +2174,13 @@ ARCLib.AddThinkFunc("ARCBank ReadTransactions",function() -- Look at this guy, r
 	while i <= #fsReadMembers do
 		local files = fsReadMembers[i]
 		local callback = table.remove(files)
+		local fol = table.remove(files)
 		local user = table.remove(files)
 		
 		local accounts = {}
 		local accountslen = 0
 		for k,v in ipairs(files) do 
-			if string.find(file.Read(ARCBank.Dir.."/groups_1.4/"..v,"DATA") or "",user,1,true) then
+			if string.find(file.Read(ARCBank.Dir..fol..v,"DATA") or "",user,1,true) then
 				accountslen = accountslen + 1
 				accounts[accountslen] = string.sub(v,1,#v-4)
 			end
@@ -1786,11 +2222,12 @@ ARCLib.AddThinkFunc("ARCBank ReadTransactions",function() -- Look at this guy, r
 	while i <= #fsReadAllProperties do
 		local files = fsReadAllProperties[i]
 		local callback = table.remove(files)
+		local fol = table.remove(files)
 		
 		local accounts = {}
 		local accountslen = 0
 		for k,v in ipairs(files) do 
-			local data = util.JSONToTable(file.Read(ARCBank.Dir.."/accounts_1.4/"..v,"DATA") or "")
+			local data = util.JSONToTable(file.Read(ARCBank.Dir..fol..v,"DATA") or "")
 			if data then
 				accountslen = accountslen + 1
 				accounts[accountslen] = data
@@ -1845,6 +2282,7 @@ local function createOldAccount(oldAccounts,i)
 			return
 		end
 	end
+	accountdata.owner = owner
 	ARCBank.WriteNewAccount(accountdata.name,owner,accountdata.rank,accountdata.money,"Converted from an older version of ARCBank",function(errcode,filename)
 		if errcode == ARCBANK_ERROR_NONE then
 			if accountdata.isgroup then

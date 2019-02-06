@@ -1,6 +1,6 @@
 -- This file is under copyright, and is bound to the agreement stated in the EULA.
 -- Any 3rd party content has been used as either public domain or with permission.
--- © Copyright 2014-2017 Aritz Beobide-Cardinal All rights reserved.
+-- © Copyright 2014-2018 Aritz Beobide-Cardinal All rights reserved.
 AddCSLuaFile("cl_init.lua")
 AddCSLuaFile("shared.lua")
 include('shared.lua')
@@ -357,7 +357,7 @@ function ENT:Use( ply, caller )
 	if self.InUse && ply == self.UsePlayer && self.PlayerNeedsToDoSomething then
 		local hit,dir,frac = util.IntersectRayWithOBB(ply:GetShootPos(),ply:GetAimVector()*100, self:LocalToWorld(self.ATMType.MoneyHitBoxPos), self:LocalToWorldAngles(self.ATMType.MoneyHitBoxAng), vector_origin, self.ATMType.MoneyHitBoxSize)  
 		if hit && self.MonehDelay <= CurTime() then
-			self.MonehDelay = CurTime() + 5
+			self.MonehDelay = math.huge -- Quick and dirty fix,
 			if self.TakingMoney then
 				if self.Hacked then
 					ARCBank.PlayerAddMoney(self.UsePlayer,self.args.money)
@@ -371,6 +371,7 @@ function ENT:Use( ply, caller )
 					self.PlayerNeedsToDoSomething = false
 				else
 					ARCBank.AddFromWallet(self.UsePlayer,self.args.name,-self.args.money,"ATM",function(errc)
+						self.MonehDelay = CurTime() + 5
 						self.errorc = errc
 						if self.ATMType.UseMoneyModel and IsValid(self.moneyprop) then
 							self.moneyprop:Remove()
@@ -384,6 +385,7 @@ function ENT:Use( ply, caller )
 			else
 			
 				ARCBank.AddFromWallet(self.UsePlayer,self.args.name,self.args.money,"ATM",function(errc)
+					self.MonehDelay = CurTime() + 5
 					self.errorc = errc
 					if self.errorc == 0 then
 						self:EmitSoundTable(self.ATMType.DepositDoneSound,65,100)
@@ -393,6 +395,7 @@ function ENT:Use( ply, caller )
 						if self.ATMType.UseMoneyModel then
 
 							self.moneyprop = ents.Create( "prop_physics" )
+							
 							if IsValid(self.moneyprop) then
 								self.moneyprop.ARCBank_MapEntity = true
 								self.moneyprop:SetModel( self.ATMType.MoneyModel )
@@ -400,9 +403,12 @@ function ENT:Use( ply, caller )
 								self.moneyprop:SetPos( self:LocalToWorld(self.ATMType.DepositAnimationPos))
 								self.moneyprop:SetAngles( self:LocalToWorldAngles(self.ATMType.DepositAnimationAng) )
 								self.moneyprop:Spawn()
-								self.moneyprop:GetPhysicsObject():EnableCollisions(false)
-								self.moneyprop:GetPhysicsObject():EnableGravity(false)
-								self.moneyprop:GetPhysicsObject():SetVelocity(self.moneyprop:GetForward()*self.ATMType.DepositAnimationSpeed.x + self.moneyprop:GetRight()*self.ATMType.DepositAnimationSpeed.y + self.moneyprop:GetUp()*self.ATMType.DepositAnimationSpeed.z)
+								local phys = self.moneyprop:GetPhysicsObject()
+								if IsValid(phys) then
+									phys:EnableCollisions(false)
+									phys:EnableGravity(false)
+									phys:SetVelocity(self.moneyprop:GetForward()*self.ATMType.DepositAnimationSpeed.x + self.moneyprop:GetRight()*self.ATMType.DepositAnimationSpeed.y + self.moneyprop:GetUp()*self.ATMType.DepositAnimationSpeed.z)
+								end
 							end
 							--MsgN(tostring(self.moneyprop:GetAngles():Up()).." + "..tostring(self.ATMType.DepositAnimationSpeed).." = ".. tostring(self.moneyprop:GetAngles():Up() * self.ATMType.DepositAnimationSpeed))
 							timer.Simple(self.ATMType.DepositAnimationLength,function() if IsValid(self.moneyprop) then self.moneyprop:Remove() end end)
@@ -465,10 +471,14 @@ function ENT:ATM_USE(activator)
 					if self.ATMType.CardModel == "models/arc/card.mdl" then
 						selfcard:SetSubMaterial(2,ARCBank.Settings.card_texture_world)
 					end
-					selfcard:GetPhysicsObject():EnableCollisions(false)
-					selfcard:GetPhysicsObject():EnableGravity(false)
-					selfcard:GetPhysicsObject():SetVelocity(selfcard:GetForward()*self.ATMType.CardRemoveAnimationSpeed.x + selfcard:GetRight()*self.ATMType.CardRemoveAnimationSpeed.y + selfcard:GetUp()*self.ATMType.CardRemoveAnimationSpeed.z)
-					timer.Simple(self.ATMType.CardRemoveAnimationLength-0.3,function() selfcard:GetPhysicsObject():SetVelocity(Vector(0,0,0)) end)
+					local phys = selfcard:GetPhysicsObject()
+
+					if IsValid(phys) then
+						phys:EnableCollisions(false)
+						phys:EnableGravity(false)
+						phys:SetVelocity(selfcard:GetForward()*self.ATMType.CardRemoveAnimationSpeed.x + selfcard:GetRight()*self.ATMType.CardRemoveAnimationSpeed.y + selfcard:GetUp()*self.ATMType.CardRemoveAnimationSpeed.z)
+						timer.Simple(self.ATMType.CardRemoveAnimationLength-0.3,function() phys:SetVelocity(Vector(0,0,0)) end)
+					end
 					timer.Simple(self.ATMType.CardRemoveAnimationLength,function() 
 						--MsgN(self:WorldToLocal(selfcard:GetPos()))
 						if IsValid(selfcard) then
@@ -496,8 +506,9 @@ function ENT:ATM_USE(activator)
 
 			else
 				--ARCBank.Msgs.UserMsgs.ATMUsed
-				
-				ARCLib.NotifyPlayer(activator,string.Replace(ARCBank.Msgs.UserMsgs.ATMUsed, "%PLAYER%", self.UsePlayer:Nick()) ,NOTIFY_GENERIC,5,true)
+				if (IsValid(self.UsePlayer)) then
+					ARCLib.NotifyPlayer(activator,string.Replace(ARCBank.Msgs.UserMsgs.ATMUsed, "%PLAYER%", self.UsePlayer:Nick()) ,NOTIFY_GENERIC,5,true)
+				end
 			end
 		elseif ARCBank.Loaded && self.RebootTime < CurTime() && !self.Broken then
 
@@ -517,9 +528,12 @@ function ENT:ATM_USE(activator)
 				if self.ATMType.CardModel == "models/arc/card.mdl" then
 					selfcard:SetSubMaterial(2,ARCBank.Settings.card_texture_world)
 				end
-				selfcard:GetPhysicsObject():EnableCollisions(false)
-				selfcard:GetPhysicsObject():EnableGravity(false)
-				selfcard:GetPhysicsObject():SetVelocity(selfcard:GetForward()*self.ATMType.CardInsertAnimationSpeed.x + selfcard:GetRight()*self.ATMType.CardInsertAnimationSpeed.y + selfcard:GetUp()*self.ATMType.CardInsertAnimationSpeed.z)
+				local phys = selfcard:GetPhysicsObject()
+				if IsValid(phys) then
+					phys:EnableCollisions(false)
+					phys:EnableGravity(false)
+					phys:SetVelocity(selfcard:GetForward()*self.ATMType.CardInsertAnimationSpeed.x + selfcard:GetRight()*self.ATMType.CardInsertAnimationSpeed.y + selfcard:GetUp()*self.ATMType.CardInsertAnimationSpeed.z)
+				end
 				timer.Simple(self.ATMType.CardInsertAnimationLength,function() 
 					--MsgN(self:WorldToLocal(selfcard:GetPos()))
 					selfcard:Remove() 
@@ -564,15 +578,19 @@ function ENT:WithdrawAnimation()
 				atm.moneyprop:SetPos( atm:LocalToWorld(atm.ATMType.WithdrawAnimationPos))
 				atm.moneyprop:SetAngles( atm:LocalToWorldAngles(atm.ATMType.WithdrawAnimationAng) )
 				atm.moneyprop:Spawn()
-				atm.moneyprop:GetPhysicsObject():EnableCollisions(false)
-				atm.moneyprop:GetPhysicsObject():EnableGravity(false)
-				timer.Simple(atm.ATMType.WithdrawAnimationLength,function() 
-					if IsValid(atm.moneyprop) then
-						atm.moneyprop:GetPhysicsObject():SetVelocity(Vector(0,0,0)) 
-						atm.moneyprop:GetPhysicsObject():EnableMotion( false) 
-					end
-				end)
-				atm.moneyprop:GetPhysicsObject():SetVelocity(atm.moneyprop:GetForward()*atm.ATMType.WithdrawAnimationSpeed.x + atm.moneyprop:GetRight()*atm.ATMType.WithdrawAnimationSpeed.y + atm.moneyprop:GetUp()*atm.ATMType.WithdrawAnimationSpeed.z)
+				local phys = atm.moneyprop:GetPhysicsObject()
+				if IsValid(phys) then
+					phys:EnableCollisions(false)
+					phys:EnableGravity(false)
+					timer.Simple(atm.ATMType.WithdrawAnimationLength,function() 
+						if IsValid(atm.moneyprop) then
+							atm.moneyprop:GetPhysicsObject():SetVelocity(Vector(0,0,0)) 
+							atm.moneyprop:GetPhysicsObject():EnableMotion( false) 
+						end
+					end)
+					
+					phys:SetVelocity(atm.moneyprop:GetForward()*atm.ATMType.WithdrawAnimationSpeed.x + atm.moneyprop:GetRight()*atm.ATMType.WithdrawAnimationSpeed.y + atm.moneyprop:GetUp()*atm.ATMType.WithdrawAnimationSpeed.z)
+				end
 			end
 		end
 		if atm.ATMType.WithdrawAnimation != "" then

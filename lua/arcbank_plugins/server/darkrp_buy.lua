@@ -2,7 +2,7 @@
 
 -- This file is under copyright, and is bound to the agreement stated in the EULA.
 -- Any 3rd party content has been used as either public domain or with permission.
--- © Copyright 2017 Aritz Beobide-Cardinal All rights reserved.
+-- © Copyright 2017-2018 Aritz Beobide-Cardinal All rights reserved.
 
 util.AddNetworkString( "arcbank_buyshit" )
 local hooks = {
@@ -83,7 +83,7 @@ net.Receive("arcbank_buyshit",function(len,ply)
 	if not ply._ARCBank_F4Error then return end -- This could not be possible without getting the notification first.
 	if account == "_" then -- This will always be an invalid ARCBank account
 		ply._ARCBank_F4Error[i][itemcmd] = ARCBANK_ERROR_UNDERLING --ARCBank.AddMoney will never throw this error, but you are an UNDERLING for not using ARCBank :^)
-		print(commands[i]..itemcmd)
+		--print(commands[i]..itemcmd)
 		timer.Simple(0.1,function()
 			clearCooldownCommand(ply,i,itemcmd)
 			ply:ConCommand(commands[i]..itemcmd)

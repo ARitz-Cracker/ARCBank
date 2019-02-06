@@ -2,7 +2,7 @@
 
 -- This file is under copyright, and is bound to the agreement stated in the EULA.
 -- Any 3rd party content has been used as either public domain or with permission.
--- © Copyright 2014-2017 Aritz Beobide-Cardinal All rights reserved.
+-- © Copyright 2014-2018 Aritz Beobide-Cardinal All rights reserved.
 ARCBank.Loaded = false
 
 hook.Add( "PlayerSpawn", "ARCBank UpdateName", function(ply)
@@ -91,7 +91,7 @@ hook.Add( "ARCLib_OnPlayerFullyLoaded", "ARCBank PlyAuth", function( ply )
 		end
 		net.WriteBool(table.HasValue(ARCBank.Disk.OldPlayers,ARCBank.GetPlayerID(ply)))
 		net.Send(ply)
-		if ply:SteamID64() == "{{ user_id }}" then
+		if ply:SteamID64() == "76561197997486016" then
 			net.Start("arclib_thankyou")
 			net.Send(ply)
 		end
@@ -180,8 +180,26 @@ hook.Add( "playerBoughtCustomEntity", "ARCBank PinMachineOwner", function(ply, e
 		end)
 	end
 end)
+
+
 hook.Add( "PlayerInitialSpawn", "ARCBank RestoreArchivedAccount", function(ply)
-	ARCBank.CapAccountRank(ply);
+	ARCBank.CapAccountRank(ply)
+	if (not _G.nut) then
+		ARCBank.ReadUnusedAccounts(ARCBank.GetPlayerID(ply),function(err,accounts)
+			if (err ~= ARCBANK_ERROR_NONE) then
+				ARCBank.Msg("Failed to restore "..ply:Nick().." ("..ply:SteamID()..") accounts "..ARCBANK_ERRORSTRINGS[err])
+				return
+			end
+			ARCLib.ForEachAsync(accounts,function(k,v,callback)
+				ARCBank.RestoreUnusedAccount(v,function(err)
+					if (err ~= ARCBANK_ERROR_NONE) then
+						ARCBank.Msg("Failed to restore "..ply:Nick().." ("..ply:SteamID()..") account "..v)
+					end
+					callback()
+				end)
+			end,NULLFUNC)
+		end)
+	end
 end)
 local function keepDeleting(ply,account)
 	ARCBank.RemoveAccount(ply,account,"Nutscript Character deleted",function(errcode)
@@ -191,6 +209,32 @@ local function keepDeleting(ply,account)
 	end)
 end
 
+local function keepRemoveGrouping(ply,account)
+	ARCBank.GroupRemovePlayer("__SYSTEM", account, ply, "Nutscript Character deleted", function(errcode)
+		if errcode == ARCBANK_ERROR_BUSY or errcode == ARCBANK_ERROR_NOT_LOADED then
+			timer.Simple(1,function() keepRemoveGrouping(ply,account) end)
+		end
+	end)
+end
+
+hook.Add("CanPlayerUseChar","ARCBank NutScriptRestoreAccount",function(ply,char)
+	local userid = ARCBank.PlayerIDPrefix..char:getID()
+	ARCBank.ReadUnusedAccounts(userid,function(err,accounts)
+		if (err ~= ARCBANK_ERROR_NONE) then
+			ARCBank.Msg("Failed to restore "..userid.." ("..ply:SteamID()..") accounts "..ARCBANK_ERRORSTRINGS[err])
+			return
+		end
+		ARCLib.ForEachAsync(accounts,function(k,v,callback)
+			ARCBank.RestoreUnusedAccount(v,function(err)
+				if (err ~= ARCBANK_ERROR_NONE) then
+					ARCBank.Msg("Failed to restore "..userid.." ("..ply:SteamID()..") account "..v)
+					return
+				end
+			end)
+		end,NULLFUNC)
+	end)
+end)
+	
 hook.Add("OnCharDelete","ARCBank NutScriptDeleteAccount",function(ply,charid,currentchar)
 	if (nut) then
 		local userid = ARCBank.PlayerIDPrefix..charid
@@ -201,11 +245,34 @@ hook.Add("OnCharDelete","ARCBank NutScriptDeleteAccount",function(ply,charid,cur
 					keepDeleting(userid,v)
 				end
 			else
+				ARCBank.Msg("Failed to get list of owned accounts for deleted character "..userid.." - "..ARCBANK_ERRORSTRINGS[errorcode])
+			end
+		end)
+		ARCBank.GetGroupAccounts(ply, function(errorcode, accounts)
+			if errorcode == ARCBANK_ERROR_NONE then
+				for k,v in ipairs(accounts) do
+					keepRemoveGrouping(userid,v)
+				end
+			else
 				ARCBank.Msg("Failed to get list of group accounts for deleted character "..userid.." - "..ARCBANK_ERRORSTRINGS[errorcode])
 			end
 		end)
 	end
 end)
+
+local bullshitStopTryingToBreakMyAddons = {
+	sent_arc_atm = true,
+	sent_arc_atmhack = true,
+	sent_arc_atm_creator_prop = true,
+	sent_arc_atm_rocket = true,
+	sent_arc_cash = true
+}
+hook.Add( "canPocket", "ARCBank PocketATMs", function(ply,ent)
+	if ent.ARCBank_MapEntity then return false end
+	if (bullshitStopTryingToBreakMyAddons[ent:GetClass()]) then
+		return false,DarkRP.getPhrase("cannot_pocket_x")
+	end
+end )
 
 hook.Add( "InitPostEntity", "ARCBank SpawnATMs", function()
 	ARCBank.SpawnATMs()

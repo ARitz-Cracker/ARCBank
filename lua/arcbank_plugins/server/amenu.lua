@@ -1,7 +1,7 @@
 -- GUI for ARitz Cracker Bank (Serverside)
 -- This file is under copyright, and is bound to the agreement stated in the EULA.
 -- Any 3rd party content has been used as either public domain or with permission.
--- © Copyright 2014-2017 Aritz Beobide-Cardinal All rights reserved.
+-- © Copyright 2014-2018 Aritz Beobide-Cardinal All rights reserved.
 
 ARCLib.RegisterBigMessage("arcbank_comm_admin_log_dl",16000,255,true)
 local maxloglen = 16000*255

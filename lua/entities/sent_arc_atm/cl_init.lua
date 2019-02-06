@@ -1,6 +1,6 @@
 -- This file is under copyright, and is bound to the agreement stated in the EULA.
 -- Any 3rd party content has been used as either public domain or with permission.
--- © Copyright 2014-2017 Aritz Beobide-Cardinal All rights reserved.
+-- © Copyright 2014-2018 Aritz Beobide-Cardinal All rights reserved.
 ENT.RenderGroup = RENDERGROUP_TRANSLUCENT
 include('shared.lua')
 local icons_rank = {}
@@ -374,6 +374,7 @@ function ENT:PlayerAccountSearch(ply)
 			self.Loading = false
 			self:ThrowError(err)
 		else
+
 			local names = {}
 			ARCLib.ForEachAsync(data,function(k,v,callback)
 				if string.StartWith( v, "_" ) then --TODO: Since the names aren't lost like in 1.4.0-beta1 can't we decode them instead of asking the server for them?
@@ -635,8 +636,10 @@ function ENT:HomeScreen()
 				self:ThrowError(err)
 			else
 				local names = {}
+				local hasPersonalAccount = 0
 				ARCLib.ForEachAsync(data,function(k,v,callback)
 					if string.StartWith( v, "_" ) then --TODO: Since the names aren't lost like in 1.4.0-beta1 can't we decode them instead of asking the server for them?
+						hasPersonalAccount = 1
 						callback()
 					else
 						ARCBank.GetAccountName(v,function(err,name)
@@ -649,6 +652,12 @@ function ENT:HomeScreen()
 						end)
 					end
 				end,function()
+					if (#data == hasPersonalAccount) then
+						self.Percent = 0
+						self.Loading = false
+						self:ThrowError(ARCBANK_ERROR_PLAYER_FOREVER_ALONE)
+						return
+					end
 					self.OnHomeScreen = false
 					self.ScreenOptions = {}
 					
@@ -716,9 +725,11 @@ function ENT:HomeScreen()
 						self.ScreenOptions[i].text = names[i]
 						self.ScreenOptions[i].icon = "group"
 						self.ScreenOptions[i].func = function(iconnum)
-							self.Loading = true
 							self.RequestedAccount = self.ScreenOptions[iconnum].text
-							ARCBank.CreateAccount(self,self.RequestedAccount,ARCBANK_GROUPACCOUNTS_STANDARD,ENT_AccountUpgrade)
+							self:Question(ARCBank.Msgs.ATMMsgs.UpgradeAccount,function()
+								self.Loading = true
+								ARCBank.UpgradeAccount(self,self.RequestedAccount,ENT_DoUpgrade)
+							end)
 						end
 					end
 					local i = #names + 1
@@ -727,11 +738,20 @@ function ENT:HomeScreen()
 					self.ScreenOptions[i].icon = "group_edit"
 					self.ScreenOptions[i].func = function()
 						Derma_StringRequest( ARCBank.Msgs.ATMMsgs.CreateGroupAccount, "Enter name", "", function(text)
+							if not IsValid(self) then
+								return
+							end
 							self:EmitSoundTable(self.ATMType.PressSound,65)
 							ARCLib.PlaySoundOnOtherPlayers(table.Random(self.ATMType.PressSound),self,65)
 							self.Loading = true
 							self.RequestedAccount = text
-							ARCBank.CreateAccount(self,self.RequestedAccount,ARCBANK_GROUPACCOUNTS_STANDARD,ENT_AccountUpgrade)
+							ARCBank.CreateAccount(self,self.RequestedAccount,ARCBANK_GROUPACCOUNTS_STANDARD,function(err)
+								if IsValid(self) then
+									self.Loading = false
+									self:ThrowError(err)
+									self:HomeScreen()
+								end
+							end)
 						end) 
 					end
 					
@@ -1584,7 +1604,9 @@ net.Receive( "ARCATM_COMM_BEEP", function(length,ply)
 end)
 function ENT:Draw()--Good
 	self:DrawModel()
-	if LocalPlayer():GetPos():DistToSqr(self:GetPos()) > 2000000 then return end
+	local distance = LocalPlayer():GetPos():DistToSqr(self:GetPos())
+	
+	if distance > 2000000 then return end
 	self:DrawShadow( true )
 	if !self.ATMType then return end
 	if ARCBank.Settings["atm_holo"] then
@@ -1604,7 +1626,7 @@ function ENT:Draw()--Good
 		cam.End3D2D()
 		
 	end
-	if LocalPlayer():GetPos():DistToSqr(self:GetPos()) > 1000000 then return end
+	if distance > 1000000 then return end
 	local Rand2 = 0
 	local vecram = vector_origin
 	if self.Hacked && self.Percent > math.Rand(0.111,0.325) && self.Percent < 1 then

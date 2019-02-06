@@ -1,7 +1,7 @@
 -- GUI for ARitz Cracker Bank (Clientside)
 -- This file is under copyright, and is bound to the agreement stated in the EULA.
 -- Any 3rd party content has been used as either public domain or with permission.
--- © Copyright 2014-2017 Aritz Beobide-Cardinal All rights reserved.
+-- © Copyright 2014-2018 Aritz Beobide-Cardinal All rights reserved.
 local ARCBankGUI = ARCBankGUI or {}
 ARCBankGUI.SelectedAccountRank = 0
 ARCBankGUI.SelectedAccount = ""
@@ -124,7 +124,7 @@ local function NewLogWindow(account,t)
 		ARCBank.GetLog(LocalPlayer(),AccountEntry:GetText(),thetime,transaction_type,function(err,progress,data)
 			if not IsValid(MainPanel) then return end --Panel was closed
 			if err == ARCBANK_ERROR_DOWNLOADING then
-				SearchProgress:SetFraction( progress*0.4 )
+				SearchProgress:SetFraction( progress*0.3 )
 			elseif err != ARCBANK_ERROR_NONE then
 				SearchProgress:SetVisible(false)
 				SearchButton:SetVisible(true)
@@ -169,7 +169,7 @@ ARCLib.AddThinkFunc("ARCBank ShowAdminMenuLogs",function()
 			end
 			AppList:AddLine( v.transaction_id, os.date("%Y-%m-%d %H:%M:%S",v.timestamp), ARCBank.Msgs.AccountTransactions[v.transaction_type], v.account1, v.account2, user1, user2, v.moneydiff, v.money or "", v.comment )
 			if IsValid(SearchProgress) then
-				SearchProgress:SetFraction( 0.4+(k/loglen*0.6) )
+				SearchProgress:SetFraction( 0.3+(k/loglen*0.7) )
 			end
 			coroutine.yield()
 		end
@@ -185,7 +185,7 @@ ARCLib.AddThinkFunc("ARCBank ShowAdminMenuLogs",function()
 			ARCBank_AdminLogDisplay_Place = -1
 			ARCBank_AdminLogDisplay = {}
 		end
-		collectgarbage()
+		--collectgarbage()
 		coroutine.yield()
 	end
 end)
@@ -196,7 +196,7 @@ ARCBank_TestLogWindow = NewLogWindow
 local function NewAccountPropertiesWindow(account)
 	
 	local AccountPopup = vgui.Create( "DFrame" )
-	AccountPopup:SetSize( 250, 245 )
+	AccountPopup:SetSize( 280, 245 )
 	AccountPopup:Center()
 	AccountPopup:SetTitle(account)
 	AccountPopup:SetVisible( true )
@@ -263,11 +263,15 @@ local function NewAccountPropertiesWindow(account)
 				end
 					
 					
-				local AccountDesc = vgui.Create( "DLabel", AccountPopup )
+				local AccountDesc = vgui.Create( "DTextEntry", AccountPopup )
 				AccountDesc:SetPos( 10, 30 ) -- Set the position of the label
 				AccountDesc:SetText(str) --  Set the text of the label
-				AccountDesc:SetWrap(true)
 				AccountDesc:SetSize( 230, 90 )
+				
+				AccountDesc:SetMultiline(true)
+				AccountDesc:SetEnterAllowed(false)
+				AccountDesc:SetVerticalScrollbarEnabled(true)
+				
 				local AcountLog = vgui.Create( "DButton", AccountPopup )
 				AcountLog:SetText(ARCBank.Msgs.ATMMsgs.ViewLog)
 				AcountLog:SetPos( 10, 155 )
@@ -290,9 +294,17 @@ local function NewAccountPropertiesWindow(account)
 					RunConsoleCommand("arcbank","give_money",accountdata.account,tostring(AccountAddMoney:GetValue()))
 				end
 				
+				local AcountUnlock = vgui.Create( "DButton", AccountPopup )
+				AcountUnlock:SetText(ARCBank.Msgs.AdminMenu.Unlock)
+				AcountUnlock:SetPos( 10, 215 )
+				AcountUnlock:SetSize( 230, 20 )
+				AcountUnlock.DoClick = function()
+					RunConsoleCommand("arcbank","unlock",accountdata.account)
+				end
+				
 				local AcountATM = vgui.Create( "DButton", AccountPopup )
 				AcountATM:SetText(ARCBank.Msgs.AdminMenu.OpenATM)
-				AcountATM:SetPos( 10, 215 )
+				AcountATM:SetPos( 10, 245 )
 				AcountATM:SetSize( 230, 20 )
 				AcountATM.DoClick = function()
 					local atm = LocalPlayer().ARCBank_ATM
@@ -407,7 +419,7 @@ net.Receive( "ARCBank_Admin_GUI", function(length)
 			local RankList= vgui.Create( "DComboBox",AccountMenu)
 			local NameBox = vgui.Create( "DTextEntry", AccountMenu )
 			local ResultList = vgui.Create( "DComboBox",AccountMenu)
-			local AccountProgress = vgui.Create( "DProgress",AccountMenu )
+			local AccountProgress = vgui.Create( "DProgressFake",AccountMenu )
 			RankList:SetPos(10,30)
 			RankList:SetSize( 200, 20 )
 			RankList:SetText( "" )
@@ -435,7 +447,7 @@ net.Receive( "ARCBank_Admin_GUI", function(length)
 				NameBox:SetValue("")
 				SIDBox:SetValue("")
 				--ResultList:AddChoice(v.name.." - "..ARCBank.Msgs.AccountRank[5*ARCLib.BoolToNumber(v.isgroup)],k)
-				AccountProgress:SetFraction(0.33)
+				AccountProgress:StartProgress()
 				ARCBank.AdminSearch(7,tostring(SelectedAccountIndex),callback)
 			end
 			
@@ -450,7 +462,7 @@ net.Receive( "ARCBank_Admin_GUI", function(length)
 				SIDBox:SetValue("")
 				ResultList:Clear()
 				--ResultList:AddChoice(v.name.." - "..ARCBank.Msgs.AccountRank[5*ARCLib.BoolToNumber(v.isgroup)],k)
-				AccountProgress:SetFraction(0.33)
+				AccountProgress:StartProgress()
 				ARCBank.AdminSearch(8,NameBox:GetValue(),callback)
 			end
 			local NameSButton = vgui.Create( "DButton", AccountMenu )
@@ -481,7 +493,7 @@ net.Receive( "ARCBank_Admin_GUI", function(length)
 				RankList:SetValue("")
 				ResultList:Clear()
 				--ResultList:AddChoice(v.name.." - "..ARCBank.Msgs.AccountRank[5*ARCLib.BoolToNumber(v.isgroup)],k)
-				AccountProgress:SetFraction(0.33)
+				AccountProgress:StartProgress()
 				ARCBank.AdminSearch(ARCBank_AdminMenuSIDOption,SIDBox:GetValue(),callback)
 			end
 			local SIDSButton = vgui.Create( "DButton", AccountMenu )
@@ -519,7 +531,7 @@ net.Receive( "ARCBank_Admin_GUI", function(length)
 				RankList:SetValue("")
 				ResultList:Clear()
 				--ResultList:AddChoice(v.name.." - "..ARCBank.Msgs.AccountRank[5*ARCLib.BoolToNumber(v.isgroup)],k)
-				AccountProgress:SetFraction(0.33)
+				AccountProgress:StartProgress()
 				ARCBank.AdminSearch(ARCBank_AdminMenuBalOption+3,tostring(Balnum:GetValue()),callback)
 			end
 			
@@ -538,23 +550,24 @@ net.Receive( "ARCBank_Admin_GUI", function(length)
 			callback = function(err,tab)
 				if not IsValid(AccountProgress) then return end
 				if err == ARCBANK_ERROR_NONE then
-					AccountProgress:SetFraction(1)
-					for k,v in ipairs(tab) do
-						local name = ""
-						if string.sub(v,1,1) == "_" then
-							name = ARCLib.basexx.from_base32(string.upper(string.sub(v,2,#v-1)))
-							local ply = ARCBank.GetPlayerByID(name)
-							if IsValid(ply) then
-								name = ply:Nick()
+					AccountProgress:StopProgress(math.Rand(0.5,1.1),function()
+						for k,v in ipairs(tab) do
+							local name = ""
+							if string.sub(v,1,1) == "_" then
+								name = ARCLib.basexx.from_base32(string.upper(string.sub(v,2,#v-1)))
+								local ply = ARCBank.GetPlayerByID(name)
+								if IsValid(ply) then
+									name = ply:Nick()
+								end
+								name = name.." ("..ARCBank.Msgs.AccountRank[0]..")"
+							else
+								name = ARCLib.basexx.from_base32(string.upper(string.sub(v,1,#v-1)))
+								name = name.." ("..ARCBank.Msgs.AccountRank[5]..")"
 							end
-							name = name.." ("..ARCBank.Msgs.AccountRank[0]..")"
-						else
-							name = ARCLib.basexx.from_base32(string.upper(string.sub(v,1,#v-1)))
-							name = name.." ("..ARCBank.Msgs.AccountRank[5]..")"
+							ResultList:AddChoice(name,v)
 						end
-						ResultList:AddChoice(name,v)
-					end
-					ResultList:SetValue(string.Replace( ARCBank.Msgs.AdminMenu.Results, "%NUM%", tostring(#tab) ) )
+						ResultList:SetValue(string.Replace( ARCBank.Msgs.AdminMenu.Results, "%NUM%", tostring(#tab) ) )
+					end)
 				else
 					AccountProgress:SetFraction(0)
 					Derma_Message( ARCBANK_ERRORSTRINGS[err], ARCBank.Msgs.AdminMenu.Accounts, ARCBank.Msgs.ATMMsgs.OK )
@@ -573,7 +586,7 @@ net.Receive( "ARCBank_Admin_GUI", function(length)
 		CommandButton:SetPos( 10, 120 )
 		CommandButton:SetSize( 180, 20 )
 		CommandButton.DoClick = function()		
-			local cmdlist = {"atm_save","atm_unsave","atm_respawn","atm_spawn"}
+			local cmdlist = {"atm_save","atm_unsave","atm_respawn","atm_spawn","reset_settings","purge_accounts","purge_transactions"}
 			local CommandFrame = vgui.Create( "DFrame" )
 			CommandFrame:SetSize( 200*math.ceil(#cmdlist/8), 30+(30*math.Clamp(#cmdlist,0,8)) )
 			CommandFrame:Center()

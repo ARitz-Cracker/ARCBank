@@ -171,7 +171,7 @@ function ENT:OnTakeDamage(dmg)
 	--if self.GottaStop then return end
 	self:TakePhysicsDamage(dmg); -- React physically when getting shot/blown
 	self.OurHealth = self.OurHealth - dmg:GetDamage(); -- Reduce the amount of damage took from our health-variable
-	MsgN(self.OurHealth)
+	--MsgN(self.OurHealth)
 	if(self.OurHealth <= 0) then -- If our health-variable is zero or below it
 		self.Hero = dmg:GetAttacker()
 		if self.Hacking then
@@ -200,6 +200,31 @@ function ENT:OnTakeDamage(dmg)
 	end
 
 end
+
+function ENT:_ActuallyStop(detachtime)
+	self.PickupTime = CurTime() + 13
+	if self.HackSound then
+		self.HackSound:Stop()
+	end
+	self:GetParent()._HackAttached = false
+	timer.Simple(detachtime,function()
+		if !IsValid(self) || !IsValid(self:GetParent()) then return end
+		local pos = self:GetParent():WorldToLocal(self:GetPos()) - Vector(0,self.left,0)
+		self:SetPos(pos)
+		self:SetParent()
+		self:GetPhysicsObject():Wake()
+		if(self.OurHealth > 0) then
+			self:EmitSound("npc/roller/blade_in.wav")
+		else
+			self:EmitSound("physics/metal/metal_box_impact_bullet"..math.random(1,3)..".wav")
+		end
+	end)
+	if self.GottaBreak then
+		self:Break()
+	end
+
+end
+
 function ENT:Think()
 	if self.Rotate then
 		if self.whirang < 90 then
@@ -212,6 +237,10 @@ function ENT:Think()
 			self:SetPos(pos)
 			self:NextThink( CurTime() )
 			return true
+		--elseif (not self:GetParent():Hackable()) then -- Someone is inserting their card while it was rotating.
+			--self:_ActuallyStop(0.1)
+			--self.Rotate = false
+			--return
 		else
 			self.spark:Fire( "SparkOnce","",0.01)
 			self.spark:Fire( "SparkOnce","",0.5)
@@ -220,7 +249,11 @@ function ENT:Think()
 			self.StartPos = self:GetParent():WorldToLocal(self:GetPos())
 			timer.Simple(0.5,function()
 				if !IsValid(self) || !IsValid(self:GetParent()) then return end
-				
+				if (not self:GetParent():Hackable()) then
+					self:EmitSound("buttons/button8.wav")
+					self:_ActuallyStop(1.5)
+					return
+				end
 				for k,v in pairs(ARCBank.Settings["atm_hack_notify"]) do
 					for _,ply in pairs(player.GetAll()) do
 						if ply:Team() == _G[v] then
@@ -278,42 +311,21 @@ function ENT:Think()
 	if !self.Hacking then return end
 	if self.GottaStop then
 		if (!self:GetParent():HackStop()) then
-			self.Hacking = false
-			self.GottaStop = false
-			self.PickupTime = CurTime() + 13
 			net.Start( "arcbank_hacker_status" )
 			net.WriteUInt(self:EntIndex(),16)
 			net.WriteUInt(2,4)
 			net.Broadcast()
 			self:EmitSound("ambient/energy/powerdown2.wav")
-			if self.HackSound then
-				self.HackSound:Stop()
-			end
 			self.EnergyLevel = self.EnergyEnd - CurTime()
 			if self.EnergyLevel < 0 then
 				self.EnergyLevel = 0
 			end
-			self:GetParent()._HackAttached = false
 			local detachtime = 3
 			if(self.OurHealth <= 0) then
 				detachtime = 0.5
 			end
-			timer.Simple(detachtime,function()
-				if !IsValid(self) || !IsValid(self:GetParent()) then return end
-				local pos = self:GetParent():WorldToLocal(self:GetPos()) - Vector(0,self.left,0)
-				self:SetPos(pos)
-				self:SetParent()
-				self:GetPhysicsObject():Wake()
-				if(self.OurHealth > 0) then
-					self:EmitSound("npc/roller/blade_in.wav")
-				else
-					self:EmitSound("physics/metal/metal_box_impact_bullet"..math.random(1,3)..".wav")
-				end
-			end)
-			if self.GottaBreak then
-				self:Break()
-			end
-			hook.Call("ARCBank_OnHackEnd",GM,self.Hacker,self)
+			self:_ActuallyStop(detachtime)
+			self.Hacking = false
 		end
 		return
 	end
