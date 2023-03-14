@@ -1,3 +1,5 @@
+This branch fixes an issue with the ATM card being displayed properly.
+
 # ARitz Cracker Bank - Community Edition
 The best ATM system for GMod is now free!
 
