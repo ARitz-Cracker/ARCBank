@@ -60,13 +60,13 @@ function ARCBank.SettingsReset() --DO NOT EDIT THIS!!!!
 	ARCBank.Settings["account_debt_limit"] = 10000  --DO NOT EDIT THIS!!!!
 	
 	
-	ARCBank.Settings["card_texture"] = "arc/atm_base/screen/card" --DO NOT EDIT THIS!!!!
+	ARCBank.Settings["card_texture"] = "arc\\atm_base\\screen\\card" --DO NOT EDIT THIS!!!!
 	ARCBank.Settings["card_weapon_slot"] = 1 --DO NOT EDIT THIS!!!!
 	ARCBank.Settings["card_weapon_slotpos"] = 4 --DO NOT EDIT THIS!!!!
 	ARCBank.Settings["card_weapon_position_up"] = 0 --DO NOT EDIT THIS!!!!
 	ARCBank.Settings["card_weapon_position_left"] = 0 --DO NOT EDIT THIS!!!!
 	ARCBank.Settings["card_weapon"] = "weapon_arc_atmcard"
-	ARCBank.Settings["card_texture_world"] = "arc/card/cardex"
+	ARCBank.Settings["card_texture_world"] = "arc\\card\\cardex"
 	ARCBank.Settings["card_draw_vehicle"] = false
 	
 	ARCBank.Settings["atm_hack_max"] = 5000 --DO NOT EDIT THIS!!!!

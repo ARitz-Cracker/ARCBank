@@ -450,7 +450,7 @@ ARCBank.SettingsDesc["card_weapon_slotpos"] = "weapon_arc_atmcard.SlotPos"
 ARCBank.SettingsDesc["card_weapon_position_up"] = "How much upward the card on the HUD should be"
 ARCBank.SettingsDesc["card_weapon_position_left"] = "How much to the left the card on the HUD should be"
 
-ARCBank.SettingsDesc["atm_hack_time_rate"] = "The hack time rate for hacking devices. The higher number, the faster the hack will take."
+ARCBank.SettingsDesc["atm_hack_time_rate"] = "How fast the device recharges. 2 = 2 seconds recharged per second. Higher = faster."
 ARCBank.SettingsDesc["atm_hack_time_max"] = "The maximum time an ATM hack can take."
 ARCBank.SettingsDesc["atm_hack_time_min"] = "The minimum time an ATM hack can take"
 ARCBank.SettingsDesc["atm_hack_time_stealth_rate"] = "Setting the ATM Hacker to \"stealth mode\" will multiply the hacking time by this amount"
